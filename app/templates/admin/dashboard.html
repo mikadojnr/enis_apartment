@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Eni's Apartments{% endblock %}
+
+{% block content %}
+    <div class="max-w-7xl mx-auto px-6 py-12">
+        <!-- Header -->
+        <div class="flex justify-between items-start mb-12">
+            <div>
+                <h1 class="serif text-5xl font-light mb-2">Admin Dashboard</h1>
+                <p class="text-lg text-neutral">Manage your apartment business</p>
+            </div>
+            <div class="space-y-2">
+                <a href="/admin/create-booking" class="btn-primary inline-block">
+                    <span>+ New Booking</span>
+                </a>
+                <a href="/admin/bookings" class="btn-outline inline-block ml-2">
+                    All Bookings
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="grid md:grid-cols-4 gap-6 mb-12">
+            <div class="service-card text-center">
+                <div class="text-4xl text-[#E96C40] mb-3">🏢</div>
+                <p class="text-3xl font-semibold text-[#632A89]">{{ total_units }}</p>
+                <p class="text-sm text-neutral">Total Units</p>
+            </div>
+            
+            <div class="service-card text-center">
+                <div class="text-4xl text-[#E96C40] mb-3">📅</div>
+                <p class="text-3xl font-semibold text-[#632A89]">{{ total_bookings }}</p>
+                <p class="text-sm text-neutral">Total Bookings</p>
+            </div>
+            
+            <div class="service-card text-center">
+                <div class="text-4xl text-[#E96C40] mb-3">👥</div>
+                <p class="text-3xl font-semibold text-[#632A89]">{{ total_users }}</p>
+                <p class="text-sm text-neutral">Active Users</p>
+            </div>
+            
+            <div class="service-card text-center">
+                <div class="text-4xl text-[#E96C40] mb-3">🔧</div>
+                <p class="text-3xl font-semibold text-[#632A89]">{{ pending_requests }}</p>
+                <p class="text-sm text-neutral">Pending Requests</p>
+            </div>
+        </div>
+
+        <!-- Admin Menu -->
+        <div class="grid md:grid-cols-3 gap-6 mb-12">
+            <a href="/admin/apartments" class="service-card hover:shadow-lg transition">
+                <div class="text-5xl mb-4">🏢</div>
+                <h3 class="font-semibold text-lg mb-2">Apartments</h3>
+                <p class="text-sm text-neutral mb-4">Create and manage apartment types</p>
+                <span class="text-[#E96C40] font-semibold text-sm">Manage Types →</span>
+            </a>
+            
+            <a href="/admin/units" class="service-card hover:shadow-lg transition">
+                <div class="text-5xl mb-4">🏠</div>
+                <h3 class="font-semibold text-lg mb-2">Units</h3>
+                <p class="text-sm text-neutral mb-4">View, edit, and manage all apartment units & galleries</p>
+                <span class="text-[#E96C40] font-semibold text-sm">{{ total_units }} units →</span>
+            </a>
+            
+            <a href="/admin/bookings" class="service-card hover:shadow-lg transition">
+                <div class="text-5xl mb-4">📋</div>
+                <h3 class="font-semibold text-lg mb-2">Bookings</h3>
+                <p class="text-sm text-neutral mb-4">Process and manage all reservations</p>
+                <span class="text-[#E96C40] font-semibold text-sm">{{ total_bookings }} bookings →</span>
+            </a>
+            
+            <a href="/admin/service-requests" class="service-card hover:shadow-lg transition">
+                <div class="text-5xl mb-4">🔧</div>
+                <h3 class="font-semibold text-lg mb-2">Services</h3>
+                <p class="text-sm text-neutral mb-4">Handle guest service requests</p>
+                <span class="text-[#E96C40] font-semibold text-sm">{{ pending_requests }} pending →</span>
+            </a>
+        </div>
+
+        <!-- Recent Bookings -->
+        <div>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="serif text-3xl font-light">Recent Bookings</h2>
+                <a href="/admin/bookings" class="text-[#E96C40] font-semibold hover:underline">View All</a>
+            </div>
+            
+            {% if recent_bookings %}
+                <div class="space-y-4">
+                    {% for booking in recent_bookings %}
+                    <div class="service-card">
+                        <div class="grid md:grid-cols-5 gap-4 items-center">
+                            <div>
+                                <p class="text-sm text-neutral mb-1">Booking ID</p>
+                                <p class="font-semibold text-[#632A89]">{{ booking.booking_reference }}</p>
+                            </div>
+                            
+                            <div>
+                                <p class="text-sm text-neutral mb-1">Guest</p>
+                                <p class="font-semibold">{{ booking.guest.first_name }} {{ booking.guest.last_name }}</p>
+                            </div>
+                            
+                            <div>
+                                <p class="text-sm text-neutral mb-1">Unit</p>
+                                <p class="font-semibold">{{ booking.unit.unit_number }}</p>
+                            </div>
+                            
+                            <div>
+                                <p class="text-sm text-neutral mb-1">Dates</p>
+                                <p class="font-semibold text-sm">{{ booking.check_in_date.strftime('%b %d') }} - {{ booking.check_out_date.strftime('%b %d') }}</p>
+                            </div>
+                            
+                            <div class="text-right">
+                                <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold
+                                    {% if booking.status == 'confirmed' %}bg-[#94CA3E] text-white
+                                    {% elif booking.status == 'pending' %}bg-yellow-400 text-white
+                                    {% else %}bg-gray-400 text-white{% endif %}">
+                                    {{ booking.status|capitalize }}
+                                </span>
+                                <a href="/admin/bookings" class="block text-xs text-[#E96C40] font-semibold mt-2 hover:underline">
+                                    Manage →
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="service-card text-center py-12">
+                    <p class="text-neutral">No recent bookings</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

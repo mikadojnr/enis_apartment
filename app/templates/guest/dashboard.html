@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Eni's Apartments{% endblock %}
+
+{% block content %}
+    <div class="max-w-7xl mx-auto px-6 py-12">
+        <!-- Welcome Section -->
+        <div class="mb-12">
+            <h1 class="serif text-5xl font-light mb-2">Welcome, {{ current_user.first_name }}!</h1>
+            <p class="text-lg text-neutral">Manage your bookings and services</p>
+        </div>
+
+        <div class="grid md:grid-cols-4 gap-6 mb-12">
+            <!-- Stats -->
+            <div class="service-card text-center">
+                <div class="text-4xl text-[#E96C40] mb-3">📅</div>
+                <p class="text-3xl font-semibold text-[#632A89]">{{ bookings|length }}</p>
+                <p class="text-sm text-neutral">Total Bookings</p>
+            </div>
+            
+            <div class="service-card text-center">
+                <div class="text-4xl text-[#E96C40] mb-3">🏠</div>
+                <p class="text-3xl font-semibold text-[#632A89]">
+                    {% set active_bookings = bookings|selectattr('status', 'equalto', 'confirmed')|list|length %}
+                    {{ active_bookings }}
+                </p>
+                <p class="text-sm text-neutral">Active Bookings</p>
+            </div>
+            
+            <div class="service-card text-center">
+                <div class="text-4xl text-[#E96C40] mb-3">🔧</div>
+                <p class="text-3xl font-semibold text-[#632A89]">{{ service_requests|length }}</p>
+                <p class="text-sm text-neutral">Service Requests</p>
+            </div>
+            
+            <div class="service-card text-center">
+                <div class="text-4xl text-[#E96C40] mb-3">✉️</div>
+                <p class="text-3xl font-semibold text-[#632A89]">
+                    {% set pending_requests = service_requests|selectattr('status', 'equalto', 'pending')|list|length %}
+                    {{ pending_requests }}
+                </p>
+                <p class="text-sm text-neutral">Pending Services</p>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="grid md:grid-cols-3 gap-6 mb-12">
+            <a href="/bookings/availability" class="service-card text-center hover:shadow-lg transition">
+                <div class="text-5xl mb-3">🎯</div>
+                <h3 class="font-semibold text-lg mb-2">New Booking</h3>
+                <p class="text-sm text-neutral">Reserve another stay</p>
+            </a>
+            
+            <a href="/services/request" class="service-card text-center hover:shadow-lg transition">
+                <div class="text-5xl mb-3">🛎️</div>
+                <h3 class="font-semibold text-lg mb-2">Request Service</h3>
+                <p class="text-sm text-neutral">Laundry, maintenance, etc.</p>
+            </a>
+            
+            <a href="/auth/profile" class="service-card text-center hover:shadow-lg transition">
+                <div class="text-5xl mb-3">👤</div>
+                <h3 class="font-semibold text-lg mb-2">My Profile</h3>
+                <p class="text-sm text-neutral">Update your information</p>
+            </a>
+        </div>
+
+        <!-- Bookings Section -->
+        <div class="mb-12">
+            <h2 class="serif text-3xl font-light mb-6">Your Bookings</h2>
+            
+            {% if bookings %}
+                <div class="space-y-6">
+                    {% for booking in bookings %}
+                    <div class="service-card">
+                        <div class="grid md:grid-cols-4 gap-6 items-start">
+                            <div>
+                                <p class="text-sm text-neutral mb-1">Booking Reference</p>
+                                <p class="font-semibold text-[#632A89]">{{ booking.booking_reference }}</p>
+                            </div>
+                            
+                            <div>
+                                <p class="text-sm text-neutral mb-1">Unit</p>
+                                <p class="font-semibold text-[#632A89]">{{ booking.unit.unit_number }}</p>
+                                <p class="text-xs text-neutral">Floor {{ booking.unit.floor }}</p>
+                            </div>
+                            
+                            <div>
+                                <p class="text-sm text-neutral mb-1">Dates</p>
+                                <p class="font-semibold">{{ booking.check_in_date.strftime('%b %d') }} - {{ booking.check_out_date.strftime('%b %d') }}</p>
+                                <p class="text-xs text-neutral">{{ ((booking.check_out_date - booking.check_in_date).days) }} nights</p>
+                            </div>
+                            
+                            <div class="text-right">
+                                <p class="text-sm text-neutral mb-1">Status</p>
+                                <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold
+                                    {% if booking.status == 'confirmed' %}bg-[#94CA3E] text-white
+                                    {% elif booking.status == 'pending' %}bg-yellow-400 text-white
+                                    {% elif booking.status == 'completed' %}bg-blue-400 text-white
+                                    {% else %}bg-gray-400 text-white{% endif %}">
+                                    {{ booking.status|capitalize }}
+                                </span>
+                                
+                                {% if booking.status in ['pending', 'confirmed'] %}
+                                <button onclick="cancelBooking({{ booking.id }})" class="block mt-2 text-xs text-red-500 hover:underline">
+                                    Cancel
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-6 border-t border-gray-200 flex gap-4">
+                            <a href="/bookings/{{ booking.id }}" class="text-sm font-semibold text-[#E96C40] hover:underline">
+                                View Details
+                            </a>
+                            <a href="/services/request?booking={{ booking.id }}" class="text-sm font-semibold text-[#632A89] hover:underline">
+                                Request Service
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="service-card text-center py-12">
+                    <div class="text-5xl mb-4">📅</div>
+                    <h3 class="font-semibold text-xl mb-2">No Bookings Yet</h3>
+                    <p class="text-neutral mb-6">Start your luxury stay with Eni's Apartments</p>
+                    <a href="/bookings/availability" class="btn-primary inline-block">
+                        <span>Book Now</span>
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Service Requests Section -->
+        {% if service_requests %}
+        <div>
+            <h2 class="serif text-3xl font-light mb-6">Your Service Requests</h2>
+            
+            <div class="space-y-4">
+                {% for req in service_requests %}
+                <div class="service-card">
+                    <div class="grid md:grid-cols-4 gap-6 items-start">
+                        <div>
+                            <p class="text-sm text-neutral mb-1">Service</p>
+                            <p class="font-semibold text-[#632A89]">{{ req.service.name }}</p>
+                        </div>
+                        
+                        <div>
+                            <p class="text-sm text-neutral mb-1">Booking</p>
+                            <p class="font-semibold text-[#632A89]">{{ req.booking.booking_reference }}</p>
+                        </div>
+                        
+                        <div>
+                            <p class="text-sm text-neutral mb-1">Requested</p>
+                            <p class="font-semibold">{{ req.created_at.strftime('%b %d, %Y') }}</p>
+                        </div>
+                        
+                        <div class="text-right">
+                            <p class="text-sm text-neutral mb-1">Status</p>
+                            <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold
+                                {% if req.status == 'completed' %}bg-[#94CA3E] text-white
+                                {% elif req.status == 'in_progress' %}bg-blue-400 text-white
+                                {% else %}bg-yellow-400 text-white{% endif %}">
+                                {{ req.status|replace('_', ' ')|capitalize }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    {% if req.notes %}
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <p class="text-sm text-neutral"><strong>Notes:</strong> {{ req.notes }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function cancelBooking(bookingId) {
+        if (confirm('Are you sure you want to cancel this booking?')) {
+            fetch(`/bookings/${bookingId}/cancel`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert('Error canceling booking');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred');
+            });
+        }
+    }
+</script>
+{% endblock %}

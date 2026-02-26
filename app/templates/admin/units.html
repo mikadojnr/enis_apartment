@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Units - Eni's Apartments{% endblock %}
+
+{% block content %}
+    <div class="max-w-7xl mx-auto px-6 py-12">
+        <!-- Header -->
+        <div class="flex justify-between items-start mb-12">
+            <div>
+                <h1 class="serif text-5xl font-light mb-2">Manage Units</h1>
+                <p class="text-lg text-neutral">Control availability, details, and galleries for all units</p>
+            </div>
+            <div class="space-y-2">
+                <a href="/admin/units/new" class="btn-primary inline-block">
+                    <span>+ New Unit</span>
+                </a>
+                <a href="/admin/dashboard" class="btn-outline inline-block ml-2">
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Units Grid -->
+        {% if units %}
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {% for unit in units %}
+                <div class="service-card">
+                    <div class="mb-6">
+                        <div class="relative h-48 overflow-hidden rounded mb-4">
+                            <img src="{{ unit.image_url }}" alt="{{ unit.unit_number }}" class="w-full h-full object-cover">
+                        </div>
+                        <h3 class="font-semibold text-lg mb-2">{{ unit.unit_number }}</h3>
+                        <p class="text-sm text-neutral mb-4">Floor {{ unit.floor }} • {{ unit.view }}</p>
+                        
+                        <!-- Status -->
+                        <div class="mb-4">
+                            {% if unit.is_available %}
+                                <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-[#94CA3E] text-white">
+                                    Available
+                                </span>
+                            {% else %}
+                                <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-red-500 text-white">
+                                    Unavailable
+                                </span>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Details -->
+                        <ul class="text-xs text-neutral space-y-1 mb-6">
+                            <li>{{ unit.apartment_type.bedrooms }}BR • {{ unit.apartment_type.bathrooms }}BA</li>
+                            <li>{{ unit.apartment_type.area_sqm }} sqm</li>
+                            <li>N{{ "%.0f"|format(unit.apartment_type.base_price) }}/day</li>
+                        </ul>
+                        
+                        <!-- Actions -->
+                        <div class="space-y-2">
+                            <a href="/admin/units/{{ unit.id }}/edit" class="w-full text-sm font-semibold px-4 py-2 rounded transition bg-blue-100 text-blue-600 hover:bg-blue-200 inline-block text-center">
+                                Edit
+                            </a>
+                            <a href="/admin/units/{{ unit.id }}/gallery" class="w-full text-sm font-semibold px-4 py-2 rounded transition bg-purple-100 text-purple-600 hover:bg-purple-200 inline-block text-center">
+                                Gallery
+                            </a>
+                            <button onclick="toggleAvailability({{ unit.id }}, {{ unit.is_available|lower }})" 
+                                    class="w-full text-sm font-semibold px-4 py-2 rounded transition
+                                    {% if unit.is_available %}
+                                        bg-red-100 text-red-600 hover:bg-red-200
+                                    {% else %}
+                                        bg-green-100 text-green-600 hover:bg-green-200
+                                    {% endif %}">
+                                {{ unit.is_available ? 'Mark Unavailable' : 'Mark Available' }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="service-card text-center py-12">
+                <div class="text-5xl mb-4">🏠</div>
+                <h3 class="font-semibold text-xl mb-2">No Units Found</h3>
+                <p class="text-neutral">Contact support to add units to your property</p>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function toggleAvailability(unitId, currentStatus) {
+        try {
+            const response = await fetch(`/admin/units/${unitId}/toggle`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                // Reload the page to reflect changes
+                window.location.reload();
+            } else {
+                alert('Error updating unit availability');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred');
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Bookings - Eni's Apartments{% endblock %}
+
+{% block content %}
+    <div class="max-w-7xl mx-auto px-6 py-12">
+        <!-- Header -->
+        <div class="flex justify-between items-start mb-12">
+            <div>
+                <h1 class="serif text-5xl font-light mb-2">Manage Bookings</h1>
+                <p class="text-lg text-neutral">Review and process all reservations</p>
+            </div>
+            <a href="/admin/dashboard" class="btn-outline inline-block">
+                Back to Dashboard
+            </a>
+        </div>
+
+        <!-- Filters -->
+        <div class="mb-8 space-x-3">
+            <a href="/admin/bookings?status=all" class="px-6 py-2 rounded-full border-2 transition
+                {% if current_status == 'all' %}border-[#E96C40] bg-[#E96C40] text-white{% else %}border-gray-300 text-gray-600 hover:border-[#E96C40]{% endif %}">
+                All
+            </a>
+            <a href="/admin/bookings?status=pending" class="px-6 py-2 rounded-full border-2 transition
+                {% if current_status == 'pending' %}border-yellow-400 bg-yellow-400 text-white{% else %}border-gray-300 text-gray-600 hover:border-yellow-400{% endif %}">
+                Pending
+            </a>
+            <a href="/admin/bookings?status=confirmed" class="px-6 py-2 rounded-full border-2 transition
+                {% if current_status == 'confirmed' %}border-[#94CA3E] bg-[#94CA3E] text-white{% else %}border-gray-300 text-gray-600 hover:border-[#94CA3E]{% endif %}">
+                Confirmed
+            </a>
+            <a href="/admin/bookings?status=completed" class="px-6 py-2 rounded-full border-2 transition
+                {% if current_status == 'completed' %}border-blue-400 bg-blue-400 text-white{% else %}border-gray-300 text-gray-600 hover:border-blue-400{% endif %}">
+                Completed
+            </a>
+        </div>
+
+        <!-- Bookings Table -->
+        {% if bookings %}
+            <div class="space-y-4">
+                {% for booking in bookings %}
+                <div class="service-card">
+                    <div class="grid md:grid-cols-6 gap-4 items-start">
+                        <div>
+                            <p class="text-sm text-neutral mb-1">Reference</p>
+                            <p class="font-semibold text-[#632A89] text-sm">{{ booking.booking_reference }}</p>
+                        </div>
+                        
+                        <div>
+                            <p class="text-sm text-neutral mb-1">Guest</p>
+                            <p class="font-semibold">{{ booking.guest.first_name }} {{ booking.guest.last_name }}</p>
+                            <p class="text-xs text-neutral">{{ booking.guest.email }}</p>
+                        </div>
+                        
+                        <div>
+                            <p class="text-sm text-neutral mb-1">Unit</p>
+                            <p class="font-semibold">{{ booking.unit.unit_number }}</p>
+                        </div>
+                        
+                        <div>
+                            <p class="text-sm text-neutral mb-1">Duration</p>
+                            <p class="font-semibold text-sm">{{ booking.check_in_date.strftime('%b %d') }} - {{ booking.check_out_date.strftime('%b %d') }}</p>
+                            <p class="text-xs text-neutral">{{ (booking.check_out_date - booking.check_in_date).days }} nights</p>
+                        </div>
+                        
+                        <div>
+                            <p class="text-sm text-neutral mb-1">Total</p>
+                            <p class="font-semibold text-lg text-[#E96C40]">N{{ "%.0f"|format(booking.total_price) }}</p>
+                        </div>
+                        
+                        <div>
+                            <p class="text-sm text-neutral mb-2">Status</p>
+                            <select onchange="updateBookingStatus({{ booking.id }}, this.value)" 
+                                    class="px-3 py-1 rounded text-sm font-semibold bg-white border
+                                    {% if booking.status == 'confirmed' %}border-[#94CA3E] text-[#94CA3E]
+                                    {% elif booking.status == 'pending' %}border-yellow-400 text-yellow-600
+                                    {% elif booking.status == 'completed' %}border-blue-400 text-blue-600
+                                    {% else %}border-gray-400 text-gray-600{% endif %}">
+                                <option value="pending" {% if booking.status == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="confirmed" {% if booking.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                                <option value="completed" {% if booking.status == 'completed' %}selected{% endif %}>Completed</option>
+                                <option value="cancelled" {% if booking.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-t border-gray-200 flex gap-4">
+                        <span class="text-xs text-neutral">
+                            Guests: {{ booking.number_of_guests }}
+                        </span>
+                        <span class="text-xs {% if booking.paid %}text-[#94CA3E] font-semibold{% else %}text-red-500{% endif %}">
+                            Payment: {{ booking.paid ? 'Paid' : 'Pending' }}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="service-card text-center py-12">
+                <div class="text-5xl mb-4">📋</div>
+                <h3 class="font-semibold text-xl mb-2">No Bookings Found</h3>
+                <p class="text-neutral">No {{ current_status }} bookings at the moment</p>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function updateBookingStatus(bookingId, newStatus) {
+        try {
+            const response = await fetch(`/admin/bookings/${bookingId}/status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Error updating booking status');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred');
+        }
+    }
+</script>
+{% endblock %}

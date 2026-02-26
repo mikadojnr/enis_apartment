@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Apartments - Eni's Apartments{% endblock %}
+
+{% block content %}
+    <!-- Header -->
+    <section class="py-16 px-6 bg-gradient-to-r from-[#632A89] to-[#E96C40] text-white">
+        <div class="max-w-7xl mx-auto">
+            <h1 class="serif text-5xl font-light mb-4">Our Apartments</h1>
+            <p class="text-lg max-w-2xl">Discover our collection of luxurious 2-bedroom serviced apartments</p>
+        </div>
+    </section>
+
+    <!-- Filter Section -->
+    <section class="py-12 px-6 bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row gap-6 items-center justify-between">
+                <div>
+                    <h3 class="font-semibold mb-4">Filter by Type:</h3>
+                    <div class="flex flex-wrap gap-3">
+                        <a href="/units" class="px-6 py-2 rounded-full border-2 border-[#E96C40] text-[#E96C40] hover:bg-[#E96C40] hover:text-white transition">
+                            All Units
+                        </a>
+                        {% for apt_type in apartment_types %}
+                        <a href="/units?type={{ apt_type.id }}" class="px-6 py-2 rounded-full border-2 border-gray-300 text-gray-600 hover:border-[#E96C40] transition">
+                            {{ apt_type.bedrooms }}BR - N{{ "%.0f"|format(apt_type.base_price * 30) }}/mo
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="font-semibold mb-4">Availability:</h3>
+                    <a href="/bookings/availability" class="btn-primary">
+                        <span>Check Dates</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Units Grid -->
+    <section class="py-24 px-6 bg-[#f8f6f3]">
+        <div class="max-w-7xl mx-auto">
+            {% if units %}
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for unit in units %}
+                <div class="service-card img-hover-scale h-full flex flex-col">
+                    <div class="relative h-64 mb-6 overflow-hidden">
+                        <img src="{{ unit.image_url }}" 
+                             alt="{{ unit.unit_number }}" 
+                             class="w-full h-full object-cover">
+                        <div class="absolute top-4 right-4 bg-[#E96C40] text-white px-4 py-2 text-sm font-medium rounded">
+                            {{ unit.unit_number }}
+                        </div>
+                        {% if not unit.is_available %}
+                        <div class="absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <span class="text-white font-semibold">Unavailable</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <h3 class="serif text-2xl font-semibold mb-2">Floor {{ unit.floor }}</h3>
+                    <p class="text-[#94CA3E] font-semibold mb-3">{{ unit.view }}</p>
+                    
+                    <ul class="space-y-2 text-sm mb-4 flex-grow">
+                        <li class="flex items-center gap-2">
+                            <span class="text-[#E96C40]">●</span> {{ unit.apartment_type.bedrooms }} Bedrooms
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-[#E96C40]">●</span> {{ unit.apartment_type.bathrooms }} Bathrooms
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-[#E96C40]">●</span> {{ unit.apartment_type.area_sqm }} sqm
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-[#E96C40]">●</span> 
+                            <span class="font-semibold">N{{ "%.0f"|format(unit.apartment_type.base_price * 30) }}/month</span>
+                        </li>
+                    </ul>
+                    
+                    <div class="space-y-3">
+                        <a href="/unit/{{ unit.unit_number }}" class="btn-primary block text-center py-2">
+                            <span>View Details</span>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-16">
+                <h3 class="serif text-3xl font-light mb-4">No Units Available</h3>
+                <p class="text-neutral">Try adjusting your filters</p>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Why Choose Section -->
+    <section class="py-24 px-6 bg-white">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="serif text-5xl font-light mb-4">Why Choose Eni's?</h2>
+                <div class="accent-line"></div>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="text-center">
+                    <div class="text-5xl mb-4 text-[#E96C40]">🏆</div>
+                    <h3 class="font-semibold text-xl mb-2">Premium Quality</h3>
+                    <p class="text-neutral">Meticulously curated apartments with high-end finishes and modern design</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="text-5xl mb-4 text-[#E96C40]">🎯</div>
+                    <h3 class="font-semibold text-xl mb-2">Flexible Terms</h3>
+                    <p class="text-neutral">Short-term or long-term stays with competitive pricing and transparent terms</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="text-5xl mb-4 text-[#E96C40]">🤝</div>
+                    <h3 class="font-semibold text-xl mb-2">Expert Support</h3>
+                    <p class="text-neutral">Dedicated concierge and 24/7 support to ensure your comfort</p>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

@@ -1,0 +1,480 @@
+{% extends "base.html" %}
+{% block title %}Complete Your Booking - Eni's Apartments{% endblock %}
+{% block content %}
+    <div class="max-w-7xl mx-auto px-6 py-12">
+
+        <!-- Breadcrumb -->
+        <nav class="mb-8 text-sm text-neutral">
+            <a href="/" class="hover:text-[#E96C40]">Home</a> /
+            <a href="/units" class="hover:text-[#E96C40]">Apartments</a> /
+            <span>Booking</span>
+        </nav>
+
+        <div class="flex items-center justify-between mb-12">
+            <h1 class="serif text-5xl font-light">Complete Your Booking</h1>
+        </div>
+
+        <!-- Progress Steps (exactly as in reference UI) -->
+        <div class="mb-10 flex justify-center">
+            <div class="inline-flex items-center gap-x-6 bg-white shadow-sm  px-10 py-4">
+                <!-- Step 1 -->
+                <div class="flex items-center gap-x-3">
+                    <div class="w-9 h-9 bg-[#94CA3E] text-white text-lg font-semibold rounded-2xl flex items-center justify-center">1</div>
+                    <span class="text-[#94CA3E] font-medium text-base tracking-tight">Select Apartment</span>
+                </div>
+                <div class="h-px w-14 bg-[#94CA3E]"></div>
+                <!-- Step 2 (current) -->
+                <div class="flex items-center gap-x-3">
+                    <div class="w-9 h-9 bg-[#632A89] text-white text-lg font-semibold rounded-2xl flex items-center justify-center">2</div>
+                    <span class="text-[#632A89] font-medium text-base tracking-tight">Your Details</span>
+                </div>
+                <div class="h-px w-14 bg-gray-300"></div>
+                <!-- Step 3 -->
+                <div class="flex items-center gap-x-3 opacity-60">
+                    <div class="w-9 h-9 bg-gray-300 text-gray-400 text-lg font-semibold rounded-2xl flex items-center justify-center">3</div>
+                    <span class="text-gray-400 font-medium text-base tracking-tight">Confirmation</span>
+                </div>
+            </div>
+        </div>
+
+        
+
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-8">
+            <!-- LEFT: Full booking form (all sections from reference UI) -->
+            <div class="md:col-span-3">
+                <form id="bookingForm" class="space-y-12">
+                    <input type="hidden" id="unitId" name="unit_id">
+
+                    <!-- STAY DETAILS -->
+                    <div class="service-card">
+                        <h2 class="serif text-2xl font-light mb-8 flex items-center gap-3">
+                            <span class="text-3xl"><i class="fa-solid fa-calendar"></i></span> STAY DETAILS
+                        </h2>
+                        <div class="grid grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-semibold mb-2 text-[#632A89]">Check In Date *</label>
+                                <input type="date" id="checkIn"
+                                       class="w-full px-4 py-3 border border-gray-300  focus:outline-none focus:border-[#E96C40]">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold mb-2 text-[#632A89]">Check Out Date *</label>
+                                <input type="date" id="checkOut"
+                                       class="w-full px-4 py-3 border border-gray-300  focus:outline-none focus:border-[#E96C40]">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-6 mt-8">
+                            <div>
+                                <label class="block text-sm font-semibold mb-2 text-[#632A89]">Guests</label>
+                                <select id="guests" class="w-full px-4 py-3 border border-gray-300  focus:outline-none focus:border-[#E96C40]">
+                                    <option value="" selected>None</option>
+                                    <option value="1">1 Guest</option>
+                                    <option value="2">2 Guests</option>
+                                    <option value="3">3 Guests</option>
+                                    <option value="4">4 Guests</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold mb-2 text-[#632A89]">Children</label>
+                                <select id="children" class="w-full px-4 py-3 border border-gray-300  focus:outline-none focus:border-[#E96C40]">
+                                    <option value="0" selected>None</option>
+                                    <option value="1" >1 Child</option>
+                                    <option value="2" >2 Children</option>
+                                    <option value="3" >3 Children</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- GUEST INFORMATION (exactly as in reference) -->
+                    <div class="service-card">
+                        <h2 class="serif text-2xl font-light mb-8 flex items-center gap-3">
+                            <span class="text-3xl"><i class="fa-solid fa-user"></i></span> GUEST INFORMATION
+                        </h2>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-semibold mb-2 text-[#632A89]">First Name *</label>
+                                <input type="text" id="firstName" required
+                                       class="w-full px-4 py-3 border border-gray-300  focus:outline-none focus:border-[#E96C40]">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold mb-2 text-[#632A89]">Last Name *</label>
+                                <input type="text" id="lastName" required
+                                       class="w-full px-4 py-3 border border-gray-300  focus:outline-none focus:border-[#E96C40]">
+                            </div>
+                        </div>
+                        <div class="mt-6">
+                            <label class="block text-sm font-semibold mb-2 text-[#632A89]">Email Address *</label>
+                            <input type="email" id="email" required
+                                   class="w-full px-4 py-3 border border-gray-300  focus:outline-none focus:border-[#E96C40]">
+                        </div>
+                        <div class="mt-6">
+                            <label class="block text-sm font-semibold mb-2 text-[#632A89]">Phone Number *</label>
+                            <input type="tel" id="phone" required
+                                   class="w-full px-4 py-3 border border-gray-300  focus:outline-none focus:border-[#E96C40]">
+                        </div>
+                        <div class="mt-6">
+                            <label class="block text-sm font-semibold mb-2 text-[#632A89]">ID Type</label>
+                            <select id="idType" class="w-full px-4 py-3 border border-gray-300  focus:outline-none focus:border-[#E96C40]">
+                                <option value="passport" selected>International Passport</option>
+                                <option value="nin" >National Identification Number</option>
+                                <option value="divers_license" >Drivers License</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- ADD-ON SERVICES (exactly as in reference, all checked) -->
+                    <div class="service-card">
+                        <h2 class="serif text-2xl font-light mb-8 flex items-center gap-3">
+                            <span class="text-3xl"><i class="fa-solid fa-wand-magic-sparkles"></i></span> ADD-ON SERVICES
+                        </h2>
+                        <div class="space-y-5">
+                            <!-- Daily Chef Breakfast -->
+                            <label class="group flex items-start gap-5 p-5 border border-gray-200 hover:border-[#94CA3E]  cursor-pointer transition-all">
+                                <input type="checkbox" id="addonBreakfast" checked class="mt-1 w-5 h-5 accent-[#94CA3E]">
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-4">
+                                            <span class="text-4xl">🍳</span>
+                                            <div>
+                                                <div class="font-semibold text-xl">Daily Chef Breakfast</div>
+                                                <div class="text-sm text-neutral mt-1">Gourmet breakfast delivered to your unit</div>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="font-semibold text-[#632A89]">₦8,500</div>
+                                            <div class="text-xs text-neutral">/person</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
+
+                            <!-- Airport Transfer -->
+                            <label class="group flex items-start gap-5 p-5 border border-gray-200 hover:border-[#94CA3E]  cursor-pointer transition-all">
+                                <input type="checkbox" id="addonAirport" checked class="mt-1 w-5 h-5 accent-[#94CA3E]">
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-4">
+                                            <span class="text-4xl">🚕</span>
+                                            <div>
+                                                <div class="font-semibold text-xl">Airport Transfer</div>
+                                                <div class="text-sm text-neutral mt-1">Luxury vehicle pickup or dropoff</div>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="font-semibold text-[#632A89]">₦25,000</div>
+                                            <div class="text-xs text-neutral">/trip</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
+
+                            <!-- VIP Welcome Pack -->
+                            <label class="group flex items-start gap-5 p-5 border border-gray-200 hover:border-[#94CA3E]  cursor-pointer transition-all">
+                                <input type="checkbox" id="addonVIP" checked class="mt-1 w-5 h-5 accent-[#94CA3E]">
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-4">
+                                            <span class="text-4xl">🎁</span>
+                                            <div>
+                                                <div class="font-semibold text-xl">VIP Welcome Pack</div>
+                                                <div class="text-sm text-neutral mt-1">Champagne, flowers, chocolates & more</div>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="font-semibold text-[#632A89]">₦45,000</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- SPECIAL REQUESTS -->
+                    <div class="service-card">
+                        <h2 class="serif text-2xl font-light mb-6 flex items-center gap-3">
+                            <span class="text-3xl"><i class="fa-solid fa-file-lines"></i></span> SPECIAL REQUESTS
+                        </h2>
+                        <textarea id="specialRequests" rows="4"
+                                  class="w-full px-4 py-3 border border-gray-300  focus:outline-none focus:border-[#E96C40]"
+                                  placeholder="Any special requirements, preferences, or occasions we should know about?"></textarea>
+                    </div>
+
+                    <!-- Terms + Confirm Button -->
+                    <div class="pt-6">
+                        <label class="flex items-start gap-3 cursor-pointer">
+                            <input type="checkbox" id="termsCheck" checked required class="w-5 h-5 mt-0.5 accent-[#94CA3E]">
+                            <span class="text-sm text-neutral leading-tight">
+                                I agree to the <a href="#" class="text-[#E96C40] hover:underline">Terms of Service</a> and 
+                                <a href="#" class="text-[#E96C40] hover:underline">Cancellation Policy</a>. 
+                                Free cancellation up to 48 hours before check-in.
+                            </span>
+                        </label>
+
+                        <div id="formMessage" class="hidden p-4 rounded-2xl text-sm mt-8"></div>
+
+                        <button type="submit" id="submitBtn"
+                                class="btn-primary w-full mt-10 py-5 text-xl font-semibold  flex items-center justify-center gap-3 bg-[#94CA3E] hover:bg-[#7eb52f]">
+                            <span>Confirm Booking & Pay</span> <span id="payAmount" class="font-semibold">₦1,417,500</span>
+                        </button>
+
+                        <!-- <p class="text-center text-xs text-neutral mt-6 flex items-center justify-center gap-2">
+                            <span class="text-[#94CA3E]">🔒</span> Secured by 256-bit SSL encryption
+                        </p> -->
+                    </div>
+                </form>
+            </div>
+
+            <!-- RIGHT: Property summary sidebar (exactly as in reference UI) -->
+            <div class="md:col-span-2">
+                <!-- Property image -->
+                    <img src="https://picsum.photos/id/1015/600/380" alt="Sky Penthouse Suite"
+                         class="w-full object-cover">
+                         
+                <div class="service-card sticky top-12">
+                    
+                    <div class="flex items-baseline justify-between">
+                        <h3 class="serif text-3xl font-light">Sky Penthouse Suite</h3>
+                        <div class="flex items-center gap-1 text-amber-400 text-2xl">
+                            ★ <span class="text-lg font-semibold text-neutral">4.9</span>
+                        </div>
+                    </div>
+
+                    <p class="flex items-center gap-2 text-neutral mt-2">
+                        <span class="text-xl"><i class="fa-solid fa-map-pin"></i></span> Victoria Island, Lagos
+                    </p>
+
+                    <!-- Amenities tags -->
+                    <div class="flex flex-wrap gap-3 mt-7">
+                        <span class="px-5 py-2 bg-[#94CA3E]/10 text-[#94CA3E] text-sm font-medium ">4 Beds</span>
+                        <span class="px-5 py-2 bg-[#94CA3E]/10 text-[#94CA3E] text-sm font-medium ">Pool</span>
+                        <span class="px-5 py-2 bg-[#94CA3E]/10 text-[#94CA3E] text-sm font-medium ">WIFI</span>
+                        <span class="px-5 py-2 bg-[#94CA3E]/10 text-[#94CA3E] text-sm font-medium ">Gym</span>
+                    </div>
+
+                    <!-- Pricing breakdown (exactly as reference + dynamic add-ons) -->
+                    <div class="mt-10 space-y-6" id="pricingSection">
+                        <div class="flex justify-between text-lg">
+                            <span class="text-neutral">₦450,000 × 3 nights</span>
+                            <span class="font-semibold">₦1,350,000</span>
+                        </div>
+
+                        <!-- Dynamic add-ons inserted here by JS -->
+                        <div id="addonsBreakdown" class="space-y-3 text-sm"></div>
+
+                        <div class="flex justify-between text-emerald-600">
+                            <span>Daily Housekeeping</span>
+                            <span class="font-medium">Free</span>
+                        </div>
+                        <div class="flex justify-between text-emerald-600">
+                            <span>24/7 Concierge</span>
+                            <span class="font-medium">Free</span>
+                        </div>
+
+                        <div class="flex justify-between pt-4 border-t border-gray-200">
+                            <span class="text-neutral">Service fee (5%)</span>
+                            <span class="font-semibold">₦67,500</span>
+                        </div>
+
+                        <div class="flex justify-between md:text-xl lg:text-3xl font-light pt-6 border-t">
+                            <span>Total</span>
+                            <span id="grandTotal" class="text-[#E96C40]">₦1,417,500</span>
+                        </div>
+                    </div>
+
+                    <!-- Cancellation note (exactly as reference) -->
+                    <div class="mt-10 p-6 bg-[#f8f6f3]  text-sm leading-relaxed border border-[#94CA3E]/20">
+                        ✓ Free cancellation before Feb 23, 2024 at 3:00 PM. Cancel after that for a 50% refund.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        const bookingData = sessionStorage.getItem('bookingData');
+        console.log("Booking Data", bookingData);
+
+        if (bookingData) {
+            const { unit_id, check_in, check_out, num_guests } = JSON.parse(bookingData);
+
+            // Populate fields
+            const unitInput = document.getElementById('unitId');
+            if (unitInput) unitInput.value = unit_id;
+
+            const checkInInput = document.getElementById('checkIn');
+            if (checkInInput) checkInInput.value = check_in;
+
+            const checkOutInput = document.getElementById('checkOut');
+            if (checkOutInput) checkOutInput.value = check_out;
+
+            const guestsSelect = document.getElementById('guests');
+            if (guestsSelect) {
+                const numGuestsStr = String(num_guests); // convert to string
+                const optionExists = Array.from(guestsSelect.options).some(
+                    option => option.value === numGuestsStr
+                );
+                if (optionExists) guestsSelect.value = numGuestsStr;
+            }
+
+            // Clear sessionStorage so it doesn't persist
+            // sessionStorage.removeItem('bookingData');
+        }
+       
+
+
+
+        // Hard-coded values from reference UI (3 nights @ ₦450,000)
+        const BASE_PRICE = 1350000;
+        const SERVICE_FEE = 67500;
+
+        function calculateAddons() {
+            let total = 0;
+            const lines = [];
+
+            if (document.getElementById('addonBreakfast').checked) {
+                const cost = 8500 * 2; // 2 adults
+                total += cost;
+                lines.push({ name: 'Daily Chef Breakfast', cost: cost });
+            }
+            if (document.getElementById('addonAirport').checked) {
+                const cost = 25000;
+                total += cost;
+                lines.push({ name: 'Airport Transfer', cost: cost });
+            }
+            if (document.getElementById('addonVIP').checked) {
+                const cost = 45000;
+                total += cost;
+                lines.push({ name: 'VIP Welcome Pack', cost: cost });
+            }
+            return { total, lines };
+        }
+
+        function updatePricingAndButton() {
+            const { total: addonsTotal, lines } = calculateAddons();
+            const grandTotal = BASE_PRICE + addonsTotal + SERVICE_FEE;
+
+            // Build add-ons HTML
+            let html = '';
+            lines.forEach(item => {
+                html += `
+                    <div class="flex justify-between">
+                        <span class="text-neutral">${item.name}</span>
+                        <span class="font-medium">₦${item.cost.toLocaleString()}</span>
+                    </div>
+                `;
+            });
+            document.getElementById('addonsBreakdown').innerHTML = html;
+
+            // Update totals
+            document.getElementById('grandTotal').textContent = `₦${grandTotal.toLocaleString()}`;
+            document.getElementById('payAmount').textContent = `₦${grandTotal.toLocaleString()}`;
+        }
+
+        // Form submit (keeps original functionality + all new fields)
+        const bookingForm = document.getElementById('bookingForm');
+        const formMessage = document.getElementById('formMessage');
+        const submitBtn = document.getElementById('submitBtn');
+
+        bookingForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!document.getElementById('termsCheck').checked) {
+                showMessage('You must agree to the terms and conditions', 'error');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            const originalHTML = submitBtn.innerHTML;
+            submitBtn.innerHTML = 'Processing...';
+
+            try {
+                const addonsData = calculateAddons();
+
+                const bookingData = {
+                    unit_id: 999, // dummy ID for Sky Penthouse Suite
+                    check_in: document.getElementById('checkIn').value,
+                    check_out: document.getElementById('checkOut').value,
+                    num_guests: parseInt(document.getElementById('adults').value),
+                    num_children: parseInt(document.getElementById('children').value),
+                    first_name: document.getElementById('firstName').value,
+                    last_name: document.getElementById('lastName').value,
+                    email: document.getElementById('email').value,
+                    phone: document.getElementById('phone').value,
+                    id_type: document.getElementById('idType').value,
+                    special_requests: document.getElementById('specialRequests').value || '',
+                    payment_method: document.querySelector('input[name="paymentMethod"]:checked').value,
+                    card_number: document.getElementById('cardNumber').value,
+                    expiry: document.getElementById('expiry').value,
+                    cvv: document.getElementById('cvv').value,
+                    addons: {
+                        chef_breakfast: document.getElementById('addonBreakfast').checked,
+                        airport_transfer: document.getElementById('addonAirport').checked,
+                        vip_welcome: document.getElementById('addonVIP').checked
+                    }
+                };
+
+                const response = await fetch('/bookings/new', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bookingData)
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.booking_id) {
+                    window.location.href = `/bookings/${data.booking_id}/confirmation`;
+                } else {
+                    showMessage(data.message || 'Booking failed. Please try again.', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showMessage('Network error while creating booking.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalHTML; // restore (amount is already updated by live listener)
+            }
+        });
+
+        function showMessage(msg, type = 'error') {
+            formMessage.textContent = msg;
+            formMessage.className = `p-4 rounded-2xl text-sm border ${
+                type === 'success'
+                    ? 'bg-[#94CA3E]/20 text-[#632A89] border-[#94CA3E]'
+                    : 'bg-red-50 text-red-700 border-red-200'
+            }`;
+            formMessage.classList.remove('hidden');
+        }
+
+        // Initialise everything
+        window.addEventListener('load', () => {
+            // Live update on any add-on change
+            ['addonBreakfast', 'addonAirport', 'addonVIP'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('change', updatePricingAndButton);
+            });
+
+            // Initial calculation (all add-ons checked by default)
+            updatePricingAndButton();
+        });
+
+        // Paystack Button Click
+        document.getElementById('paystackButton').addEventListener('click', function () {
+            let handler = PaystackPop.setup({
+                key: 'YOUR_PUBLIC_KEY', // Replace with your Paystack public key
+                email: 'customer@example.com', // Replace dynamically if needed
+                amount: 5000, // Amount in kobo (e.g., 5000 = ₦50.00)
+                currency: "NGN",
+                ref: 'PS_' + Math.floor((Math.random() * 1000000000) + 1),
+                callback: function(response){
+                    alert('Payment successful! Reference: ' + response.reference);
+                },
+                onClose: function(){
+                    alert('Payment was not completed.');
+                }
+            });
+            handler.openIframe();
+        });
+    </script>
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+{% endblock %}

@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}Check Availability - Eni's Apartments{% endblock %}
+
+{% block content %}
+    <div class="max-w-7xl mx-auto px-6 py-12">
+        <div class="mb-12">
+            <h1 class="serif text-5xl font-light mb-4">Book Your Stay</h1>
+            <p class="text-lg text-neutral">Select your dates and choose your perfect apartment</p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- Search Section -->
+            <div class="md:col-span-1">
+                <div class="service-card sticky top-32">
+                    <h2 class="serif text-2xl font-light mb-6">Your Details</h2>
+                    
+                    <form id="searchForm">
+                        <div class="mb-6">
+                            <label for="checkIn" class="block text-sm font-semibold mb-2 text-[#632A89]">Check In</label>
+                            <input type="date" id="checkIn" name="checkIn" required 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]"
+                                   min="{{ today }}">
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label for="checkOut" class="block text-sm font-semibold mb-2 text-[#632A89]">Check Out</label>
+                            <input type="date" id="checkOut" name="checkOut" required
+                                   class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]">
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label for="guests" class="block text-sm font-semibold mb-2 text-[#632A89]">Number of Guests</label>
+                            <select id="guests" name="guests" class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]">
+                                <option value="1">1 Guest</option>
+                                <option value="2" selected>2 Guests</option>
+                                <option value="3">3 Guests</option>
+                                <option value="4">4 Guests</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary w-full text-center py-3">
+                            <span>Search Availability</span>
+                        </button>
+                    </form>
+                    
+                    <!-- Pricing Info -->
+                    <!-- <div class="mt-8 pt-8 border-t border-gray-200">
+                        <h3 class="font-semibold mb-4">Price Breakdown</h3>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-neutral">Daily Rate</span>
+                                <span class="font-semibold">N<span id="dailyRate">0</span></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-neutral">Number of Nights</span>
+                                <span class="font-semibold"><span id="nights">0</span> nights</span>
+                            </div>
+                            <div class="border-t border-gray-200 pt-2 mt-2 flex justify-between font-semibold text-lg">
+                                <span>Total</span>
+                                <span class="text-[#E96C40]">N<span id="totalPrice">0</span></span>
+                            </div>
+                        </div>
+                    </div> -->
+                </div>
+            </div>
+
+            <!-- Available Units -->
+            <div class="md:col-span-2">
+                <div id="unitsContainer" class="grid gap-6">
+                    <div class="service-card text-center py-12">
+                        <p class="text-neutral">Enter your dates to see available units</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const checkInInput = document.getElementById('checkIn');
+    const checkOutInput = document.getElementById('checkOut');
+    const guestsInput = document.getElementById('guests');
+    const searchForm = document.getElementById('searchForm');
+    const unitsContainer = document.getElementById('unitsContainer');
+    
+    // Set minimum check-out date
+    checkInInput.addEventListener('change', function() {
+        const checkInDate = new Date(this.value);
+        const minCheckOut = new Date(checkInDate);
+        minCheckOut.setDate(minCheckOut.getDate() + 1);
+        checkOutInput.min = minCheckOut.toISOString().split('T')[0];
+        updatePricing();
+    });
+    
+    checkOutInput.addEventListener('change', updatePricing);
+    
+    function updatePricing() {
+        const checkIn = checkInInput.value;
+        const checkOut = checkOutInput.value;
+        
+        if (checkIn && checkOut) {
+            const checkInDate = new Date(checkIn);
+            const checkOutDate = new Date(checkOut);
+            const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+            
+            if (nights > 0) {
+                const dailyRate = 150; // Base rate, adjust as needed
+                const totalPrice = nights * dailyRate;
+                
+                document.getElementById('nights').textContent = nights;
+                document.getElementById('dailyRate').textContent = dailyRate.toLocaleString();
+                document.getElementById('totalPrice').textContent = totalPrice.toLocaleString();
+            }
+        }
+    }
+    
+    searchForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const checkIn = checkInInput.value;
+        const checkOut = checkOutInput.value;
+        const guests = guestsInput.value;
+        
+        if (!checkIn || !checkOut) {
+            alert('Please select both check-in and check-out dates');
+            return;
+        }
+        
+        try {
+            // Fetch available units
+            const response = await fetch('/api/units');
+            const units = await response.json();
+            
+            unitsContainer.innerHTML = '';
+            
+            if (units.length === 0) {
+                unitsContainer.innerHTML = '<div class="col-span-full service-card text-center py-12"><p class="text-neutral">No units available for these dates</p></div>';
+                return;
+            }
+            
+            for (const unit of units) {
+                // Check availability for this unit
+                const availResponse = await fetch(`/api/availability?unit_id=${unit.id}&check_in=${checkIn}&check_out=${checkOut}`);
+                const availData = await availResponse.json();
+                
+                const card = document.createElement('div');
+                card.className = 'service-card img-hover-scale';
+                card.innerHTML = `
+                    <div class="relative h-64 mb-6 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80" 
+                             alt="${unit.unit_number}" class="w-full h-full object-cover">
+                        <div class="absolute top-4 right-4 bg-[#E96C40] text-white px-4 py-2 text-sm font-medium rounded">
+                            ${unit.unit_number}
+                        </div>
+                        ${!availData.is_available ? '<div class="absolute inset-0 bg-black/50 flex items-center justify-center"><span class="text-white font-semibold">Not Available</span></div>' : ''}
+                    </div>
+                    
+                    <h3 class="serif text-2xl font-semibold mb-2">Floor ${unit.floor}</h3>
+                    <p class="text-[#94CA3E] font-semibold mb-3">${unit.view}</p>
+                    
+                    <ul class="space-y-2 text-sm mb-6">
+                        <li class="flex items-center gap-2">
+                            <span class="text-[#E96C40]">●</span> ${unit.apartment_type.bedrooms} Bedrooms, ${unit.apartment_type.bathrooms} Bathrooms
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-[#E96C40]">●</span> ${unit.apartment_type.area_sqm} sqm
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-[#E96C40]">●</span> N${(unit.apartment_type.price * (Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24)))).toLocaleString()} for stay
+                        </li>
+                    </ul>
+                    
+                    ${availData.is_available ? `
+                        <button onclick="proceedToBooking(${unit.id}, '${checkIn}', '${checkOut}', ${guests})" class="btn-primary w-full text-center py-3">
+                            <span>Select This Unit</span>
+                        </button>
+                    ` : `
+                        <button disabled class="w-full py-3 bg-gray-300 text-gray-500 cursor-not-allowed rounded font-semibold">
+                            Not Available
+                        </button>
+                    `}
+                `;
+                
+                unitsContainer.appendChild(card);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            unitsContainer.innerHTML = '<div class="col-span-full service-card text-center py-12"><p class="text-red-500">Error loading units. Please try again.</p></div>';
+        }
+    });
+    
+    function proceedToBooking(unitId, checkIn, checkOut, guests) {
+        // Redirect to booking page with unit and dates
+        window.location.href = `/bookings/new?unit_id=${unitId}&check_in=${checkIn}&check_out=${checkOut}&guests=${guests}`;
+    }
+</script>
+{% endblock %}

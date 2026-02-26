@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Eni's Apartments{% endblock %}
+
+{% block content %}
+    <!-- Hero Section -->
+    <section id="home" class="relative h-screen flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0 bg-cover bg-center" style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1600&q=80');">
+        </div>
+        
+        <div class="relative z-10 text-center text-white px-6 max-w-5xl">
+            <h1 class="serif text-6xl md:text-8xl font-light mb-6 fade-in-up">
+                Elevated Living<br/>
+                <!-- <span class="font-semibold">Redefined</span> -->
+            </h1>
+            <div class="accent-line fade-in-up delay-1" style="background-color: #E96C40;"></div>
+            <p class="text-lg md:text-xl mb-10 max-w-2xl mx-auto font-light leading-relaxed fade-in-up delay-2">
+               Luxury meets comfort in our curated collection of fully serviced apartments. Experience hotel-grade amenities with the freedom of home.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center fade-in-up delay-3">
+                <!-- <a href="/bookings/availability" class="btn-primary inline-block text-center">
+                    <span>Reserve Your Stay</span>
+                </a> -->
+                <!-- <a href="/units" class="btn-outline inline-block text-center border-white text-white bg-[#E96C40]/50">
+                    Explore Apartments
+                </a> -->
+            </div>
+
+            <div class="mx-auto mt-6 p-3 text-[#632A89] bg-white/80 max-w-4xl  shadow-md fade-in-up delay-3">
+                <form action="" class="space-y-6">
+                    <h2 class="text-2xl font-semibold text-gray-800 text-center">Check Availability</h2>
+
+                    <!-- Form Fields -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Location Dropdown -->
+                    <!-- <div>
+                        <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                        <select 
+                        id="location" 
+                        name="location" 
+                        class="w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-[#E96C40] focus:border-[#E96C40] outline-none transition"
+                        required
+                        >
+                        <option value="">Select a location</option>
+                        <option value="Abuja">Abuja</option>
+                        <option value="Lagos">Lagos</option>
+                        <option value="Port Harcourt">Port Harcourt</option>
+                        <option value="Kano">Kano</option>
+                        <option value="Enugu">Enugu</option>
+                        </select>
+                    </div> -->
+
+                    <!-- Check-in -->
+                    <div>
+                        <label for="checkin" class="block text-sm font-medium text-gray-700 mb-1">Check-in</label>
+                        <input 
+                        type="date" 
+                        id="checkin" 
+                        name="checkin" 
+                        class="w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-[#E96C40] focus:border-[#E96C40] outline-none transition"
+                        required
+                        >
+                    </div>
+
+                    <!-- Check-out -->
+                    <div>
+                        <label for="checkout" class="block text-sm font-medium text-gray-700 mb-1">Check-out</label>
+                        <input 
+                        type="date" 
+                        id="checkout" 
+                        name="checkout" 
+                        class="w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-[#E96C40] focus:border-[#E96C40] outline-none transition"
+                        required
+                        >
+                    </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="text-center hover:text-white">
+                    <button 
+                        type="submit" 
+                        class="px-6 py-3 bg-[#E96C40] hover:text-white font-semibold shadow hover:bg-[#632A89] transition w-full btn-primary"
+                    >
+                        <span>Check Availability</span>
+                    </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+        
+        
+        <!-- Scroll indicator -->
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 fade-in delay-4">
+            <div class="w-6 h-10 border-2 border-white rounded-full flex justify-center">
+                <div class="w-1 h-3 bg-white rounded-full mt-2 animate-bounce"></div>
+            </div>
+        </div>
+
+        
+
+    </section>
+
+    <!-- Apartments Overview -->
+    <section id="apartments" class="py-24 px-6 bg-white">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="serif text-5xl md:text-6xl font-light mb-4">Our Residences</h2>
+                <div class="accent-line"></div>
+                <p class="text-lg text-neutral max-w-2xl mx-auto mt-6">
+                    Four meticulously crafted units, each featuring two spacious bedrooms designed for modern urban living in Abuja
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for unit in units %}
+                <div class="service-card img-hover-scale">
+                    <div class="relative h-64 mb-6 overflow-hidden">
+                        <img src="{{ unit.image_url }}" 
+                             alt="{{ unit.unit_number }}" 
+                             class="w-full h-full object-cover">
+                        <div class="absolute top-4 right-4 bg-[#E96C40] text-white px-4 py-2 text-sm font-medium">
+                            {{ unit.unit_number }}
+                        </div>
+                    </div>
+                    <h3 class="serif text-2xl font-semibold mb-3">Unit {{ unit.floor }}</h3>
+                    <p class="text-neutral mb-4 leading-relaxed text-sm">
+                        {{ unit.view }} with premium finishes and modern amenities
+                    </p>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-center gap-2">
+                            <span class="text-[#E96C40]">●</span> 2 Bedrooms, 2 Bathrooms
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-[#E96C40]">●</span> {{ unit.apartment_type.area_sqm }} sqm Living Space
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-[#E96C40]">●</span> {{ unit.view }}
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-[#E96C40]">●</span> N{{ "%.0f"|format(unit.apartment_type.base_price * 30) }}/month
+                        </li>
+                    </ul>
+                    <a href="/unit/{{ unit.unit_number }}" class="w-full mt-6 inline-block btn-primary text-center">
+                        <span>View Details</span>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="text-center mt-12">
+                <a href="/units" class="btn-outline inline-block">
+                    View All Apartments
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Essential Services -->
+    <section id="services" class="py-24 px-6 bg-[#f8f6f3]">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="serif text-5xl md:text-6xl font-light mb-4">Essential Services</h2>
+                <div class="accent-line"></div>
+                <p class="text-lg text-neutral max-w-2xl mx-auto mt-6">
+                    Every comfort and convenience at your fingertips, ensuring a seamless living experience
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-4 gap-6">
+                {% for service in essential_services %}
+                <div class="service-card text-center">
+                    <div class="text-[#E96C40] text-5xl mb-4">
+                        {% if "Security" in service.name %}<i class="fa-solid fa-shield"></i>
+                        {% elif "Electricity" in service.name %}<i class="fa-solid fa-bolt"></i>
+                        {% elif "Water" in service.name %}<i class="fa-solid fa-droplet"></i>
+                        {% elif "Housekeeping" in service.name %}<i class="fa-solid fa-spray-can-sparkles"></i>
+                        {% elif "Furnished" in service.name %}<i class="fa-solid fa-couch"></i>
+                        {% elif "Maintenance" in service.name %}<i class="fa-solid fa-wrench"></i>
+                        {% elif "Parking" in service.name %}<i class="fa-solid fa-car"></i>
+                        {% else %}<i class="fa-solid fa-wifi"></i>{% endif %}
+                    </div>
+                    <h3 class="font-semibold text-lg mb-2">{{ service.name }}</h3>
+                    <p class="text-sm text-neutral">{{ service.description }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Optional Services -->
+    <section class="py-24 px-6 bg-white">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="serif text-5xl md:text-6xl font-light mb-4">Premium Services</h2>
+                <div class="accent-line"></div>
+                <p class="text-lg text-neutral max-w-2xl mx-auto mt-6">
+                    Enhance your experience with our optional premium services
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-6">
+                {% for service in optional_services %}
+                <div class="service-card text-center">
+                    <div class="text-[#E96C40] text-5xl mb-4">
+                        {% if "Laundry" in service.name %}<i class="fa-solid fa-shirt"></i>
+                        {% elif "Gym" in service.name %}<i class="fa-solid fa-dumbbell"></i>
+                        {% elif "Concierge" in service.name %}<i class="fa-solid fa-hat-cowboy"></i>
+                        {% elif "Airport" in service.name %}<i class="fa-solid fa-plane"></i>
+                        {% elif "Pet" in service.name %}<i class="fa-solid fa-paw"></i>
+                        {% else %}<i class="fa-solid fa-star"></i>{% endif %}
+                    </div>
+                    <h3 class="font-semibold text-lg mb-2">{{ service.name }}</h3>
+                    <p class="text-sm text-neutral mb-4">{{ service.description }}</p>
+                    {% if service.price > 0 %}
+                    <p class="text-sm font-semibold text-[#E96C40]">N{{ "%.0f"|format(service.price) }}/service</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-20 px-6 bg-gradient-to-r from-[#632A89] to-[#E96C40] text-white">
+        <div class="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 text-center">
+            <div>
+                <div class="serif text-5xl font-light mb-2">4</div>
+                <p class="text-lg">Luxury Units</p>
+            </div>
+            <div>
+                <div class="serif text-5xl font-light mb-2">7</div>
+                <p class="text-lg">Essential Services</p>
+            </div>
+            <div>
+                <div class="serif text-5xl font-light mb-2">24/7</div>
+                <p class="text-lg">Support Available</p>
+            </div>
+            <div>
+                <div class="serif text-5xl font-light mb-2">5★</div>
+                <p class="text-lg">Guest Rated</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-24 px-6 bg-[#f8f6f3]">
+        <div class="max-w-2xl mx-auto text-center">
+            <h2 class="serif text-5xl font-light mb-6">Ready to Experience Luxury?</h2>
+            <p class="text-lg text-neutral mb-10">
+                Reserve your perfect apartment today and discover the elevated living experience you deserve
+            </p>
+            <a href="/bookings/availability" class="btn-primary inline-block">
+                <span>Book Your Stay</span>
+            </a>
+        </div>
+    </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Intersection Observer for fade-in animations
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('fade-in-up');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+    
+    document.querySelectorAll('.service-card').forEach(el => {
+        observer.observe(el);
+    });
+</script>
+{% endblock %}

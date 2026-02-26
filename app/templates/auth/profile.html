@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - Eni's Apartments{% endblock %}
+
+{% block content %}
+    <div class="max-w-4xl mx-auto px-6 py-12">
+        <nav class="mb-8 text-sm text-neutral">
+            <a href="/" class="hover:text-[#E96C40]">Home</a> / 
+            <a href="/guest/dashboard" class="hover:text-[#E96C40]">Dashboard</a> / 
+            <span>Profile</span>
+        </nav>
+        
+        <h1 class="serif text-5xl font-light mb-12">My Profile</h1>
+        
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- Profile Form -->
+            <div class="md:col-span-2">
+                <div class="service-card">
+                    <h2 class="serif text-2xl font-light mb-6">Personal Information</h2>
+                    
+                    <form id="profileForm" class="space-y-6">
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="firstName" class="block text-sm font-semibold mb-2 text-[#632A89]">First Name</label>
+                                <input type="text" id="firstName" name="first_name" required
+                                       value="{{ current_user.first_name }}"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]">
+                            </div>
+                            <div>
+                                <label for="lastName" class="block text-sm font-semibold mb-2 text-[#632A89]">Last Name</label>
+                                <input type="text" id="lastName" name="last_name" required
+                                       value="{{ current_user.last_name }}"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="email" class="block text-sm font-semibold mb-2 text-[#632A89]">Email Address</label>
+                            <input type="email" id="email" name="email" required
+                                   value="{{ current_user.email }}"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]">
+                            <p class="text-xs text-neutral mt-2">Your registered email address</p>
+                        </div>
+                        
+                        <div>
+                            <label for="phone" class="block text-sm font-semibold mb-2 text-[#632A89]">Phone Number</label>
+                            <input type="tel" id="phone" name="phone"
+                                   value="{{ current_user.phone or '' }}"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]"
+                                   placeholder="+234 800 000 0000">
+                        </div>
+                        
+                        <div id="profileMessage" class="hidden p-3 rounded text-sm"></div>
+                        
+                        <button type="submit" class="btn-primary py-3 px-6">
+                            <span>Save Changes</span>
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Security Section -->
+                <div class="service-card mt-8">
+                    <h2 class="serif text-2xl font-light mb-6">Security</h2>
+                    
+                    <form id="passwordForm" class="space-y-6">
+                        <div>
+                            <label for="currentPassword" class="block text-sm font-semibold mb-2 text-[#632A89]">Current Password</label>
+                            <input type="password" id="currentPassword" name="current_password" required
+                                   class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]">
+                        </div>
+                        
+                        <div>
+                            <label for="newPassword" class="block text-sm font-semibold mb-2 text-[#632A89]">New Password</label>
+                            <input type="password" id="newPassword" name="new_password" required
+                                   class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]"
+                                   placeholder="At least 8 characters">
+                            <p class="text-xs text-neutral mt-2">Choose a strong password with numbers and symbols</p>
+                        </div>
+                        
+                        <div>
+                            <label for="confirmPassword" class="block text-sm font-semibold mb-2 text-[#632A89]">Confirm New Password</label>
+                            <input type="password" id="confirmPassword" name="confirm_password" required
+                                   class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]">
+                        </div>
+                        
+                        <div id="passwordMessage" class="hidden p-3 rounded text-sm"></div>
+                        
+                        <button type="submit" class="btn-primary py-3 px-6">
+                            <span>Update Password</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="md:col-span-1">
+                <!-- Account Info Card -->
+                <div class="service-card mb-8">
+                    <h3 class="serif text-2xl font-light mb-6">Account Info</h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-xs text-neutral uppercase tracking-wide">Member Since</p>
+                            <p class="font-semibold">{{ current_user.created_at.strftime('%B %d, %Y') }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-neutral uppercase tracking-wide">Account Status</p>
+                            <p class="font-semibold text-[#94CA3E]">Active</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-neutral uppercase tracking-wide">Account Type</p>
+                            <p class="font-semibold">{% if current_user.is_admin %}Administrator{% else %}Guest{% endif %}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Stats -->
+                <div class="service-card mb-8">
+                    <h3 class="font-semibold mb-4">Your Bookings</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-neutral">Total Bookings</span>
+                            <span class="font-semibold text-[#E96C40]" id="totalBookings">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-neutral">Completed</span>
+                            <span class="font-semibold text-[#94CA3E]" id="completedBookings">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-neutral">Upcoming</span>
+                            <span class="font-semibold text-[#632A89]" id="upcomingBookings">0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Actions -->
+                <div class="service-card">
+                    <h3 class="font-semibold mb-4">Actions</h3>
+                    <div class="space-y-3">
+                        <a href="/guest/dashboard" class="block text-center btn-outline py-2 px-4 text-sm">
+                            View Bookings
+                        </a>
+                        <a href="/bookings/availability" class="block text-center btn-primary py-2 px-4 text-sm">
+                            New Booking
+                        </a>
+                        <a href="/auth/logout" class="block text-center text-red-600 border border-red-200 rounded py-2 px-4 text-sm hover:bg-red-50">
+                            Sign Out
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const profileForm = document.getElementById('profileForm');
+        const passwordForm = document.getElementById('passwordForm');
+        const profileMessage = document.getElementById('profileMessage');
+        const passwordMessage = document.getElementById('passwordMessage');
+        
+        // Load booking stats
+        async function loadBookingStats() {
+            try {
+                const response = await fetch('/api/user/bookings');
+                const bookings = await response.json();
+                
+                const total = bookings.length;
+                const completed = bookings.filter(b => b.status === 'completed').length;
+                const upcoming = bookings.filter(b => b.status === 'confirmed').length;
+                
+                document.getElementById('totalBookings').textContent = total;
+                document.getElementById('completedBookings').textContent = completed;
+                document.getElementById('upcomingBookings').textContent = upcoming;
+            } catch (error) {
+                console.error('Error loading booking stats:', error);
+            }
+        }
+        
+        profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            try {
+                const response = await fetch('/auth/profile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        first_name: document.getElementById('firstName').value,
+                        last_name: document.getElementById('lastName').value,
+                        email: document.getElementById('email').value,
+                        phone: document.getElementById('phone').value
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage(profileMessage, 'Profile updated successfully', 'success');
+                } else {
+                    showMessage(profileMessage, data.message || 'Error updating profile', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage(profileMessage, 'Error updating profile. Please try again.', 'error');
+            }
+        });
+        
+        passwordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (newPassword !== confirmPassword) {
+                showMessage(passwordMessage, 'Passwords do not match', 'error');
+                return;
+            }
+            
+            if (newPassword.length < 8) {
+                showMessage(passwordMessage, 'Password must be at least 8 characters', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/auth/change-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        current_password: document.getElementById('currentPassword').value,
+                        new_password: newPassword
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage(passwordMessage, 'Password updated successfully', 'success');
+                    passwordForm.reset();
+                } else {
+                    showMessage(passwordMessage, data.message || 'Error updating password', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage(passwordMessage, 'Error updating password. Please try again.', 'error');
+            }
+        });
+        
+        function showMessage(element, msg, type) {
+            element.textContent = msg;
+            element.className = `p-3 rounded text-sm ${type === 'success' ? 'bg-[#94CA3E]/20 text-[#632A89] border border-[#94CA3E]' : 'bg-red-50 text-red-600 border border-red-200'}`;
+            element.classList.remove('hidden');
+            
+            if (type === 'success') {
+                setTimeout(() => element.classList.add('hidden'), 5000);
+            }
+        }
+        
+        // Load stats on page load
+        loadBookingStats();
+    </script>
+{% endblock %}

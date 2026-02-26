@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Services - Eni's Apartments{% endblock %}
+
+{% block content %}
+    <!-- Header -->
+    <section class="py-16 px-6 bg-gradient-to-r from-[#632A89] to-[#E96C40] text-white">
+        <div class="max-w-7xl mx-auto">
+            <h1 class="serif text-5xl font-light mb-4">Our Services</h1>
+            <p class="text-lg max-w-2xl">Comprehensive services designed to enhance your living experience</p>
+        </div>
+    </section>
+
+    <!-- Essential Services -->
+    <section class="py-24 px-6 bg-white">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="serif text-5xl font-light mb-4">Essential Services</h2>
+                <div class="accent-line"></div>
+                <p class="text-lg text-neutral max-w-2xl mx-auto mt-6">
+                    Included with every stay to ensure your comfort and convenience
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {% for service in essential %}
+                <div class="service-card text-center h-full">
+                    <div class="text-6xl mb-4">
+                        {% if "Security" in service.name %}🛡️
+                        {% elif "Electricity" in service.name %}⚡
+                        {% elif "Water" in service.name %}💧
+                        {% elif "Housekeeping" in service.name %}✨
+                        {% elif "Furnished" in service.name %}🛋️
+                        {% elif "Maintenance" in service.name %}🔧
+                        {% elif "Parking" in service.name %}🚗
+                        {% else %}📶{% endif %}
+                    </div>
+                    <h3 class="serif text-2xl font-semibold mb-3">{{ service.name }}</h3>
+                    <p class="text-neutral leading-relaxed">{{ service.description }}</p>
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <span class="inline-block bg-[#94CA3E] text-white text-sm font-semibold px-4 py-2 rounded-full">Included</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Optional Services -->
+    <section class="py-24 px-6 bg-[#f8f6f3]">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="serif text-5xl font-light mb-4">Premium Services</h2>
+                <div class="accent-line"></div>
+                <p class="text-lg text-neutral max-w-2xl mx-auto mt-6">
+                    Optional services available for an additional fee
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for service in optional %}
+                <div class="service-card h-full flex flex-col">
+                    <div class="text-6xl mb-4 text-center">
+                        {% if "Laundry" in service.name %}👔
+                        {% elif "Gym" in service.name %}💪
+                        {% elif "Concierge" in service.name %}🎩
+                        {% elif "Airport" in service.name %}✈️
+                        {% elif "Pet" in service.name %}🐾
+                        {% else %}⭐{% endif %}
+                    </div>
+                    <h3 class="serif text-2xl font-semibold mb-3 text-center">{{ service.name }}</h3>
+                    <p class="text-neutral leading-relaxed flex-grow">{{ service.description }}</p>
+                    
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <span class="text-lg font-semibold text-[#E96C40]">N{{ "%.0f"|format(service.price) }}</span>
+                            {% if current_user.is_authenticated %}
+                            <button onclick="addServiceToCart('{{ service.id }}', '{{ service.name }}')" 
+                                    class="text-sm font-semibold text-[#632A89] hover:text-[#E96C40]">
+                                Add
+                            </button>
+                            {% else %}
+                            <a href="/auth/login" class="text-sm font-semibold text-[#632A89] hover:text-[#E96C40]">
+                                Login
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Service Details Section -->
+    <section class="py-24 px-6 bg-white">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="serif text-5xl font-light mb-4">How It Works</h2>
+                <div class="accent-line"></div>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-[#E96C40] text-white rounded-full flex items-center justify-center mx-auto mb-4 serif text-2xl font-semibold">
+                        1
+                    </div>
+                    <h3 class="font-semibold text-lg mb-3">Request Service</h3>
+                    <p class="text-neutral">Browse our available services and select what you need during your stay</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-[#E96C40] text-white rounded-full flex items-center justify-center mx-auto mb-4 serif text-2xl font-semibold">
+                        2
+                    </div>
+                    <h3 class="font-semibold text-lg mb-3">We Arrange</h3>
+                    <p class="text-neutral">Our team coordinates and schedules your service at a time convenient for you</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-[#E96C40] text-white rounded-full flex items-center justify-center mx-auto mb-4 serif text-2xl font-semibold">
+                        3
+                    </div>
+                    <h3 class="font-semibold text-lg mb-3">Enjoy Service</h3>
+                    <p class="text-neutral">Sit back and relax while our professionals deliver top-quality service</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-24 px-6 bg-gradient-to-r from-[#632A89] to-[#E96C40] text-white">
+        <div class="max-w-2xl mx-auto text-center">
+            <h2 class="serif text-5xl font-light mb-6">Ready to Book?</h2>
+            <p class="text-lg mb-10">
+                Choose your apartment and select the perfect services for your stay
+            </p>
+            <a href="/bookings/availability" class="inline-block bg-white text-[#632A89] font-semibold px-8 py-3 rounded hover:bg-gray-100 transition">
+                Book Your Stay
+            </a>
+        </div>
+    </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function addServiceToCart(serviceId, serviceName) {
+        alert('Service ' + serviceName + ' added! You can manage services during booking.');
+        // This would integrate with a cart system in a full implementation
+    }
+</script>
+{% endblock %}

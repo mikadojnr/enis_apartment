@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Apartments - Eni's Apartments{% endblock %}
+
+{% block content %}
+    <div class="max-w-7xl mx-auto px-6 py-12">
+        <!-- Header -->
+        <div class="flex justify-between items-start mb-12">
+            <div>
+                <h1 class="serif text-5xl font-light mb-2">Manage Apartments</h1>
+                <p class="text-lg text-neutral">Create and manage apartment types</p>
+            </div>
+            <div class="space-y-2">
+                <button onclick="openCreateModal()" class="btn-primary inline-block">
+                    <span>+ New Apartment Type</span>
+                </button>
+                <a href="/admin/dashboard" class="btn-outline inline-block ml-2">
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Apartments Grid -->
+        {% if apartment_types %}
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for apartment in apartment_types %}
+                <div class="service-card">
+                    <div class="mb-6">
+                        <div class="mb-4">
+                            <h3 class="font-semibold text-xl mb-2">{{ apartment.name }}</h3>
+                            <p class="text-sm text-neutral">{{ apartment.bedrooms }} BD • {{ apartment.bathrooms }} BA • {{ apartment.area_sqm }} sqm</p>
+                        </div>
+                        
+                        <!-- Details -->
+                        <div class="bg-[#f8f6f3] p-4 rounded mb-6">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-xs text-neutral mb-1">Bedrooms</p>
+                                    <p class="font-semibold">{{ apartment.bedrooms }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-neutral mb-1">Bathrooms</p>
+                                    <p class="font-semibold">{{ apartment.bathrooms }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-neutral mb-1">Area</p>
+                                    <p class="font-semibold">{{ apartment.area_sqm }} sqm</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-neutral mb-1">Daily Rate</p>
+                                    <p class="font-semibold">N{{ "%.0f"|format(apartment.base_price) }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Unit Count -->
+                        <div class="mb-6">
+                            <p class="text-sm text-neutral mb-2">Active Units</p>
+                            <div class="text-2xl font-semibold text-[#E96C40]">{{ apartment.units.count() }}</div>
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div class="space-y-2">
+                            <button onclick="editApartment({{ apartment.id }})" class="w-full text-sm font-semibold px-4 py-2 rounded transition bg-blue-100 text-blue-600 hover:bg-blue-200">
+                                Edit
+                            </button>
+                            <button onclick="deleteApartment({{ apartment.id }})" class="w-full text-sm font-semibold px-4 py-2 rounded transition bg-red-100 text-red-600 hover:bg-red-200">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="service-card text-center py-12">
+                <div class="text-5xl mb-4">🏢</div>
+                <h3 class="font-semibold text-xl mb-2">No Apartment Types</h3>
+                <p class="text-neutral mb-6">Create your first apartment type to get started</p>
+                <button onclick="openCreateModal()" class="btn-primary inline-block">
+                    Create Apartment Type
+                </button>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <div id="apartmentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-6">
+        <div class="bg-white rounded-lg max-w-2xl w-full max-h-96 overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 flex justify-between items-center">
+                <h2 id="modalTitle" class="serif text-3xl font-light">New Apartment Type</h2>
+                <button onclick="closeModal()" class="text-2xl text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
+            
+            <form id="apartmentForm" class="p-8 space-y-6">
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="name" class="block text-sm font-semibold mb-2">Name</label>
+                        <input type="text" id="name" name="name" required class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]" placeholder="e.g., 2-Bedroom Luxury">
+                    </div>
+                    <div>
+                        <label for="base_price" class="block text-sm font-semibold mb-2">Daily Price (₦)</label>
+                        <input type="number" id="base_price" name="base_price" required step="0.01" class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]">
+                    </div>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div>
+                        <label for="bedrooms" class="block text-sm font-semibold mb-2">Bedrooms</label>
+                        <input type="number" id="bedrooms" name="bedrooms" required min="1" class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]">
+                    </div>
+                    <div>
+                        <label for="bathrooms" class="block text-sm font-semibold mb-2">Bathrooms</label>
+                        <input type="number" id="bathrooms" name="bathrooms" required min="1" class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]">
+                    </div>
+                    <div>
+                        <label for="area_sqm" class="block text-sm font-semibold mb-2">Area (sqm)</label>
+                        <input type="number" id="area_sqm" name="area_sqm" required step="0.01" class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]">
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="description" class="block text-sm font-semibold mb-2">Description</label>
+                    <textarea id="description" name="description" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]" placeholder="Describe this apartment type..."></textarea>
+                </div>
+                
+                <div class="flex gap-4 pt-4 border-t">
+                    <button type="submit" class="btn-primary flex-1">Save Apartment Type</button>
+                    <button type="button" onclick="closeModal()" class="btn-outline flex-1">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentApartmentId = null;
+        
+        function openCreateModal() {
+            currentApartmentId = null;
+            document.getElementById('modalTitle').textContent = 'New Apartment Type';
+            document.getElementById('apartmentForm').reset();
+            document.getElementById('apartmentModal').classList.remove('hidden');
+        }
+        
+        function closeModal() {
+            document.getElementById('apartmentModal').classList.add('hidden');
+        }
+        
+        async function editApartment(apartmentId) {
+            try {
+                const response = await fetch(`/admin/apartments/${apartmentId}`);
+                if (!response.ok) return;
+                
+                // Load apartment data and open modal
+                currentApartmentId = apartmentId;
+                document.getElementById('modalTitle').textContent = 'Edit Apartment Type';
+                
+                // You'd typically fetch the data here and populate the form
+                document.getElementById('apartmentModal').classList.remove('hidden');
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+        
+        async function deleteApartment(apartmentId) {
+            if (!confirm('Are you sure you want to delete this apartment type?')) return;
+            
+            try {
+                const response = await fetch(`/admin/apartments/${apartmentId}/delete`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.message || 'Error deleting apartment');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+        
+        document.getElementById('apartmentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            const url = currentApartmentId 
+                ? `/admin/apartments/${currentApartmentId}/edit`
+                : '/admin/apartments/new';
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    location.reload();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+    </script>
+{% endblock %}

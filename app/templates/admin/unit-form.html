@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit' if unit else 'Create' }} Unit - Eni's Apartments{% endblock %}
+
+{% block content %}
+    <div class="max-w-2xl mx-auto px-6 py-12">
+        <!-- Header -->
+        <div class="mb-12">
+            <h1 class="serif text-5xl font-light mb-2">{{ 'Edit Unit' if unit else 'Create New Unit' }}</h1>
+            <p class="text-lg text-neutral">{{ 'Update unit details' if unit else 'Add a new apartment unit' }}</p>
+        </div>
+
+        <!-- Form -->
+        <form id="unitForm" class="service-card p-8 space-y-8">
+            <div class="grid md:grid-cols-2 gap-8">
+                <div>
+                    <label for="unit_number" class="block text-sm font-semibold mb-2">Unit Number</label>
+                    <input type="text" id="unit_number" name="unit_number" required 
+                           value="{{ unit.unit_number if unit else '' }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]" 
+                           placeholder="e.g., Unit A1, Unit B2">
+                </div>
+                
+                <div>
+                    <label for="apartment_type_id" class="block text-sm font-semibold mb-2">Apartment Type</label>
+                    <select id="apartment_type_id" name="apartment_type_id" required 
+                            class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]">
+                        <option value="">Select apartment type</option>
+                        {% for apt in apartment_types %}
+                        <option value="{{ apt.id }}" {% if unit and unit.apartment_type_id == apt.id %}selected{% endif %}>
+                            {{ apt.name }} ({{ apt.bedrooms }}BR • {{ apt.bathrooms }}BA)
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <div>
+                    <label for="floor" class="block text-sm font-semibold mb-2">Floor</label>
+                    <input type="number" id="floor" name="floor" required min="1"
+                           value="{{ unit.floor if unit else '' }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]">
+                </div>
+                
+                <div>
+                    <label for="view" class="block text-sm font-semibold mb-2">View Type</label>
+                    <input type="text" id="view" name="view" 
+                           value="{{ unit.view if unit else '' }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]" 
+                           placeholder="e.g., City View, Garden View">
+                </div>
+            </div>
+            
+            <div>
+                <label for="image_url" class="block text-sm font-semibold mb-2">Featured Image URL</label>
+                <input type="url" id="image_url" name="image_url" 
+                       value="{{ unit.image_url if unit else '' }}"
+                       class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]" 
+                       placeholder="https://example.com/image.jpg">
+                <p class="text-xs text-neutral mt-2">This image will appear on the units listing. You can add a full gallery later.</p>
+                
+                <!-- Image Preview -->
+                {% if unit and unit.image_url %}
+                <div class="mt-4">
+                    <p class="text-sm font-semibold mb-2">Current Image</p>
+                    <div class="relative h-32 overflow-hidden rounded">
+                        <img src="{{ unit.image_url }}" alt="{{ unit.unit_number }}" class="w-full h-full object-cover">
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Buttons -->
+            <div class="flex gap-4 pt-8 border-t">
+                <button type="submit" class="btn-primary flex-1">
+                    {{ 'Update Unit' if unit else 'Create Unit' }}
+                </button>
+                <a href="/admin/units" class="btn-outline flex-1 text-center">
+                    Cancel
+                </a>
+            </div>
+            
+            {% if unit %}
+            <div class="pt-4 border-t">
+                <button type="button" onclick="deleteUnit()" class="w-full px-4 py-2 bg-red-100 text-red-600 font-semibold rounded hover:bg-red-200 transition">
+                    Delete Unit
+                </button>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+
+    <script>
+        const unitId = {% if unit %}{{ unit.id }}{% else %}null{% endif %};
+        
+        document.getElementById('unitForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            const url = unitId 
+                ? `/admin/units/${unitId}/edit`
+                : '/admin/units/new';
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    // Redirect to units list or gallery if new unit
+                    if (unitId) {
+                        window.location.href = '/admin/units';
+                    } else {
+                        window.location.href = `/admin/units/${result.unit_id}/gallery`;
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error saving unit');
+            }
+        });
+        
+        async function deleteUnit() {
+            if (!confirm('Are you sure you want to delete this unit? This cannot be undone.')) return;
+            
+            try {
+                const response = await fetch(`/admin/units/${unitId}/delete`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    window.location.href = '/admin/units';
+                } else {
+                    alert(data.message || 'Error deleting unit');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+    </script>
+{% endblock %}
