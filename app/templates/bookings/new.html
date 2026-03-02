@@ -41,7 +41,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-5 gap-8">
             <!-- LEFT: Full booking form (all sections from reference UI) -->
-            <div class="md:col-span-3">
+            <div class="md:col-span-3 order-2 md:order-1">
                 <form id="bookingForm" class="space-y-12">
                     <input type="hidden" id="unitId" name="unit_id">
 
@@ -136,7 +136,7 @@
                                         <div class="flex items-center gap-4">
                                             <span class="text-4xl">🍳</span>
                                             <div>
-                                                <div class="font-semibold text-xl">Daily Chef Breakfast</div>
+                                                <div class="font-semibold text-md md:text-lg lg:text-xl">Daily Chef Breakfast</div>
                                                 <div class="text-sm text-neutral mt-1">Gourmet breakfast delivered to your unit</div>
                                             </div>
                                         </div>
@@ -156,7 +156,7 @@
                                         <div class="flex items-center gap-4">
                                             <span class="text-4xl">🚕</span>
                                             <div>
-                                                <div class="font-semibold text-xl">Airport Transfer</div>
+                                                <div class="font-semibold text-md md:text-lg lg:text-xl">Airport Transfer</div>
                                                 <div class="text-sm text-neutral mt-1">Luxury vehicle pickup or dropoff</div>
                                             </div>
                                         </div>
@@ -176,7 +176,7 @@
                                         <div class="flex items-center gap-4">
                                             <span class="text-4xl">🎁</span>
                                             <div>
-                                                <div class="font-semibold text-xl">VIP Welcome Pack</div>
+                                                <div class="font-semibold text-md md:text-lg lg:text-xl">VIP Welcome Pack</div>
                                                 <div class="text-sm text-neutral mt-1">Champagne, flowers, chocolates & more</div>
                                             </div>
                                         </div>
@@ -213,7 +213,7 @@
                         <div id="formMessage" class="hidden p-4 rounded-2xl text-sm mt-8"></div>
 
                         <button type="submit" id="submitBtn"
-                                class="btn-primary w-full mt-10 py-5 text-xl font-semibold  flex items-center justify-center gap-3 bg-[#94CA3E] hover:bg-[#7eb52f]">
+                                class="btn-primary w-full mt-10 py-5 text-sm md:text-md lg:text-xl font-semibold  flex items-center justify-center gap-3 bg-[#94CA3E] hover:bg-[#7eb52f]">
                             <span>Confirm Booking & Pay</span> <span id="payAmount" class="font-semibold">₦1,417,500</span>
                         </button>
 
@@ -225,73 +225,138 @@
             </div>
 
             <!-- RIGHT: Property summary sidebar (exactly as in reference UI) -->
-            <div class="md:col-span-2">
-                <!-- Property image -->
-                    <img src="https://picsum.photos/id/1015/600/380" alt="Sky Penthouse Suite"
-                         class="w-full object-cover">
-                         
-                <div class="service-card sticky top-12">
-                    
-                    <div class="flex items-baseline justify-between">
-                        <h3 class="serif text-3xl font-light">Sky Penthouse Suite</h3>
+            <div class="md:col-span-2 order-1 md:order-2">
+                <!-- Property image - Skeleton placeholder -->
+                <div id="propertyImagePlaceholder" class="w-full h-64 bg-gray-300 mb-5 animate-pulse"></div>
+                <img id="unitImage" src="https://picsum.photos/id/1015/600/380" alt="Sky Penthouse Suite"
+                    class="w-full object-cover mb-5 hidden">
+
+                <div id="serviceCard" class="service-card sticky top-12">
+                    <!-- Title Skeleton -->
+                    <div id="titlePlaceholder" class="flex items-baseline justify-between animate-pulse">
+                        <h3 id="unitTitle" class="serif text-3xl font-light bg-gray-300 w-3/4 h-8"></h3>
                         <div class="flex items-center gap-1 text-amber-400 text-2xl">
-                            ★ <span class="text-lg font-semibold text-neutral">4.9</span>
+                            <div id="ratingPlaceholder" class="bg-gray-300 w-16 h-6"></div>
                         </div>
                     </div>
 
-                    <p class="flex items-center gap-2 text-neutral mt-2">
-                        <span class="text-xl"><i class="fa-solid fa-map-pin"></i></span> Victoria Island, Lagos
-                    </p>
+                    <!-- Location Skeleton -->
+                    <p id="locationPlaceholder" class="flex items-center gap-2 text-neutral mt-2 bg-gray-300 w-1/2 h-6"></p>
 
-                    <!-- Amenities tags -->
-                    <div class="flex flex-wrap gap-3 mt-7">
-                        <span class="px-5 py-2 bg-[#94CA3E]/10 text-[#94CA3E] text-sm font-medium ">4 Beds</span>
-                        <span class="px-5 py-2 bg-[#94CA3E]/10 text-[#94CA3E] text-sm font-medium ">Pool</span>
-                        <span class="px-5 py-2 bg-[#94CA3E]/10 text-[#94CA3E] text-sm font-medium ">WIFI</span>
-                        <span class="px-5 py-2 bg-[#94CA3E]/10 text-[#94CA3E] text-sm font-medium ">Gym</span>
+                    <!-- Amenities tags Skeleton -->
+                    <div id="amenitiesPlaceholder" class="flex flex-wrap gap-3 mt-7">
+                        <div class="px-5 py-2 bg-gray-300 w-20 h-6 animate-pulse"></div>
+                        <div class="px-5 py-2 bg-gray-300 w-20 h-6 animate-pulse"></div>
+                        <div class="px-5 py-2 bg-gray-300 w-20 h-6 animate-pulse"></div>
+                        <div class="px-5 py-2 bg-gray-300 w-20 h-6 animate-pulse"></div>
                     </div>
 
-                    <!-- Pricing breakdown (exactly as reference + dynamic add-ons) -->
+                    <!-- Pricing breakdown (Skeleton) -->
                     <div class="mt-10 space-y-6" id="pricingSection">
-                        <div class="flex justify-between text-lg">
-                            <span class="text-neutral">₦450,000 × 3 nights</span>
-                            <span class="font-semibold">₦1,350,000</span>
+                        <div id="pricingPlaceholder" class="flex justify-between text-lg">
+                            <div class="bg-gray-300 w-36 h-6 animate-pulse"></div>
+                            <div class="bg-gray-300 w-32 h-6 animate-pulse"></div>
                         </div>
 
-                        <!-- Dynamic add-ons inserted here by JS -->
-                        <div id="addonsBreakdown" class="space-y-3 text-sm"></div>
-
-                        <div class="flex justify-between text-emerald-600">
-                            <span>Daily Housekeeping</span>
-                            <span class="font-medium">Free</span>
+                        <!-- Dynamic add-ons (Skeleton) -->
+                        <div id="addonsBreakdownPlaceholder" class="space-y-3 text-sm animate-pulse">
+                            <div class="bg-gray-300 w-full h-6"></div>
+                            <div class="bg-gray-300 w-full h-6"></div>
                         </div>
+
+                        <!-- Service fees & total (Skeleton) -->
                         <div class="flex justify-between text-emerald-600">
-                            <span>24/7 Concierge</span>
-                            <span class="font-medium">Free</span>
+                            <div class="bg-gray-300 w-32 h-6 animate-pulse"></div>
+                            <div class="bg-gray-300 w-24 h-6 animate-pulse"></div>
                         </div>
 
                         <div class="flex justify-between pt-4 border-t border-gray-200">
-                            <span class="text-neutral">Service fee (5%)</span>
-                            <span class="font-semibold">₦67,500</span>
+                            <div class="bg-gray-300 w-44 h-6 animate-pulse"></div>
+                            <div class="bg-gray-300 w-24 h-6 animate-pulse"></div>
                         </div>
 
                         <div class="flex justify-between md:text-xl lg:text-3xl font-light pt-6 border-t">
-                            <span>Total</span>
-                            <span id="grandTotal" class="text-[#E96C40]">₦1,417,500</span>
+                            <div class="bg-gray-300 w-32 h-6 animate-pulse"></div>
+                            <div class="bg-gray-300 w-40 h-8 animate-pulse"></div>
                         </div>
                     </div>
 
-                    <!-- Cancellation note (exactly as reference) -->
-                    <div class="mt-10 p-6 bg-[#f8f6f3]  text-sm leading-relaxed border border-[#94CA3E]/20">
-                        ✓ Free cancellation before Feb 23, 2024 at 3:00 PM. Cancel after that for a 50% refund.
-                    </div>
+                    <!-- Cancellation note Skeleton -->
+                    <div id="cancellationNotePlaceholder" class="mt-10 p-6 bg-gray-200 text-sm leading-relaxed border border-gray-300 w-full h-20 animate-pulse"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Function to fetch unit data from the backend
+        async function fetchUnitData(unitId) {
+            try {
+            // Fetch unit data from the backend API
+            const response = await fetch(`/api/units/${unitId}`);
 
+            // If the response is successful
+            if (!response.ok) {
+                throw new Error('Failed to fetch unit data');
+            }
+
+            const data = await response.json();
+
+            // Hide skeleton loader
+            document.getElementById('propertyImagePlaceholder').classList.add('hidden');
+            document.getElementById('unitImage').classList.remove('hidden');
+            document.getElementById('serviceCard').classList.remove('animate-pulse');
+
+            // Populate the data into the HTML
+            document.getElementById('unitTitle').textContent = data.unit_number; // Unit name
+            document.getElementById('unitRating').textContent = data.apartment_type.base_price; // Unit rating (if this is available)
+            document.getElementById('locationPlaceholder').textContent = `Victoria Island, Lagos`; // Location (adjust if necessary)
+            document.getElementById('unitImage').src = data.images[0].image_url; // Property image
+
+            // Populate amenities tags dynamically
+            const amenitiesTags = document.getElementById('amenitiesTags');
+            amenitiesTags.innerHTML = ''; // Clear existing tags
+            data.apartment_type.amenities.forEach(amenity => {
+                const tag = document.createElement('span');
+                tag.classList.add('px-5', 'py-2', 'bg-[#94CA3E]/10', 'text-[#94CA3E]', 'text-sm', 'font-medium');
+                tag.textContent = amenity;
+                amenitiesTags.appendChild(tag);
+            });
+
+            // Pricing breakdown
+            document.getElementById('unitPricing').textContent = `₦${data.apartment_type.base_price} × 3 nights`; // Adjust as necessary
+            const totalPrice = data.apartment_type.base_price * 3; // Assuming 3 nights
+            document.getElementById('unitTotal').textContent = `₦${totalPrice.toLocaleString()}`;
+
+            // Add-ons section (dynamically added by JS)
+            const addonsBreakdown = document.getElementById('addonsBreakdown');
+            addonsBreakdown.innerHTML = ''; // Clear existing add-ons
+            data.addons.forEach(addon => {
+                const addonDiv = document.createElement('div');
+                addonDiv.classList.add('flex', 'justify-between');
+                addonDiv.innerHTML = `<span>${addon.name}</span><span class="font-medium">${addon.price}</span>`;
+                addonsBreakdown.appendChild(addonDiv);
+            });
+
+            // Service fee (5%)
+            document.getElementById('serviceFee').textContent = `₦${(totalPrice * 0.05).toLocaleString()}`;
+
+            // Grand total (including service fee)
+            const grandTotal = totalPrice + (totalPrice * 0.05);
+            document.getElementById('grandTotal').textContent = `₦${grandTotal.toLocaleString()}`;
+
+            // Cancellation note
+            document.getElementById('cancellationNote').textContent = `✓ Free cancellation before Feb 23, 2024 at 3:00 PM. Cancel after that for a 50% refund.`;
+
+            } catch (error) {
+            console.error('Error fetching unit data:', error);
+            }
+        }
+
+        // Call the function for a specific unit ID
+        
+
+        
         const bookingData = sessionStorage.getItem('bookingData');
         console.log("Booking Data", bookingData);
 
@@ -317,13 +382,12 @@
                 if (optionExists) guestsSelect.value = numGuestsStr;
             }
 
+            fetchUnitData(unit_id); // Example: fetch data for unit with ID 1
+
             // Clear sessionStorage so it doesn't persist
             // sessionStorage.removeItem('bookingData');
         }
        
-
-
-
         // Hard-coded values from reference UI (3 nights @ ₦450,000)
         const BASE_PRICE = 1350000;
         const SERVICE_FEE = 67500;

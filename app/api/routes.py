@@ -22,25 +22,95 @@ def get_units():
         }
     } for u in units])
 
+# @api_bp.route('/units/<int:unit_id>')
+# def get_unit(unit_id):
+#     """Get unit details"""
+#     unit = Unit.query.get_or_404(unit_id)
+#     return jsonify({
+#         'id': unit.id,
+#         'unit_number': unit.unit_number,
+#         'floor': unit.floor,
+#         'view': unit.view,
+#         'is_available': unit.is_available,
+#         'apartment_type': {
+#             'name': unit.apartment_type.name,
+#             'bedrooms': unit.apartment_type.bedrooms,
+#             'bathrooms': unit.apartment_type.bathrooms,
+#             'area_sqm': unit.apartment_type.area_sqm,
+#             'base_price': unit.apartment_type.base_price,
+#             'description': unit.apartment_type.description
+#         }
+#     })
+
+
 @api_bp.route('/units/<int:unit_id>')
 def get_unit(unit_id):
-    """Get unit details"""
+    """Get unit details, including all related data"""
     unit = Unit.query.get_or_404(unit_id)
-    return jsonify({
+    
+    # Fetch related data for unit
+    apartment_type = unit.apartment_type
+    unit_images = unit.gallery_images if unit.gallery_images else []
+    bookings = unit.bookings.all() if unit.bookings else []
+    service_requests = unit.service_requests.all() if unit.service_requests else []
+    
+    # Create a response dictionary
+    unit_data = {
         'id': unit.id,
         'unit_number': unit.unit_number,
         'floor': unit.floor,
         'view': unit.view,
         'is_available': unit.is_available,
+        'created_at': unit.created_at,
+        'updated_at': unit.updated_at,
         'apartment_type': {
-            'name': unit.apartment_type.name,
-            'bedrooms': unit.apartment_type.bedrooms,
-            'bathrooms': unit.apartment_type.bathrooms,
-            'area_sqm': unit.apartment_type.area_sqm,
-            'base_price': unit.apartment_type.base_price,
-            'description': unit.apartment_type.description
-        }
-    })
+            'name': apartment_type.name,
+            'bedrooms': apartment_type.bedrooms,
+            'bathrooms': apartment_type.bathrooms,
+            'area_sqm': apartment_type.area_sqm,
+            'base_price': apartment_type.base_price,
+            'description': apartment_type.description,
+        },
+        'images': [
+            {
+                'id': image.id,
+                'image_url': image.image_url,
+                'label': image.label,
+                'description': image.description,
+                'is_featured': image.is_featured,
+                'created_at': image.created_at
+            }
+            for image in unit_images
+        ],
+        'bookings': [
+            {
+                'booking_reference': booking.booking_reference,
+                'check_in_date': booking.check_in_date,
+                'check_out_date': booking.check_out_date,
+                'number_of_guests': booking.number_of_guests,
+                'status': booking.status,
+                'total_price': booking.total_price,
+                'paid': booking.paid,
+                'special_requests': booking.special_requests,
+                'guest_email': booking.guest_email,
+                'guest_phone': booking.guest_phone,
+                'created_at': booking.created_at
+            }
+            for booking in bookings
+        ],
+        'service_requests': [
+            {
+                'service_id': service_request.service_id,
+                'status': service_request.status,
+                'notes': service_request.notes,
+                'created_at': service_request.created_at,
+                'updated_at': service_request.updated_at
+            }
+            for service_request in service_requests
+        ]
+    }
+
+    return jsonify(unit_data)
 
 @api_bp.route('/services')
 def get_services():
