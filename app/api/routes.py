@@ -70,6 +70,16 @@ def get_unit(unit_id):
             'area_sqm': apartment_type.area_sqm,
             'base_price': apartment_type.base_price,
             'description': apartment_type.description,
+            'amenities': apartment_type.amenities,
+            'rating': apartment_type.rating,
+            'addons': [{
+                'id': s.id,
+                'name': s.name,
+                'description': s.description,
+                'price': s.price,
+                'pricing_type': s.pricing_type,
+                'icon': s.icon
+            } for s in apartment_type.services if s.category == 'optional' and s.is_active]
         },
         'images': [
             {

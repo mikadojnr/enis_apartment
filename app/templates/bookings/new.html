@@ -37,8 +37,6 @@
             </div>
         </div>
 
-        
-
         <div class="grid grid-cols-1 md:grid-cols-5 gap-8">
             <!-- LEFT: Full booking form (all sections from reference UI) -->
             <div class="md:col-span-3 order-2 md:order-1">
@@ -77,9 +75,9 @@
                                 <label class="block text-sm font-semibold mb-2 text-[#632A89]">Children</label>
                                 <select id="children" class="w-full px-4 py-3 border border-gray-300  focus:outline-none focus:border-[#E96C40]">
                                     <option value="0" selected>None</option>
-                                    <option value="1" >1 Child</option>
-                                    <option value="2" >2 Children</option>
-                                    <option value="3" >3 Children</option>
+                                    <option value="1">1 Child</option>
+                                    <option value="2">2 Children</option>
+                                    <option value="3">3 Children</option>
                                 </select>
                             </div>
                         </div>
@@ -116,77 +114,18 @@
                             <label class="block text-sm font-semibold mb-2 text-[#632A89]">ID Type</label>
                             <select id="idType" class="w-full px-4 py-3 border border-gray-300  focus:outline-none focus:border-[#E96C40]">
                                 <option value="passport" selected>International Passport</option>
-                                <option value="nin" >National Identification Number</option>
-                                <option value="divers_license" >Drivers License</option>
+                                <option value="nin">National Identification Number</option>
+                                <option value="drivers_license">Drivers License</option>
                             </select>
                         </div>
                     </div>
 
-                    <!-- ADD-ON SERVICES (exactly as in reference, all checked) -->
+                    <!-- ADD-ON SERVICES (dynamic container) -->
                     <div class="service-card">
                         <h2 class="serif text-2xl font-light mb-8 flex items-center gap-3">
                             <span class="text-3xl"><i class="fa-solid fa-wand-magic-sparkles"></i></span> ADD-ON SERVICES
                         </h2>
-                        <div class="space-y-5">
-                            <!-- Daily Chef Breakfast -->
-                            <label class="group flex items-start gap-5 p-5 border border-gray-200 hover:border-[#94CA3E]  cursor-pointer transition-all">
-                                <input type="checkbox" id="addonBreakfast" checked class="mt-1 w-5 h-5 accent-[#94CA3E]">
-                                <div class="flex-1">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-4">
-                                            <span class="text-4xl">🍳</span>
-                                            <div>
-                                                <div class="font-semibold text-md md:text-lg lg:text-xl">Daily Chef Breakfast</div>
-                                                <div class="text-sm text-neutral mt-1">Gourmet breakfast delivered to your unit</div>
-                                            </div>
-                                        </div>
-                                        <div class="text-right">
-                                            <div class="font-semibold text-[#632A89]">₦8,500</div>
-                                            <div class="text-xs text-neutral">/person</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </label>
-
-                            <!-- Airport Transfer -->
-                            <label class="group flex items-start gap-5 p-5 border border-gray-200 hover:border-[#94CA3E]  cursor-pointer transition-all">
-                                <input type="checkbox" id="addonAirport" checked class="mt-1 w-5 h-5 accent-[#94CA3E]">
-                                <div class="flex-1">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-4">
-                                            <span class="text-4xl">🚕</span>
-                                            <div>
-                                                <div class="font-semibold text-md md:text-lg lg:text-xl">Airport Transfer</div>
-                                                <div class="text-sm text-neutral mt-1">Luxury vehicle pickup or dropoff</div>
-                                            </div>
-                                        </div>
-                                        <div class="text-right">
-                                            <div class="font-semibold text-[#632A89]">₦25,000</div>
-                                            <div class="text-xs text-neutral">/trip</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </label>
-
-                            <!-- VIP Welcome Pack -->
-                            <label class="group flex items-start gap-5 p-5 border border-gray-200 hover:border-[#94CA3E]  cursor-pointer transition-all">
-                                <input type="checkbox" id="addonVIP" checked class="mt-1 w-5 h-5 accent-[#94CA3E]">
-                                <div class="flex-1">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-4">
-                                            <span class="text-4xl">🎁</span>
-                                            <div>
-                                                <div class="font-semibold text-md md:text-lg lg:text-xl">VIP Welcome Pack</div>
-                                                <div class="text-sm text-neutral mt-1">Champagne, flowers, chocolates & more</div>
-                                            </div>
-                                        </div>
-                                        <div class="text-right">
-                                            <div class="font-semibold text-[#632A89]">₦45,000</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </label>
-                        </div>
+                        <div id="addonsContainer" class="space-y-5"></div>
                     </div>
 
                     <!-- SPECIAL REQUESTS -->
@@ -214,12 +153,8 @@
 
                         <button type="submit" id="submitBtn"
                                 class="btn-primary w-full mt-10 py-5 text-sm md:text-md lg:text-xl font-semibold  flex items-center justify-center gap-3 bg-[#94CA3E] hover:bg-[#7eb52f]">
-                            <span>Confirm Booking & Pay</span> <span id="payAmount" class="font-semibold">₦1,417,500</span>
+                            <span>Confirm Booking & Pay</span> <span id="payAmount" class="font-semibold">₦0</span>
                         </button>
-
-                        <!-- <p class="text-center text-xs text-neutral mt-6 flex items-center justify-center gap-2">
-                            <span class="text-[#94CA3E]">🔒</span> Secured by 256-bit SSL encryption
-                        </p> -->
                     </div>
                 </form>
             </div>
@@ -230,59 +165,45 @@
                 <div id="propertyImagePlaceholder" class="w-full h-64 bg-gray-300 mb-5 animate-pulse"></div>
                 <img id="unitImage" src="https://picsum.photos/id/1015/600/380" alt="Sky Penthouse Suite"
                     class="w-full object-cover mb-5 hidden">
-
-                <div id="serviceCard" class="service-card sticky top-12">
-                    <!-- Title Skeleton -->
-                    <div id="titlePlaceholder" class="flex items-baseline justify-between animate-pulse">
+                        
+                <div id="serviceCard" class="service-card sticky top-12 animate-pulse">
+                   
+                    <div class="flex items-baseline justify-between">
                         <h3 id="unitTitle" class="serif text-3xl font-light bg-gray-300 w-3/4 h-8"></h3>
                         <div class="flex items-center gap-1 text-amber-400 text-2xl">
-                            <div id="ratingPlaceholder" class="bg-gray-300 w-16 h-6"></div>
+                            ★ <span id="unitRating" class="text-lg font-semibold text-neutral bg-gray-300 w-12 h-6"></span>
                         </div>
                     </div>
-
-                    <!-- Location Skeleton -->
-                    <p id="locationPlaceholder" class="flex items-center gap-2 text-neutral mt-2 bg-gray-300 w-1/2 h-6"></p>
-
-                    <!-- Amenities tags Skeleton -->
-                    <div id="amenitiesPlaceholder" class="flex flex-wrap gap-3 mt-7">
-                        <div class="px-5 py-2 bg-gray-300 w-20 h-6 animate-pulse"></div>
-                        <div class="px-5 py-2 bg-gray-300 w-20 h-6 animate-pulse"></div>
-                        <div class="px-5 py-2 bg-gray-300 w-20 h-6 animate-pulse"></div>
-                        <div class="px-5 py-2 bg-gray-300 w-20 h-6 animate-pulse"></div>
-                    </div>
-
-                    <!-- Pricing breakdown (Skeleton) -->
+                    <p id="locationPlaceholder" class="flex items-center gap-2 text-neutral mt-2 bg-gray-300 w-1/2 h-6 animate-pulse"></p>
+                    <!-- Amenities tags -->
+                    <div id="amenitiesTags" class="flex flex-wrap gap-3 mt-7"></div>
+                    <!-- Pricing breakdown (exactly as reference + dynamic add-ons) -->
                     <div class="mt-10 space-y-6" id="pricingSection">
-                        <div id="pricingPlaceholder" class="flex justify-between text-lg">
-                            <div class="bg-gray-300 w-36 h-6 animate-pulse"></div>
-                            <div class="bg-gray-300 w-32 h-6 animate-pulse"></div>
+                        <div class="flex justify-between text-lg">
+                            <span id="unitPricing" class="text-neutral bg-gray-300 w-36 h-6 animate-pulse"></span>
+                            <span id="unitTotal" class="font-semibold bg-gray-300 w-32 h-6 animate-pulse"></span>
                         </div>
-
-                        <!-- Dynamic add-ons (Skeleton) -->
-                        <div id="addonsBreakdownPlaceholder" class="space-y-3 text-sm animate-pulse">
-                            <div class="bg-gray-300 w-full h-6"></div>
-                            <div class="bg-gray-300 w-full h-6"></div>
-                        </div>
-
-                        <!-- Service fees & total (Skeleton) -->
+                        <!-- Dynamic add-ons inserted here by JS -->
+                        <div id="addonsBreakdown" class="space-y-3 text-sm"></div>
                         <div class="flex justify-between text-emerald-600">
-                            <div class="bg-gray-300 w-32 h-6 animate-pulse"></div>
-                            <div class="bg-gray-300 w-24 h-6 animate-pulse"></div>
+                            <span>Daily Housekeeping</span>
+                            <span class="font-medium">Free</span>
                         </div>
-
+                        <div class="flex justify-between text-emerald-600">
+                            <span>24/7 Concierge</span>
+                            <span class="font-medium">Free</span>
+                        </div>
                         <div class="flex justify-between pt-4 border-t border-gray-200">
-                            <div class="bg-gray-300 w-44 h-6 animate-pulse"></div>
-                            <div class="bg-gray-300 w-24 h-6 animate-pulse"></div>
+                            <span class="text-neutral">Service fee (5%)</span>
+                            <span id="serviceFee" class="font-semibold bg-gray-300 w-24 h-6 animate-pulse"></span>
                         </div>
-
                         <div class="flex justify-between md:text-xl lg:text-3xl font-light pt-6 border-t">
-                            <div class="bg-gray-300 w-32 h-6 animate-pulse"></div>
-                            <div class="bg-gray-300 w-40 h-8 animate-pulse"></div>
+                            <span>Total</span>
+                            <span id="grandTotal" class="text-[#E96C40] bg-gray-300 w-40 h-8 animate-pulse"></span>
                         </div>
                     </div>
-
-                    <!-- Cancellation note Skeleton -->
-                    <div id="cancellationNotePlaceholder" class="mt-10 p-6 bg-gray-200 text-sm leading-relaxed border border-gray-300 w-full h-20 animate-pulse"></div>
+                    <!-- Cancellation note (exactly as reference) -->
+                    <div id="cancellationNote" class="mt-10 p-6 bg-[#f8f6f3] text-sm leading-relaxed border border-[#94CA3E]/20 bg-gray-200 h-20 animate-pulse"></div>
                 </div>
             </div>
         </div>
@@ -292,131 +213,130 @@
         // Function to fetch unit data from the backend
         async function fetchUnitData(unitId) {
             try {
-            // Fetch unit data from the backend API
-            const response = await fetch(`/api/units/${unitId}`);
+                const response = await fetch(`/api/units/${unitId}`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch unit data');
+                }
+                const data = await response.json();
 
-            // If the response is successful
-            if (!response.ok) {
-                throw new Error('Failed to fetch unit data');
-            }
+                // Hide skeleton loader
+                document.getElementById('propertyImagePlaceholder').classList.add('hidden');
+                document.getElementById('unitImage').classList.remove('hidden');
+                document.getElementById('serviceCard').classList.remove('animate-pulse');
+                document.getElementById('locationPlaceholder').classList.remove('bg-gray-300', 'h-6', 'animate-pulse');
+                document.getElementById('unitPricing').classList.remove('bg-gray-300', 'w-36', 'h-6', 'animate-pulse');
+                document.getElementById('unitTotal').classList.remove('bg-gray-300', 'w-32', 'h-6', 'animate-pulse');
+                document.getElementById('serviceFee').classList.remove('bg-gray-300', 'w-24', 'h-6', 'animate-pulse');
+                document.getElementById('grandTotal').classList.remove('bg-gray-300', 'w-40', 'h-8', 'animate-pulse');
+                document.getElementById('cancellationNote').classList.remove('bg-gray-200', 'h-20', 'animate-pulse');
+                document.getElementById('unitTitle').classList.remove('bg-gray-300', 'w-3/4', 'h-8');
+                document.getElementById('unitRating').parentElement.querySelector('span').classList.remove('bg-gray-300', 'w-12', 'h-6');
 
-            const data = await response.json();
+                // Populate the data into the HTML
+                document.getElementById('unitTitle').textContent = data.unit_number;
+                document.getElementById('unitRating').textContent = data.apartment_type.rating;
+                document.getElementById('locationPlaceholder').textContent = `Victoria Island, Lagos`;
+                document.getElementById('unitImage').src = data.images[0]?.image_url || 'https://picsum.photos/id/1015/600/380';
 
-            // Hide skeleton loader
-            document.getElementById('propertyImagePlaceholder').classList.add('hidden');
-            document.getElementById('unitImage').classList.remove('hidden');
-            document.getElementById('serviceCard').classList.remove('animate-pulse');
+                // Populate amenities tags dynamically
+                const amenitiesTags = document.getElementById('amenitiesTags');
+                amenitiesTags.innerHTML = '';
+                (data.apartment_type.amenities || []).forEach(amenity => {
+                    const tag = document.createElement('span');
+                    tag.classList.add('px-5', 'py-2', 'bg-[#94CA3E]/10', 'text-[#94CA3E]', 'text-sm', 'font-medium');
+                    tag.textContent = amenity;
+                    amenitiesTags.appendChild(tag);
+                });
 
-            // Populate the data into the HTML
-            document.getElementById('unitTitle').textContent = data.unit_number; // Unit name
-            document.getElementById('unitRating').textContent = data.apartment_type.base_price; // Unit rating (if this is available)
-            document.getElementById('locationPlaceholder').textContent = `Victoria Island, Lagos`; // Location (adjust if necessary)
-            document.getElementById('unitImage').src = data.images[0].image_url; // Property image
+                // Populate add-ons dynamically in form
+                const addonsContainer = document.getElementById('addonsContainer');
+                addonsContainer.innerHTML = '';
+                data.apartment_type.addons.forEach(addon => {
+                    const label = document.createElement('label');
+                    label.classList.add('group', 'flex', 'items-start', 'gap-5', 'p-5', 'border', 'border-gray-200', 'hover:border-[#94CA3E]', 'cursor-pointer', 'transition-all');
+                    label.innerHTML = `
+                        <input type="checkbox" id="addon${addon.id}" checked class="mt-1 w-5 h-5 accent-[#94CA3E]">
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-4">
+                                    <span class="text-4xl">${addon.icon || '✨'}</span>
+                                    <div>
+                                        <div class="font-semibold text-md md:text-lg lg:text-xl">${addon.name}</div>
+                                        <div class="text-sm text-neutral mt-1">${addon.description || ''}</div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-semibold text-[#632A89]">₦${addon.price.toLocaleString()}</div>
+                                    <div class="text-xs text-neutral">${addon.pricing_type ? '/' + addon.pricing_type.replace('per_', '').replace('_per_', ' ') : ''}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    addonsContainer.appendChild(label);
+                    document.getElementById(`addon${addon.id}`).addEventListener('change', updatePricingAndButton);
+                });
 
-            // Populate amenities tags dynamically
-            const amenitiesTags = document.getElementById('amenitiesTags');
-            amenitiesTags.innerHTML = ''; // Clear existing tags
-            data.apartment_type.amenities.forEach(amenity => {
-                const tag = document.createElement('span');
-                tag.classList.add('px-5', 'py-2', 'bg-[#94CA3E]/10', 'text-[#94CA3E]', 'text-sm', 'font-medium');
-                tag.textContent = amenity;
-                amenitiesTags.appendChild(tag);
-            });
+                // Initial pricing update
+                updatePricingAndButton(data);
 
-            // Pricing breakdown
-            document.getElementById('unitPricing').textContent = `₦${data.apartment_type.base_price} × 3 nights`; // Adjust as necessary
-            const totalPrice = data.apartment_type.base_price * 3; // Assuming 3 nights
-            document.getElementById('unitTotal').textContent = `₦${totalPrice.toLocaleString()}`;
-
-            // Add-ons section (dynamically added by JS)
-            const addonsBreakdown = document.getElementById('addonsBreakdown');
-            addonsBreakdown.innerHTML = ''; // Clear existing add-ons
-            data.addons.forEach(addon => {
-                const addonDiv = document.createElement('div');
-                addonDiv.classList.add('flex', 'justify-between');
-                addonDiv.innerHTML = `<span>${addon.name}</span><span class="font-medium">${addon.price}</span>`;
-                addonsBreakdown.appendChild(addonDiv);
-            });
-
-            // Service fee (5%)
-            document.getElementById('serviceFee').textContent = `₦${(totalPrice * 0.05).toLocaleString()}`;
-
-            // Grand total (including service fee)
-            const grandTotal = totalPrice + (totalPrice * 0.05);
-            document.getElementById('grandTotal').textContent = `₦${grandTotal.toLocaleString()}`;
-
-            // Cancellation note
-            document.getElementById('cancellationNote').textContent = `✓ Free cancellation before Feb 23, 2024 at 3:00 PM. Cancel after that for a 50% refund.`;
+                // Cancellation note (keep hardcoded for now)
+                document.getElementById('cancellationNote').textContent = `✓ Free cancellation before Feb 23, 2024 at 3:00 PM. Cancel after that for a 50% refund.`;
 
             } catch (error) {
-            console.error('Error fetching unit data:', error);
+                console.error('Error fetching unit data:', error);
             }
         }
 
-        // Call the function for a specific unit ID
-        
-
-        
-        const bookingData = sessionStorage.getItem('bookingData');
-        console.log("Booking Data", bookingData);
-
-        if (bookingData) {
-            const { unit_id, check_in, check_out, num_guests } = JSON.parse(bookingData);
-
-            // Populate fields
-            const unitInput = document.getElementById('unitId');
-            if (unitInput) unitInput.value = unit_id;
-
-            const checkInInput = document.getElementById('checkIn');
-            if (checkInInput) checkInInput.value = check_in;
-
-            const checkOutInput = document.getElementById('checkOut');
-            if (checkOutInput) checkOutInput.value = check_out;
-
-            const guestsSelect = document.getElementById('guests');
-            if (guestsSelect) {
-                const numGuestsStr = String(num_guests); // convert to string
-                const optionExists = Array.from(guestsSelect.options).some(
-                    option => option.value === numGuestsStr
-                );
-                if (optionExists) guestsSelect.value = numGuestsStr;
+        // Function to calculate nights
+        function calculateNights() {
+            const checkIn = document.getElementById('checkIn').value;
+            const checkOut = document.getElementById('checkOut').value;
+            if (checkIn && checkOut) {
+                return Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
             }
-
-            fetchUnitData(unit_id); // Example: fetch data for unit with ID 1
-
-            // Clear sessionStorage so it doesn't persist
-            // sessionStorage.removeItem('bookingData');
+            return 0;
         }
-       
-        // Hard-coded values from reference UI (3 nights @ ₦450,000)
-        const BASE_PRICE = 1350000;
-        const SERVICE_FEE = 67500;
 
-        function calculateAddons() {
+        // Function to calculate add-ons total and lines
+        function calculateAddons(data) {
             let total = 0;
             const lines = [];
+            const nights = calculateNights();
+            const num_adults = parseInt(document.getElementById('guests').value || 0);
+            const num_children = parseInt(document.getElementById('children').value || 0);
+            const num_guests = num_adults + num_children;
 
-            if (document.getElementById('addonBreakfast').checked) {
-                const cost = 8500 * 2; // 2 adults
-                total += cost;
-                lines.push({ name: 'Daily Chef Breakfast', cost: cost });
-            }
-            if (document.getElementById('addonAirport').checked) {
-                const cost = 25000;
-                total += cost;
-                lines.push({ name: 'Airport Transfer', cost: cost });
-            }
-            if (document.getElementById('addonVIP').checked) {
-                const cost = 45000;
-                total += cost;
-                lines.push({ name: 'VIP Welcome Pack', cost: cost });
-            }
+            data.apartment_type.addons.forEach(addon => {
+                const checkbox = document.getElementById(`addon${addon.id}`);
+                if (checkbox && checkbox.checked) {
+                    let cost = addon.price;
+                    if (addon.pricing_type && addon.pricing_type.includes('per_person')) {
+                        cost *= num_guests;
+                    }
+                    if (addon.pricing_type && (addon.pricing_type.includes('per_day') || addon.pricing_type.includes('per_night'))) {
+                        cost *= nights;
+                    }
+                    total += cost;
+                    lines.push({ name: addon.name, cost });
+                }
+            });
             return { total, lines };
         }
 
-        function updatePricingAndButton() {
-            const { total: addonsTotal, lines } = calculateAddons();
-            const grandTotal = BASE_PRICE + addonsTotal + SERVICE_FEE;
+        // Function to update pricing and button
+        function updatePricingAndButton(data) {
+            if (!data) return;
+
+            const nights = calculateNights();
+            const basePrice = data.apartment_type.base_price * nights;
+            const { total: addonsTotal, lines } = calculateAddons(data);
+            const subtotal = basePrice + addonsTotal;
+            const serviceFee = subtotal * 0.05;
+            const grandTotal = subtotal + serviceFee;
+
+            // Update base pricing
+            document.getElementById('unitPricing').textContent = `₦${data.apartment_type.base_price.toLocaleString()} × ${nights} nights`;
+            document.getElementById('unitTotal').textContent = `₦${basePrice.toLocaleString()}`;
 
             // Build add-ons HTML
             let html = '';
@@ -430,15 +350,18 @@
             });
             document.getElementById('addonsBreakdown').innerHTML = html;
 
-            // Update totals
+            // Update service fee and grand total
+            document.getElementById('serviceFee').textContent = `₦${serviceFee.toLocaleString()}`;
             document.getElementById('grandTotal').textContent = `₦${grandTotal.toLocaleString()}`;
             document.getElementById('payAmount').textContent = `₦${grandTotal.toLocaleString()}`;
         }
 
-        // Form submit (keeps original functionality + all new fields)
+        // Form submit
         const bookingForm = document.getElementById('bookingForm');
         const formMessage = document.getElementById('formMessage');
         const submitBtn = document.getElementById('submitBtn');
+
+        let fetchedData = null;  // To store fetched unit data for submit
 
         bookingForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -453,29 +376,27 @@
             submitBtn.innerHTML = 'Processing...';
 
             try {
-                const addonsData = calculateAddons();
+                const selectedAddons = [];
+                fetchedData.apartment_type.addons.forEach(addon => {
+                    const checkbox = document.getElementById(`addon${addon.id}`);
+                    if (checkbox && checkbox.checked) {
+                        selectedAddons.push(addon.id);
+                    }
+                });
 
                 const bookingData = {
-                    unit_id: 999, // dummy ID for Sky Penthouse Suite
+                    unit_id: document.getElementById('unitId').value,
                     check_in: document.getElementById('checkIn').value,
                     check_out: document.getElementById('checkOut').value,
-                    num_guests: parseInt(document.getElementById('adults').value),
-                    num_children: parseInt(document.getElementById('children').value),
+                    num_adults: parseInt(document.getElementById('guests').value || 0),
+                    num_children: parseInt(document.getElementById('children').value || 0),
                     first_name: document.getElementById('firstName').value,
                     last_name: document.getElementById('lastName').value,
                     email: document.getElementById('email').value,
                     phone: document.getElementById('phone').value,
                     id_type: document.getElementById('idType').value,
                     special_requests: document.getElementById('specialRequests').value || '',
-                    payment_method: document.querySelector('input[name="paymentMethod"]:checked').value,
-                    card_number: document.getElementById('cardNumber').value,
-                    expiry: document.getElementById('expiry').value,
-                    cvv: document.getElementById('cvv').value,
-                    addons: {
-                        chef_breakfast: document.getElementById('addonBreakfast').checked,
-                        airport_transfer: document.getElementById('addonAirport').checked,
-                        vip_welcome: document.getElementById('addonVIP').checked
-                    }
+                    addons: selectedAddons
                 };
 
                 const response = await fetch('/bookings/new', {
@@ -496,7 +417,7 @@
                 showMessage('Network error while creating booking.', 'error');
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = originalHTML; // restore (amount is already updated by live listener)
+                submitBtn.innerHTML = originalHTML;
             }
         });
 
@@ -512,33 +433,32 @@
 
         // Initialise everything
         window.addEventListener('load', () => {
-            // Live update on any add-on change
-            ['addonBreakfast', 'addonAirport', 'addonVIP'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.addEventListener('change', updatePricingAndButton);
-            });
+            const bookingData = sessionStorage.getItem('bookingData');
+            if (bookingData) {
+                const { unit_id, check_in, check_out, num_guests } = JSON.parse(bookingData);
 
-            // Initial calculation (all add-ons checked by default)
-            updatePricingAndButton();
-        });
-
-        // Paystack Button Click
-        document.getElementById('paystackButton').addEventListener('click', function () {
-            let handler = PaystackPop.setup({
-                key: 'YOUR_PUBLIC_KEY', // Replace with your Paystack public key
-                email: 'customer@example.com', // Replace dynamically if needed
-                amount: 5000, // Amount in kobo (e.g., 5000 = ₦50.00)
-                currency: "NGN",
-                ref: 'PS_' + Math.floor((Math.random() * 1000000000) + 1),
-                callback: function(response){
-                    alert('Payment successful! Reference: ' + response.reference);
-                },
-                onClose: function(){
-                    alert('Payment was not completed.');
+                // Populate fields
+                document.getElementById('unitId').value = unit_id;
+                document.getElementById('checkIn').value = check_in;
+                document.getElementById('checkOut').value = check_out;
+                const guestsSelect = document.getElementById('guests');
+                if (guestsSelect) {
+                    guestsSelect.value = String(num_guests);
                 }
+
+                fetchUnitData(unit_id).then(() => {
+                    fetchedData = window.fetchedData;  // Store for submit (set in fetch if needed)
+                    window.fetchedData = data;  // Assuming data is accessible, adjust if needed
+                });
+
+                // Clear sessionStorage
+                // sessionStorage.removeItem('bookingData');
+            }
+
+            // Add change listeners for dates and guests
+            ['checkIn', 'checkOut', 'guests', 'children'].forEach(id => {
+                document.getElementById(id).addEventListener('change', () => updatePricingAndButton(fetchedData));
             });
-            handler.openIframe();
         });
     </script>
-    <script src="https://js.paystack.co/v1/inline.js"></script>
 {% endblock %}

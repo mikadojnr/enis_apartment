@@ -34,6 +34,11 @@ class User(UserMixin, db.Model):
 def load_user(id):
     return User.query.get(int(id))
 
+apartment_type_services = db.Table('apartment_type_services',
+    db.Column('apartment_type_id', db.Integer, db.ForeignKey('apartment_types.id'), primary_key=True),
+    db.Column('service_id', db.Integer, db.ForeignKey('services.id'), primary_key=True)
+)
+
 class ApartmentType(db.Model):
     """Apartment type (e.g., 2-bedroom)"""
     __tablename__ = 'apartment_types'
@@ -43,15 +48,26 @@ class ApartmentType(db.Model):
     bedrooms = db.Column(db.Integer, nullable=False)
     bathrooms = db.Column(db.Integer, nullable=False)
     area_sqm = db.Column(db.Float, nullable=False)
-    description = db.Column(db.Text)
     base_price = db.Column(db.Float, nullable=False)
+    description = db.Column(db.Text)
+
+    # ✅ FIXED HERE
+    amenities = db.Column(db.JSON, default=list)
+
+    rating = db.Column(db.Float, default=0.0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     units = db.relationship('Unit', backref='apartment_type', lazy='dynamic')
+    services = db.relationship(
+        'Service',
+        secondary=apartment_type_services,
+        lazy='subquery',
+        backref=db.backref('apartment_types', lazy=True)
+    )
     
     def __repr__(self):
         return f'<ApartmentType {self.name}>'
-
+      
 class Unit(db.Model):
     """Individual apartment unit"""
     __tablename__ = 'units'
@@ -64,13 +80,15 @@ class Unit(db.Model):
     image_url = db.Column(db.String(255))
     is_available = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     bookings = db.relationship('Booking', backref='unit', lazy='dynamic')
     gallery_images = db.relationship('UnitImage', backref='unit', lazy='dynamic', cascade='all, delete-orphan')
+    service_requests = db.relationship('ServiceRequest', backref='unit', lazy='dynamic')
     
     def __repr__(self):
         return f'<Unit {self.unit_number}>'
-
+    
 class UnitImage(db.Model):
     """Gallery images for apartment units"""
     __tablename__ = 'unit_images'
@@ -86,19 +104,22 @@ class UnitImage(db.Model):
     
     def __repr__(self):
         return f'<UnitImage {self.label} - {self.unit.unit_number}>'
-
+    
 class Booking(db.Model):
     """Booking/reservation"""
     __tablename__ = 'bookings'
     
     id = db.Column(db.Integer, primary_key=True)
     booking_reference = db.Column(db.String(50), unique=True, nullable=False, index=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     unit_id = db.Column(db.Integer, db.ForeignKey('units.id'), nullable=False)
     
     check_in_date = db.Column(db.DateTime, nullable=False)
     check_out_date = db.Column(db.DateTime, nullable=False)
     number_of_guests = db.Column(db.Integer, nullable=False)
+    num_children = db.Column(db.Integer, default=0)
+
+    expires_at = db.Column(db.DateTime, nullable=True)  # null = no expiry or already paid/completed
     
     status = db.Column(db.String(50), default='pending')  # pending, confirmed, completed, cancelled
     total_price = db.Column(db.Float, nullable=False)
@@ -118,7 +139,7 @@ class Booking(db.Model):
     
     def __repr__(self):
         return f'<Booking {self.booking_reference}>'
-
+    
 class Service(db.Model):
     """Available services"""
     __tablename__ = 'services'
@@ -128,6 +149,8 @@ class Service(db.Model):
     category = db.Column(db.String(50), nullable=False)  # essential or optional
     description = db.Column(db.Text)
     price = db.Column(db.Float, default=0)  # 0 for essential services
+    pricing_type = db.Column(db.String(50))  # e.g., 'per_person_per_day', 'per_stay', 'per_trip'
+    icon = db.Column(db.String(50))  # Emoji or icon code
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
@@ -135,7 +158,7 @@ class Service(db.Model):
     
     def __repr__(self):
         return f'<Service {self.name}>'
-
+    
 class ServiceRequest(db.Model):
     """Service requests made by guests"""
     __tablename__ = 'service_requests'
@@ -143,7 +166,8 @@ class ServiceRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     service_id = db.Column(db.Integer, db.ForeignKey('services.id'), nullable=False)
     booking_id = db.Column(db.Integer, db.ForeignKey('bookings.id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    unit_id = db.Column(db.Integer, db.ForeignKey('units.id'), nullable=False)
     
     status = db.Column(db.String(50), default='pending')  # pending, in_progress, completed
     notes = db.Column(db.Text)
