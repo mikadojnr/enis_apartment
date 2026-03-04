@@ -2,7 +2,6 @@
 {% block title %}Complete Your Booking - Eni's Apartments{% endblock %}
 {% block content %}
     <div class="max-w-7xl mx-auto px-6 py-12">
-
         <!-- Breadcrumb -->
         <nav class="mb-8 text-sm text-neutral">
             <a href="/" class="hover:text-[#E96C40]">Home</a> /
@@ -14,23 +13,22 @@
             <h1 class="serif text-5xl font-light">Complete Your Booking</h1>
         </div>
 
-        <!-- Progress Steps (exactly as in reference UI) -->
+        <!-- Progress Steps -->
         <div class="mb-10 flex justify-center">
-            <div class="inline-flex items-center gap-x-6 bg-white shadow-sm  px-10 py-4">
-                <!-- Step 1 -->
-                <div class="flex items-center gap-x-3">
+            <div class="inline-flex items-center gap-x-6 bg-white shadow-sm px-10 py-4" id="progressContainer">
+                <div class="flex items-center gap-x-3" id="step1">
                     <div class="w-9 h-9 bg-[#94CA3E] text-white text-lg font-semibold rounded-2xl flex items-center justify-center">1</div>
                     <span class="text-[#94CA3E] font-medium text-base tracking-tight">Select Apartment</span>
                 </div>
-                <div class="h-px w-14 bg-[#94CA3E]"></div>
-                <!-- Step 2 (current) -->
-                <div class="flex items-center gap-x-3">
+                <div class="h-px w-14 bg-[#94CA3E]" id="line1"></div>
+
+                <div class="flex items-center gap-x-3" id="step2">
                     <div class="w-9 h-9 bg-[#632A89] text-white text-lg font-semibold rounded-2xl flex items-center justify-center">2</div>
                     <span class="text-[#632A89] font-medium text-base tracking-tight">Your Details</span>
                 </div>
-                <div class="h-px w-14 bg-gray-300"></div>
-                <!-- Step 3 -->
-                <div class="flex items-center gap-x-3 opacity-60">
+                <div class="h-px w-14 bg-gray-300" id="line2"></div>
+
+                <div class="flex items-center gap-x-3 opacity-60" id="step3">
                     <div class="w-9 h-9 bg-gray-300 text-gray-400 text-lg font-semibold rounded-2xl flex items-center justify-center">3</div>
                     <span class="text-gray-400 font-medium text-base tracking-tight">Confirmation</span>
                 </div>
@@ -38,8 +36,8 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-5 gap-8">
-            <!-- LEFT: Full booking form (all sections from reference UI) -->
-            <div class="md:col-span-3 order-2 md:order-1">
+            <!-- LEFT: Form + Confirmation -->
+            <div class="md:col-span-3 order-2 md:order-1" id="formArea">
                 <form id="bookingForm" class="space-y-12">
                     <input type="hidden" id="unitId" name="unit_id">
 
@@ -51,30 +49,28 @@
                         <div class="grid grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-sm font-semibold mb-2 text-[#632A89]">Check In Date *</label>
-                                <input type="date" id="checkIn"
-                                       class="w-full px-4 py-3 border border-gray-300  focus:outline-none focus:border-[#E96C40]">
+                                <input type="date" id="checkIn" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold mb-2 text-[#632A89]">Check Out Date *</label>
-                                <input type="date" id="checkOut"
-                                       class="w-full px-4 py-3 border border-gray-300  focus:outline-none focus:border-[#E96C40]">
+                                <input type="date" id="checkOut" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-6 mt-8">
                             <div>
-                                <label class="block text-sm font-semibold mb-2 text-[#632A89]">Guests</label>
-                                <select id="guests" class="w-full px-4 py-3 border border-gray-300  focus:outline-none focus:border-[#E96C40]">
-                                    <option value="" selected>None</option>
-                                    <option value="1">1 Guest</option>
-                                    <option value="2">2 Guests</option>
-                                    <option value="3">3 Guests</option>
-                                    <option value="4">4 Guests</option>
+                                <label class="block text-sm font-semibold mb-2 text-[#632A89]">Adults *</label>
+                                <select id="guests" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
+                                    <option value="" disabled selected>Select adults</option>
+                                    <option value="1">1 Adult</option>
+                                    <option value="2">2 Adults</option>
+                                    <option value="3">3 Adults</option>
+                                    <option value="4">4 Adults</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold mb-2 text-[#632A89]">Children</label>
-                                <select id="children" class="w-full px-4 py-3 border border-gray-300  focus:outline-none focus:border-[#E96C40]">
-                                    <option value="0" selected>None</option>
+                                <select id="children" class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
+                                    <option value="0" selected>0 Children</option>
                                     <option value="1">1 Child</option>
                                     <option value="2">2 Children</option>
                                     <option value="3">3 Children</option>
@@ -83,7 +79,7 @@
                         </div>
                     </div>
 
-                    <!-- GUEST INFORMATION (exactly as in reference) -->
+                    <!-- GUEST INFORMATION -->
                     <div class="service-card">
                         <h2 class="serif text-2xl font-light mb-8 flex items-center gap-3">
                             <span class="text-3xl"><i class="fa-solid fa-user"></i></span> GUEST INFORMATION
@@ -91,36 +87,32 @@
                         <div class="grid md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-sm font-semibold mb-2 text-[#632A89]">First Name *</label>
-                                <input type="text" id="firstName" required
-                                       class="w-full px-4 py-3 border border-gray-300  focus:outline-none focus:border-[#E96C40]">
+                                <input type="text" id="firstName" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold mb-2 text-[#632A89]">Last Name *</label>
-                                <input type="text" id="lastName" required
-                                       class="w-full px-4 py-3 border border-gray-300  focus:outline-none focus:border-[#E96C40]">
+                                <input type="text" id="lastName" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
                             </div>
                         </div>
                         <div class="mt-6">
                             <label class="block text-sm font-semibold mb-2 text-[#632A89]">Email Address *</label>
-                            <input type="email" id="email" required
-                                   class="w-full px-4 py-3 border border-gray-300  focus:outline-none focus:border-[#E96C40]">
+                            <input type="email" id="email" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
                         </div>
                         <div class="mt-6">
                             <label class="block text-sm font-semibold mb-2 text-[#632A89]">Phone Number *</label>
-                            <input type="tel" id="phone" required
-                                   class="w-full px-4 py-3 border border-gray-300  focus:outline-none focus:border-[#E96C40]">
+                            <input type="tel" id="phone" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
                         </div>
                         <div class="mt-6">
                             <label class="block text-sm font-semibold mb-2 text-[#632A89]">ID Type</label>
-                            <select id="idType" class="w-full px-4 py-3 border border-gray-300  focus:outline-none focus:border-[#E96C40]">
-                                <option value="passport" selected>International Passport</option>
+                            <select id="idType" class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
+                                <option value="passport">International Passport</option>
                                 <option value="nin">National Identification Number</option>
-                                <option value="drivers_license">Drivers License</option>
+                                <option value="drivers_license">Driver's License</option>
                             </select>
                         </div>
                     </div>
 
-                    <!-- ADD-ON SERVICES (dynamic container) -->
+                    <!-- ADD-ON SERVICES -->
                     <div class="service-card">
                         <h2 class="serif text-2xl font-light mb-8 flex items-center gap-3">
                             <span class="text-3xl"><i class="fa-solid fa-wand-magic-sparkles"></i></span> ADD-ON SERVICES
@@ -133,18 +125,17 @@
                         <h2 class="serif text-2xl font-light mb-6 flex items-center gap-3">
                             <span class="text-3xl"><i class="fa-solid fa-file-lines"></i></span> SPECIAL REQUESTS
                         </h2>
-                        <textarea id="specialRequests" rows="4"
-                                  class="w-full px-4 py-3 border border-gray-300  focus:outline-none focus:border-[#E96C40]"
+                        <textarea id="specialRequests" rows="4" class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]"
                                   placeholder="Any special requirements, preferences, or occasions we should know about?"></textarea>
                     </div>
 
-                    <!-- Terms + Confirm Button -->
+                    <!-- Terms & Submit -->
                     <div class="pt-6">
                         <label class="flex items-start gap-3 cursor-pointer">
-                            <input type="checkbox" id="termsCheck" checked required class="w-5 h-5 mt-0.5 accent-[#94CA3E]">
+                            <input type="checkbox" id="termsCheck" required class="w-5 h-5 mt-0.5 accent-[#94CA3E]">
                             <span class="text-sm text-neutral leading-tight">
-                                I agree to the <a href="#" class="text-[#E96C40] hover:underline">Terms of Service</a> and 
-                                <a href="#" class="text-[#E96C40] hover:underline">Cancellation Policy</a>. 
+                                I agree to the <a href="#" class="text-[#E96C40] hover:underline">Terms of Service</a> and
+                                <a href="#" class="text-[#E96C40] hover:underline">Cancellation Policy</a>.
                                 Free cancellation up to 48 hours before check-in.
                             </span>
                         </label>
@@ -152,313 +143,408 @@
                         <div id="formMessage" class="hidden p-4 rounded-2xl text-sm mt-8"></div>
 
                         <button type="submit" id="submitBtn"
-                                class="btn-primary w-full mt-10 py-5 text-sm md:text-md lg:text-xl font-semibold  flex items-center justify-center gap-3 bg-[#94CA3E] hover:bg-[#7eb52f]">
-                            <span>Confirm Booking & Pay</span> <span id="payAmount" class="font-semibold">₦0</span>
+                                class="btn-primary w-full mt-10 py-5 text-sm md:text-md lg:text-xl font-semibold flex items-center justify-center gap-3 bg-[#94CA3E] hover:bg-[#7eb52f] disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled>
+                            <span>Confirm Booking & Pay</span>
+                            <span id="payAmount" class="font-semibold">₦0</span>
                         </button>
                     </div>
                 </form>
-            </div>
 
-            <!-- RIGHT: Property summary sidebar (exactly as in reference UI) -->
-            <div class="md:col-span-2 order-1 md:order-2">
-                <!-- Property image - Skeleton placeholder -->
-                <div id="propertyImagePlaceholder" class="w-full h-64 bg-gray-300 mb-5 animate-pulse"></div>
-                <img id="unitImage" src="https://picsum.photos/id/1015/600/380" alt="Sky Penthouse Suite"
-                    class="w-full object-cover mb-5 hidden">
-                        
-                <div id="serviceCard" class="service-card sticky top-12 animate-pulse">
-                   
-                    <div class="flex items-baseline justify-between">
-                        <h3 id="unitTitle" class="serif text-3xl font-light bg-gray-300 w-3/4 h-8"></h3>
-                        <div class="flex items-center gap-1 text-amber-400 text-2xl">
-                            ★ <span id="unitRating" class="text-lg font-semibold text-neutral bg-gray-300 w-12 h-6"></span>
+                <!-- Confirmation screen (shown after success) -->
+                <div id="confirmationView" class="hidden space-y-8">
+                    <div class="service-card text-center py-16">
+                        <h2 class="serif text-4xl font-light text-[#632A89] mb-6">Booking Received!</h2>
+                        <p class="text-xl mb-4">Your booking reference is:</p>
+                        <div class="text-5xl font-bold text-[#E96C40] mb-8 tracking-wider font-mono" id="bookingNumberDisplay">—</div>
+
+                        <p class="text-lg mb-2">Status: <strong>Awaiting Payment</strong></p>
+                        <p class="text-sm text-neutral mb-6">
+                            Please complete payment within <strong id="expiryDisplay">24 hours</strong> to secure your reservation.<br>
+                            You can return later using this booking reference to make payment.
+                        </p>
+
+                        <div class="inline-block bg-[#f8f6f3] px-10 py-6 rounded-2xl border border-[#94CA3E]/30 text-left">
+                            <p class="text-sm font-semibold mb-3">Next steps:</p>
+                            <ol class="text-sm space-y-2 list-decimal pl-5">
+                                <li>Use the booking reference above to continue payment</li>
+                                <li>Complete secure payment via Paystack</li>
+                                <li>Receive confirmation email with full details</li>
+                            </ol>
                         </div>
                     </div>
-                    <p id="locationPlaceholder" class="flex items-center gap-2 text-neutral mt-2 bg-gray-300 w-1/2 h-6 animate-pulse"></p>
-                    <!-- Amenities tags -->
+
+                    <button onclick="window.location.href='/bookings'" 
+                            class="btn-primary w-full py-5 text-lg font-semibold bg-[#632A89] hover:bg-[#4a1f6a]">
+                        View My Bookings
+                    </button>
+                </div>
+            </div>
+
+            <!-- RIGHT: Summary Sidebar -->
+            <div class="md:col-span-2 order-1 md:order-2">
+                <div id="propertyImagePlaceholder" class="w-full h-64 bg-gray-300 mb-5 animate-pulse"></div>
+                <img id="unitImage" src="" alt="Apartment" class="w-full object-cover mb-5 hidden">
+
+                <div id="serviceCard" class="service-card sticky top-12 animate-pulse">
+                    <div class="flex items-baseline justify-between">
+                        <h3 id="unitTitle" class="serif text-3xl font-light bg-gray-300 w-3/4 h-8 rounded"></h3>
+                        <div class="flex items-center gap-1 text-amber-400 text-2xl">
+                            ★ <span id="unitRating" class="text-lg font-semibold text-neutral bg-gray-300 w-12 h-6 rounded"></span>
+                        </div>
+                    </div>
+                    <p id="locationPlaceholder" class="mt-2 text-neutral bg-gray-300 w-3/5 h-6 rounded animate-pulse"></p>
+
                     <div id="amenitiesTags" class="flex flex-wrap gap-3 mt-7"></div>
-                    <!-- Pricing breakdown (exactly as reference + dynamic add-ons) -->
+
                     <div class="mt-10 space-y-6" id="pricingSection">
                         <div class="flex justify-between text-lg">
-                            <span id="unitPricing" class="text-neutral bg-gray-300 w-36 h-6 animate-pulse"></span>
-                            <span id="unitTotal" class="font-semibold bg-gray-300 w-32 h-6 animate-pulse"></span>
+                            <span id="unitPricing" class="text-neutral bg-gray-300 w-48 h-6 rounded animate-pulse"></span>
+                            <span id="unitTotal" class="font-semibold bg-gray-300 w-32 h-6 rounded animate-pulse"></span>
                         </div>
-                        <!-- Dynamic add-ons inserted here by JS -->
                         <div id="addonsBreakdown" class="space-y-3 text-sm"></div>
                         <div class="flex justify-between text-emerald-600">
-                            <span>Daily Housekeeping</span>
-                            <span class="font-medium">Free</span>
+                            <span>Daily Housekeeping</span><span class="font-medium">Free</span>
                         </div>
                         <div class="flex justify-between text-emerald-600">
-                            <span>24/7 Concierge</span>
-                            <span class="font-medium">Free</span>
+                            <span>24/7 Concierge</span><span class="font-medium">Free</span>
                         </div>
                         <div class="flex justify-between pt-4 border-t border-gray-200">
                             <span class="text-neutral">Service fee (5%)</span>
-                            <span id="serviceFee" class="font-semibold bg-gray-300 w-24 h-6 animate-pulse"></span>
+                            <span id="serviceFee" class="font-semibold bg-gray-300 w-32 h-6 rounded animate-pulse"></span>
                         </div>
                         <div class="flex justify-between md:text-xl lg:text-3xl font-light pt-6 border-t">
                             <span>Total</span>
-                            <span id="grandTotal" class="text-[#E96C40] bg-gray-300 w-40 h-8 animate-pulse"></span>
+                            <span id="grandTotal" class="text-[#E96C40] bg-gray-300 w-48 h-8 rounded animate-pulse"></span>
                         </div>
                     </div>
-                    <!-- Cancellation note (exactly as reference) -->
-                    <div id="cancellationNote" class="mt-10 p-6 bg-[#f8f6f3] text-sm leading-relaxed border border-[#94CA3E]/20 bg-gray-200 h-20 animate-pulse"></div>
+
+                    <div id="cancellationNote" class="mt-10 p-6 bg-[#f8f6f3] text-sm leading-relaxed border border-[#94CA3E]/20 bg-gray-200 h-24 animate-pulse rounded"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Function to fetch unit data from the backend
-        async function fetchUnitData(unitId) {
-            try {
-                const response = await fetch(`/api/units/${unitId}`);
-                if (!response.ok) {
-                    throw new Error('Failed to fetch unit data');
-                }
-                const data = await response.json();
+        let fetchedData = null;
+        let bookingReference = null;
 
-                // Hide skeleton loader
-                document.getElementById('propertyImagePlaceholder').classList.add('hidden');
-                document.getElementById('unitImage').classList.remove('hidden');
-                document.getElementById('serviceCard').classList.remove('animate-pulse');
-                document.getElementById('locationPlaceholder').classList.remove('bg-gray-300', 'h-6', 'animate-pulse');
-                document.getElementById('unitPricing').classList.remove('bg-gray-300', 'w-36', 'h-6', 'animate-pulse');
-                document.getElementById('unitTotal').classList.remove('bg-gray-300', 'w-32', 'h-6', 'animate-pulse');
-                document.getElementById('serviceFee').classList.remove('bg-gray-300', 'w-24', 'h-6', 'animate-pulse');
-                document.getElementById('grandTotal').classList.remove('bg-gray-300', 'w-40', 'h-8', 'animate-pulse');
-                document.getElementById('cancellationNote').classList.remove('bg-gray-200', 'h-20', 'animate-pulse');
-                document.getElementById('unitTitle').classList.remove('bg-gray-300', 'w-3/4', 'h-8');
-                document.getElementById('unitRating').parentElement.querySelector('span').classList.remove('bg-gray-300', 'w-12', 'h-6');
-
-                // Populate the data into the HTML
-                document.getElementById('unitTitle').textContent = data.unit_number;
-                document.getElementById('unitRating').textContent = data.apartment_type.rating;
-                document.getElementById('locationPlaceholder').textContent = `Victoria Island, Lagos`;
-                document.getElementById('unitImage').src = data.images[0]?.image_url || 'https://picsum.photos/id/1015/600/380';
-
-                // Populate amenities tags dynamically
-                const amenitiesTags = document.getElementById('amenitiesTags');
-                amenitiesTags.innerHTML = '';
-                (data.apartment_type.amenities || []).forEach(amenity => {
-                    const tag = document.createElement('span');
-                    tag.classList.add('px-5', 'py-2', 'bg-[#94CA3E]/10', 'text-[#94CA3E]', 'text-sm', 'font-medium');
-                    tag.textContent = amenity;
-                    amenitiesTags.appendChild(tag);
-                });
-
-                // Populate add-ons dynamically in form
-                const addonsContainer = document.getElementById('addonsContainer');
-                addonsContainer.innerHTML = '';
-                data.apartment_type.addons.forEach(addon => {
-                    const label = document.createElement('label');
-                    label.classList.add('group', 'flex', 'items-start', 'gap-5', 'p-5', 'border', 'border-gray-200', 'hover:border-[#94CA3E]', 'cursor-pointer', 'transition-all');
-                    label.innerHTML = `
-                        <input type="checkbox" id="addon${addon.id}" checked class="mt-1 w-5 h-5 accent-[#94CA3E]">
-                        <div class="flex-1">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-4">
-                                    <span class="text-4xl">${addon.icon || '✨'}</span>
-                                    <div>
-                                        <div class="font-semibold text-md md:text-lg lg:text-xl">${addon.name}</div>
-                                        <div class="text-sm text-neutral mt-1">${addon.description || ''}</div>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <div class="font-semibold text-[#632A89]">₦${addon.price.toLocaleString()}</div>
-                                    <div class="text-xs text-neutral">${addon.pricing_type ? '/' + addon.pricing_type.replace('per_', '').replace('_per_', ' ') : ''}</div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    addonsContainer.appendChild(label);
-                    document.getElementById(`addon${addon.id}`).addEventListener('change', updatePricingAndButton);
-                });
-
-                // Initial pricing update
-                updatePricingAndButton(data);
-
-                // Cancellation note (keep hardcoded for now)
-                document.getElementById('cancellationNote').textContent = `✓ Free cancellation before Feb 23, 2024 at 3:00 PM. Cancel after that for a 50% refund.`;
-
-            } catch (error) {
-                console.error('Error fetching unit data:', error);
-            }
-        }
-
-        // Function to calculate nights
+        // ────────────────────────────────────────────────
+        //  Helpers
+        // ────────────────────────────────────────────────
         function calculateNights() {
-            const checkIn = document.getElementById('checkIn').value;
-            const checkOut = document.getElementById('checkOut').value;
-            if (checkIn && checkOut) {
-                return Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
-            }
-            return 0;
+            const checkIn = document.getElementById('checkIn')?.value;
+            const checkOut = document.getElementById('checkOut')?.value;
+            if (!checkIn || !checkOut) return 0;
+            const diff = new Date(checkOut) - new Date(checkIn);
+            return Math.ceil(diff / (1000 * 60 * 60 * 24));
         }
 
-        // Function to calculate add-ons total and lines
-        function calculateAddons(data) {
+        function isFormReady() {
+            if (!fetchedData) return false;
+
+            const requiredFields = [
+                'checkIn', 'checkOut', 'guests', 'firstName',
+                'lastName', 'email', 'phone', 'termsCheck'
+            ];
+
+            for (const id of requiredFields) {
+                const el = document.getElementById(id);
+                if (!el) return false;
+                if (el.type === 'checkbox') {
+                    if (!el.checked) return false;
+                } else if (!el.value?.trim()) {
+                    return false;
+                }
+            }
+
+            return calculateNights() > 0;
+        }
+
+        function updateButtonState() {
+            document.getElementById('submitBtn').disabled = !isFormReady();
+        }
+
+        function calculateAddonsTotalAndLines() {
+            if (!fetchedData?.apartment_type?.addons) return { total: 0, lines: [] };
+
+            const nights = calculateNights();
+            const adults = parseInt(document.getElementById('guests')?.value || '0');
+            const children = parseInt(document.getElementById('children')?.value || '0');
+            const totalGuests = adults + children;
+
             let total = 0;
             const lines = [];
-            const nights = calculateNights();
-            const num_adults = parseInt(document.getElementById('guests').value || 0);
-            const num_children = parseInt(document.getElementById('children').value || 0);
-            const num_guests = num_adults + num_children;
 
-            data.apartment_type.addons.forEach(addon => {
+            fetchedData.apartment_type.addons.forEach(addon => {
                 const checkbox = document.getElementById(`addon${addon.id}`);
-                if (checkbox && checkbox.checked) {
-                    let cost = addon.price;
-                    if (addon.pricing_type && addon.pricing_type.includes('per_person')) {
-                        cost *= num_guests;
-                    }
-                    if (addon.pricing_type && (addon.pricing_type.includes('per_day') || addon.pricing_type.includes('per_night'))) {
-                        cost *= nights;
-                    }
+                if (checkbox?.checked) {
+                    let cost = addon.price || 0;
+                    if (addon.pricing_type?.includes('per_person')) cost *= totalGuests;
+                    if (addon.pricing_type?.includes('per_day') || addon.pricing_type?.includes('per_night')) cost *= nights;
+
                     total += cost;
                     lines.push({ name: addon.name, cost });
                 }
             });
+
             return { total, lines };
         }
 
-        // Function to update pricing and button
-        function updatePricingAndButton(data) {
-            if (!data) return;
+        function updatePricingDisplay() {
+            if (!fetchedData) return;
 
             const nights = calculateNights();
-            const basePrice = data.apartment_type.base_price * nights;
-            const { total: addonsTotal, lines } = calculateAddons(data);
+            const basePrice = (fetchedData.apartment_type?.base_price || 0) * nights;
+            const { total: addonsTotal, lines } = calculateAddonsTotalAndLines();
             const subtotal = basePrice + addonsTotal;
-            const serviceFee = subtotal * 0.05;
+            const serviceFee = Math.round(subtotal * 0.05);
             const grandTotal = subtotal + serviceFee;
 
-            // Update base pricing
-            document.getElementById('unitPricing').textContent = `₦${data.apartment_type.base_price.toLocaleString()} × ${nights} nights`;
+            // Update UI
+            document.getElementById('unitPricing').textContent = nights > 0
+                ? `₦${(fetchedData.apartment_type?.base_price || 0).toLocaleString()} × ${nights} night${nights !== 1 ? 's' : ''}`
+                : '₦0 × 0 nights';
+
             document.getElementById('unitTotal').textContent = `₦${basePrice.toLocaleString()}`;
 
-            // Build add-ons HTML
-            let html = '';
+            let addonsHtml = '';
             lines.forEach(item => {
-                html += `
-                    <div class="flex justify-between">
+                addonsHtml += `
+                    <div class="flex justify-between text-sm">
                         <span class="text-neutral">${item.name}</span>
                         <span class="font-medium">₦${item.cost.toLocaleString()}</span>
                     </div>
                 `;
             });
-            document.getElementById('addonsBreakdown').innerHTML = html;
+            document.getElementById('addonsBreakdown').innerHTML = addonsHtml;
 
-            // Update service fee and grand total
             document.getElementById('serviceFee').textContent = `₦${serviceFee.toLocaleString()}`;
             document.getElementById('grandTotal').textContent = `₦${grandTotal.toLocaleString()}`;
             document.getElementById('payAmount').textContent = `₦${grandTotal.toLocaleString()}`;
         }
 
-        // Form submit
-        const bookingForm = document.getElementById('bookingForm');
-        const formMessage = document.getElementById('formMessage');
-        const submitBtn = document.getElementById('submitBtn');
+        // ────────────────────────────────────────────────
+        //  Fetch unit data
+        // ────────────────────────────────────────────────
+        async function loadUnitData(unitId) {
+            try {
+                const response = await fetch(`/api/units/${unitId}`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                fetchedData = data;
 
-        let fetchedData = null;  // To store fetched unit data for submit
+                // Remove loading states
+                document.getElementById('propertyImagePlaceholder').classList.add('hidden');
+                document.getElementById('unitImage').classList.remove('hidden');
+                document.getElementById('serviceCard').classList.remove('animate-pulse');
 
-        bookingForm.addEventListener('submit', async (e) => {
+                const skeletonElements = [
+                    'unitTitle', 'unitRating', 'locationPlaceholder',
+                    'unitPricing', 'unitTotal', 'serviceFee', 'grandTotal', 'cancellationNote'
+                ];
+                skeletonElements.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.classList.remove('bg-gray-300', 'animate-pulse', 'h-6', 'h-8', 'w-32', 'w-40', 'w-48', 'w-12', 'rounded');
+                });
+
+                // Fill content
+                document.getElementById('unitTitle').textContent = data.unit_number || data.name || 'Apartment';
+                document.getElementById('unitRating').textContent = data.apartment_type?.rating?.toFixed(1) || '4.8';
+                document.getElementById('locationPlaceholder').textContent = 'Victoria Island, Lagos';
+                document.getElementById('unitImage').src = data.images?.[0]?.image_url || 'https://picsum.photos/id/1015/600/380';
+
+                // Amenities
+                const tagsContainer = document.getElementById('amenitiesTags');
+                tagsContainer.innerHTML = '';
+                (data.apartment_type?.amenities || []).forEach(amenity => {
+                    const tag = document.createElement('span');
+                    tag.className = 'px-5 py-2 bg-[#94CA3E]/10 text-[#94CA3E] text-sm font-medium rounded-full';
+                    tag.textContent = amenity;
+                    tagsContainer.appendChild(tag);
+                });
+
+                // Add-ons
+                const addonsContainer = document.getElementById('addonsContainer');
+                addonsContainer.innerHTML = '';
+                (data.apartment_type?.addons || []).forEach(addon => {
+                    const label = document.createElement('label');
+                    label.className = 'group flex items-start gap-5 p-5 border border-gray-200 hover:border-[#94CA3E] cursor-pointer transition-all rounded-xl';
+                    label.innerHTML = `
+                        <input type="checkbox" id="addon${addon.id}" checked class="mt-1.5 w-5 h-5 accent-[#94CA3E]">
+                        <div class="flex-1">
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="flex items-start gap-4">
+                                    <span class="text-4xl flex-shrink-0">${addon.icon || '✨'}</span>
+                                    <div>
+                                        <div class="font-semibold text-lg">${addon.name}</div>
+                                        <div class="text-sm text-neutral mt-1">${addon.description || ''}</div>
+                                    </div>
+                                </div>
+                                <div class="text-right flex-shrink-0">
+                                    <div class="font-semibold text-[#632A89]">₦${(addon.price || 0).toLocaleString()}</div>
+                                    <div class="text-xs text-neutral mt-0.5">
+                                        ${addon.pricing_type ? '/' + addon.pricing_type.replace(/_/g, ' ') : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    addonsContainer.appendChild(label);
+
+                    document.getElementById(`addon${addon.id}`).addEventListener('change', () => {
+                        updatePricingDisplay();
+                        updateButtonState();
+                    });
+                });
+
+                updatePricingDisplay();
+                updateButtonState();
+
+                document.getElementById('cancellationNote').textContent =
+                    '✓ Free cancellation up to 48 hours before check-in. After that, 50% refund may apply.';
+            } catch (err) {
+                console.error('Failed to load unit:', err);
+                showMessage('Could not load apartment details. Please try again later.', 'error');
+            }
+        }
+
+        // ────────────────────────────────────────────────
+        //  Submit → Create Booking
+        // ────────────────────────────────────────────────
+        document.getElementById('bookingForm')?.addEventListener('submit', async function(e) {
             e.preventDefault();
-
-            if (!document.getElementById('termsCheck').checked) {
-                showMessage('You must agree to the terms and conditions', 'error');
+            if (!isFormReady()) {
+                showMessage('Please complete all required fields.', 'error');
                 return;
             }
 
-            submitBtn.disabled = true;
-            const originalHTML = submitBtn.innerHTML;
-            submitBtn.innerHTML = 'Processing...';
+            const btn = document.getElementById('submitBtn');
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span>Creating booking...</span>';
 
             try {
                 const selectedAddons = [];
-                fetchedData.apartment_type.addons.forEach(addon => {
-                    const checkbox = document.getElementById(`addon${addon.id}`);
-                    if (checkbox && checkbox.checked) {
-                        selectedAddons.push(addon.id);
-                    }
-                });
+                if (fetchedData?.apartment_type?.addons) {
+                    fetchedData.apartment_type.addons.forEach(addon => {
+                        if (document.getElementById(`addon${addon.id}`)?.checked) {
+                            selectedAddons.push(addon.id);
+                        }
+                    });
+                }
 
-                const bookingData = {
+                const payload = {
                     unit_id: document.getElementById('unitId').value,
                     check_in: document.getElementById('checkIn').value,
                     check_out: document.getElementById('checkOut').value,
-                    num_adults: parseInt(document.getElementById('guests').value || 0),
-                    num_children: parseInt(document.getElementById('children').value || 0),
-                    first_name: document.getElementById('firstName').value,
-                    last_name: document.getElementById('lastName').value,
-                    email: document.getElementById('email').value,
-                    phone: document.getElementById('phone').value,
-                    id_type: document.getElementById('idType').value,
-                    special_requests: document.getElementById('specialRequests').value || '',
+                    num_adults: parseInt(document.getElementById('guests').value || '0'),
+                    num_children: parseInt(document.getElementById('children').value || '0'),
+                    first_name: document.getElementById('firstName').value.trim(),
+                    last_name: document.getElementById('lastName').value.trim(),
+                    email: document.getElementById('email').value.trim(),
+                    phone: document.getElementById('phone').value.trim(),
+                    id_type: document.getElementById('idType').value || 'passport',
+                    special_requests: document.getElementById('specialRequests').value.trim(),
                     addons: selectedAddons
                 };
 
                 const response = await fetch('/bookings/new', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(bookingData)
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
                 });
 
-                const data = await response.json();
+                const result = await response.json();
 
-                if (data.success && data.booking_id) {
-                    window.location.href = `/bookings/${data.booking_id}/confirmation`;
-                } else {
-                    showMessage(data.message || 'Booking failed. Please try again.', 'error');
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || `Server error (${response.status})`);
                 }
+
+                if (!result.booking_reference) {
+                    throw new Error('No booking reference returned from server');
+                }
+
+                bookingReference = result.booking_reference;
+
+                // ── Switch to confirmation view ──
+                document.getElementById('bookingForm').classList.add('hidden');
+                document.getElementById('confirmationView').classList.remove('hidden');
+
+                document.getElementById('bookingNumberDisplay').textContent = bookingReference;
+
+                // Show real expiry if provided
+                if (result.expires_at) {
+                    const expiryDate = new Date(result.expires_at);
+                    const options = { dateStyle: 'medium', timeStyle: 'short' };
+                    document.getElementById('expiryDisplay').textContent =
+                        expiryDate.toLocaleString('en-GB', options);
+                }
+
+                // Update progress bar to step 3
+                document.getElementById('step2').classList.add('opacity-60');
+                document.getElementById('step2').querySelector('div').classList.replace('bg-[#632A89]', 'bg-gray-300');
+                document.getElementById('step2').querySelector('span').classList.replace('text-[#632A89]', 'text-gray-400');
+
+                document.getElementById('line2').classList.replace('bg-gray-300', 'bg-[#94CA3E]');
+
+                document.getElementById('step3').classList.remove('opacity-60');
+                document.getElementById('step3').querySelector('div').classList.replace('bg-gray-300', 'bg-[#94CA3E]');
+                document.getElementById('step3').querySelector('span').classList.replace('text-gray-400', 'text-[#94CA3E]');
+
+                showMessage(`Booking ${bookingReference} created successfully!`, 'success');
             } catch (err) {
-                console.error(err);
-                showMessage('Network error while creating booking.', 'error');
+                console.error('Booking creation failed:', err);
+                showMessage(err.message || 'Failed to create booking. Please check your details and try again.', 'error');
             } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalHTML;
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
             }
         });
 
-        function showMessage(msg, type = 'error') {
-            formMessage.textContent = msg;
-            formMessage.className = `p-4 rounded-2xl text-sm border ${
+        function showMessage(text, type = 'error') {
+            const msgEl = document.getElementById('formMessage');
+            msgEl.textContent = text;
+            msgEl.className = `p-4 rounded-2xl text-sm border mt-6 ${
                 type === 'success'
-                    ? 'bg-[#94CA3E]/20 text-[#632A89] border-[#94CA3E]'
+                    ? 'bg-[#94CA3E]/15 text-[#2f6a1f] border-[#94CA3E]/40'
                     : 'bg-red-50 text-red-700 border-red-200'
             }`;
-            formMessage.classList.remove('hidden');
+            msgEl.classList.remove('hidden');
         }
 
-        // Initialise everything
+        // ────────────────────────────────────────────────
+        //  Event Listeners & Init
+        // ────────────────────────────────────────────────
+        ['checkIn', 'checkOut', 'guests', 'children', 'firstName', 'lastName', 'email', 'phone', 'termsCheck'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('input', () => { updatePricingDisplay(); updateButtonState(); });
+                el.addEventListener('change', () => { updatePricingDisplay(); updateButtonState(); });
+            }
+        });
+
+        // Init on page load
         window.addEventListener('load', () => {
             const bookingData = sessionStorage.getItem('bookingData');
             if (bookingData) {
-                const { unit_id, check_in, check_out, num_guests } = JSON.parse(bookingData);
-
-                // Populate fields
-                document.getElementById('unitId').value = unit_id;
-                document.getElementById('checkIn').value = check_in;
-                document.getElementById('checkOut').value = check_out;
-                const guestsSelect = document.getElementById('guests');
-                if (guestsSelect) {
-                    guestsSelect.value = String(num_guests);
+                try {
+                    const { unit_id, check_in, check_out, num_guests } = JSON.parse(bookingData);
+                    if (unit_id) {
+                        document.getElementById('unitId').value = unit_id;
+                        if (check_in) document.getElementById('checkIn').value = check_in;
+                        if (check_out) document.getElementById('checkOut').value = check_out;
+                        if (num_guests) document.getElementById('guests').value = num_guests;
+                        loadUnitData(unit_id);
+                    }
+                } catch (e) {
+                    console.warn('Invalid bookingData in sessionStorage', e);
                 }
-
-                fetchUnitData(unit_id).then(() => {
-                    fetchedData = window.fetchedData;  // Store for submit (set in fetch if needed)
-                    window.fetchedData = data;  // Assuming data is accessible, adjust if needed
-                });
-
-                // Clear sessionStorage
-                // sessionStorage.removeItem('bookingData');
             }
-
-            // Add change listeners for dates and guests
-            ['checkIn', 'checkOut', 'guests', 'children'].forEach(id => {
-                document.getElementById(id).addEventListener('change', () => updatePricingAndButton(fetchedData));
-            });
+            updateButtonState();
         });
     </script>
 {% endblock %}

@@ -3,7 +3,7 @@ from flask_login import login_required, current_user, login_user
 from app.bookings import bookings_bp
 from app import db
 from app.models import Booking, Unit, ApartmentType, User
-from datetime import datetime
+from datetime import datetime, time
 import uuid
 import string
 import random
@@ -32,85 +32,113 @@ def availability():
                          check_in=check_in,
                          check_out=check_out)
 
-@bookings_bp.route('/new', methods=['GET', 'POST'])
+@bookings_bp.route('/new', methods=['POST'])
 def new_booking():
-    """Create new booking - for authenticated users or guests"""
-    if request.method == 'POST':
-        data = request.get_json()
-        unit_id = data.get('unit_id')
-        check_in = datetime.fromisoformat(data.get('check_in'))
-        check_out = datetime.fromisoformat(data.get('check_out'))
-        num_guests = data.get('num_guests', 2)
-        special_requests = data.get('special_requests', '')
-        
-        unit = Unit.query.get_or_404(unit_id)
-        
-        # Calculate price
-        days = (check_out - check_in).days
-        total_price = days * unit.apartment_type.base_price
-        
-        # Generate unique booking reference
-        booking_ref = f'ENI-{uuid.uuid4().hex[:8].upper()}'
-        
-        # Generate guest code for unregistered guests
-        guest_code = None
-        is_guest_booking = False
-        guest_email = None
-        guest_phone = None
-        user_id = None
-        
-        if current_user.is_authenticated:
-            user_id = current_user.id
-        else:
-            # This is a guest booking
-            is_guest_booking = True
-            guest_code = generate_guest_code()
-            guest_email = data.get('guest_email')
-            guest_phone = data.get('guest_phone')
-            
-            # Try to find or create user for guest
-            existing_user = User.query.filter_by(email=guest_email).first()
-            if existing_user:
-                user_id = existing_user.id
-            else:
-                # Create temporary guest user
-                guest_user = User(
-                    email=guest_email,
-                    first_name=data.get('guest_first_name', 'Guest'),
-                    last_name=data.get('guest_last_name', ''),
-                    phone=guest_phone,
-                    password_hash=''
-                )
-                db.session.add(guest_user)
-                db.session.flush()
-                user_id = guest_user.id
-        
-        # Create booking
-        booking = Booking(
-            booking_reference=booking_ref,
-            user_id=user_id,
-            unit_id=unit_id,
-            check_in_date=check_in,
-            check_out_date=check_out,
-            number_of_guests=num_guests,
-            total_price=total_price,
-            status='pending',
-            special_requests=special_requests,
-            guest_code=guest_code,
-            is_guest_booking=is_guest_booking,
-            guest_email=guest_email,
-            guest_phone=guest_phone
-        )
-        
-        db.session.add(booking)
-        db.session.commit()
-        
-        return jsonify({'success': True, 'booking_id': booking.id, 'guest_code': guest_code})
+    data = request.get_json() or {}
     
+    required = ['unit_id', 'check_in', 'check_out', 'first_name', 'last_name', 'email', 'phone']
+    missing = [f for f in required if not data.get(f)]
+    if missing:
+        return jsonify({"success": False, "message": f"Missing fields: {', '.join(missing)}"}), 400
+
+    try:
+        # ───── Dates ─────
+        check_in  = datetime.strptime(data['check_in'],  "%Y-%m-%d")
+        check_out = datetime.strptime(data['check_out'], "%Y-%m-%d")
+    except ValueError:
+        return jsonify({"success": False, "message": "Invalid date format (use YYYY-MM-DD)"}), 400
+
+    if check_out <= check_in:
+        return jsonify({"success": False, "message": "Check-out must be after check-in"}), 400
+
+    unit = Unit.query.get_or_404(data['unit_id'])
+
+    days = (check_out - check_in).days
+    if days <= 0:
+        return jsonify({"success": False, "message": "Invalid stay duration"}), 400
+
+    # Base price
+    base_total = days * unit.apartment_type.base_price
+
+    # ───── Guest / User handling ─────
+    user_id = None
+    guest_code = None
+    is_guest_booking = False
+
     if current_user.is_authenticated:
-        return render_template('bookings/new.html')
+        user_id = current_user.id
     else:
-        return render_template('bookings/new.html')
+        # Guest flow
+        is_guest_booking = True
+        guest_code = generate_guest_code()   # your function
+
+        email = data['email'].strip().lower()
+        existing = User.query.filter_by(email=email).first()
+
+        if existing:
+            user_id = existing.id
+        else:
+            # Create minimal user record
+            new_user = User(
+                email=email,
+                first_name=data['first_name'].strip(),
+                last_name=data['last_name'].strip(),
+                phone=data['phone'].strip(),
+                password_hash='',           # no password → guest
+                is_admin=False
+            )
+            db.session.add(new_user)
+            db.session.flush()
+            user_id = new_user.id
+
+    # ───── Create Booking ─────
+    booking = Booking(
+        booking_reference = f"ENI-{uuid.uuid4().hex[:8].upper()}",
+        user_id           = user_id,
+        unit_id           = unit.id,
+        
+        first_name        = data['first_name'].strip(),
+        last_name         = data['last_name'].strip(),
+        email             = data['email'].strip().lower(),
+        phone             = data['phone'].strip(),
+        id_type           = data.get('id_type'),
+        
+        check_in_date     = check_in,
+        check_out_date    = check_out,
+        
+        num_adults        = int(data.get('num_adults', 0)),
+        num_children      = int(data.get('num_children', 0)),
+        number_of_guests  = int(data.get('num_adults', 0)) + int(data.get('num_children', 0)),
+        
+        total_price       = base_total,           # → you can improve later with addons
+        status            = 'pending',
+        special_requests  = data.get('special_requests', '').strip(),
+        
+        is_guest_booking  = is_guest_booking,
+        guest_code        = guest_code,
+        guest_email       = data['email'] if is_guest_booking else None,
+        guest_phone       = data['phone'] if is_guest_booking else None,
+        
+        # 24 hours expiry
+        expires_at        = datetime.utcnow() + timedelta(hours=24)
+    )
+
+    # ───── Add-ons ─────
+    addon_ids = data.get('addons', [])   # list of service IDs
+    if addon_ids:
+        selected_services = Service.query.filter(Service.id.in_(addon_ids)).all()
+        booking.addons = selected_services
+
+    db.session.add(booking)
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "booking_reference": booking.booking_reference,
+        "booking_id": booking.id,           # keep for compatibility
+        "expires_at": booking.expires_at.isoformat() if booking.expires_at else None,
+        "total_price": booking.total_price
+    })
 
 @bookings_bp.route('/<int:booking_id>/confirmation')
 def booking_confirmation(booking_id):

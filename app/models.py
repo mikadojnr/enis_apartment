@@ -104,7 +104,14 @@ class UnitImage(db.Model):
     
     def __repr__(self):
         return f'<UnitImage {self.label} - {self.unit.unit_number}>'
-    
+
+# Association table for Booking ↔ Service (addons)
+booking_addons = db.Table('booking_addons',
+    db.Column('booking_id', db.Integer, db.ForeignKey('bookings.id'), primary_key=True),
+    db.Column('service_id',  db.Integer, db.ForeignKey('services.id'),  primary_key=True),
+    db.Column('quantity',    db.Integer, default=1),   # optional – if you later want qty
+)
+       
 class Booking(db.Model):
     """Booking/reservation"""
     __tablename__ = 'bookings'
@@ -113,6 +120,13 @@ class Booking(db.Model):
     booking_reference = db.Column(db.String(50), unique=True, nullable=False, index=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     unit_id = db.Column(db.Integer, db.ForeignKey('units.id'), nullable=False)
+
+    first_name       = db.Column(db.String(120), nullable=False)
+    last_name        = db.Column(db.String(120), nullable=False)
+    email            = db.Column(db.String(120), nullable=False, index=True)
+    phone            = db.Column(db.String(30), nullable=False)
+    id_type          = db.Column(db.String(50))           # passport, nin, drivers_license
+    num_adults       = db.Column(db.Integer, default=0)
     
     check_in_date = db.Column(db.DateTime, nullable=False)
     check_out_date = db.Column(db.DateTime, nullable=False)
@@ -136,10 +150,18 @@ class Booking(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     service_requests = db.relationship('ServiceRequest', backref='booking', lazy='dynamic')
+
+    addons = db.relationship(
+        'Service',
+        secondary=booking_addons,
+        lazy='subquery',
+        backref=db.backref('bookings', lazy=True)
+    )
     
     def __repr__(self):
         return f'<Booking {self.booking_reference}>'
     
+ 
 class Service(db.Model):
     """Available services"""
     __tablename__ = 'services'
