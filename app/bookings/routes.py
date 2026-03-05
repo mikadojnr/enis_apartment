@@ -3,7 +3,7 @@ from flask_login import login_required, current_user, login_user
 from app.bookings import bookings_bp
 from app import db
 from app.models import Booking, Unit, ApartmentType, User
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 import uuid
 import string
 import random
@@ -32,8 +32,13 @@ def availability():
                          check_in=check_in,
                          check_out=check_out)
 
-@bookings_bp.route('/new', methods=['POST'])
+@bookings_bp.route('/new', methods=['GET', 'POST'])
 def new_booking():
+
+    if request.method == 'GET':
+        return render_template('bookings/new.html')
+    
+
     data = request.get_json() or {}
     
     required = ['unit_id', 'check_in', 'check_out', 'first_name', 'last_name', 'email', 'phone']
@@ -131,6 +136,8 @@ def new_booking():
 
     db.session.add(booking)
     db.session.commit()
+
+    print(f"Booking created: {booking.booking_reference} (ID: {booking.id})")
 
     return jsonify({
         "success": True,
