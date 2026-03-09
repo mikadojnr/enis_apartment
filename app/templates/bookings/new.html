@@ -14,24 +14,39 @@
         </div>
 
         <!-- Progress Steps -->
-        <div class="mb-10 flex justify-center">
-            <div class="inline-flex items-center gap-x-6 bg-white shadow-sm px-10 py-4" id="progressContainer">
-                <div class="flex items-center gap-x-3" id="step1">
-                    <div class="w-9 h-9 bg-[#94CA3E] text-white text-lg font-semibold rounded-2xl flex items-center justify-center">1</div>
-                    <span class="text-[#94CA3E] font-medium text-base tracking-tight">Select Apartment</span>
-                </div>
-                <div class="h-px w-14 bg-[#94CA3E]" id="line1"></div>
+        <div class="mb-10 flex justify-center px-4">
+            <div class="flex flex-wrap sm:flex-nowrap items-center justify-center gap-3 sm:gap-x-6 bg-white shadow-sm px-4 sm:px-8 py-4 w-full max-w-3xl">
 
-                <div class="flex items-center gap-x-3" id="step2">
-                    <div class="w-9 h-9 bg-[#632A89] text-white text-lg font-semibold rounded-2xl flex items-center justify-center">2</div>
-                    <span class="text-[#632A89] font-medium text-base tracking-tight">Your Details</span>
+                <!-- Step 1 -->
+                <div class="flex items-center gap-x-2 sm:gap-x-3">
+                    <div class="w-8 h-8 sm:w-9 sm:h-9 bg-[#94CA3E] text-white text-sm sm:text-lg font-semibold rounded-2xl flex items-center justify-center">1</div>
+                    <span class="text-[#94CA3E] font-medium text-xs sm:text-base whitespace-nowrap">
+                        Select Apartment
+                    </span>
                 </div>
-                <div class="h-px w-14 bg-gray-300" id="line2"></div>
 
-                <div class="flex items-center gap-x-3 opacity-60" id="step3">
-                    <div class="w-9 h-9 bg-gray-300 text-gray-400 text-lg font-semibold rounded-2xl flex items-center justify-center">3</div>
-                    <span class="text-gray-400 font-medium text-base tracking-tight">Confirmation</span>
+                <!-- Line -->
+                <div class="hidden sm:block flex-1 h-px bg-[#94CA3E] max-w-[60px]"></div>
+
+                <!-- Step 2 -->
+                <div class="flex items-center gap-x-2 sm:gap-x-3">
+                    <div class="w-8 h-8 sm:w-9 sm:h-9 bg-[#632A89] text-white text-sm sm:text-lg font-semibold rounded-2xl flex items-center justify-center">2</div>
+                    <span class="text-[#632A89] font-medium text-xs sm:text-base whitespace-nowrap">
+                        Your Details
+                    </span>
                 </div>
+
+                <!-- Line -->
+                <div class="hidden sm:block flex-1 h-px bg-gray-300 max-w-[60px]"></div>
+
+                <!-- Step 3 -->
+                <div class="flex items-center gap-x-2 sm:gap-x-3 opacity-60">
+                    <div class="w-8 h-8 sm:w-9 sm:h-9 bg-gray-300 text-gray-400 text-sm sm:text-lg font-semibold rounded-2xl flex items-center justify-center">3</div>
+                    <span class="text-gray-400 font-medium text-xs sm:text-base whitespace-nowrap">
+                        Confirmation
+                    </span>
+                </div>
+
             </div>
         </div>
 
