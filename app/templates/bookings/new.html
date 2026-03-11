@@ -509,10 +509,13 @@
 
                 bookingReference = result.booking_reference;
 
+                // Redirect to confirmation page instead of showing div
+                window.location.href = `/bookings/${bookingReference}`;     
+
                 // ── Switch to confirmation view ──
                 // ── After successful creation ──
-                document.getElementById('bookingForm').classList.add('hidden');
-                document.getElementById('confirmationView').classList.remove('hidden');
+                // document.getElementById('bookingForm').classList.add('hidden');
+                // document.getElementById('confirmationView').classList.remove('hidden');
 
                 document.getElementById('bookingNumberDisplay').textContent = bookingReference;
 

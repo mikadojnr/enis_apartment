@@ -338,7 +338,7 @@
                     
                     <div id="bookingActions">
                         <button class="w-full py-3 btn-outline">
-                            Enquire
+                            <span>Enquire</span>
                         </button>
                     </div>
 
@@ -473,9 +473,10 @@ quickCheckInInput.addEventListener('change', function() {
 
 quickCheckForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const checkIn = quickCheckInInput.value;
-    const checkOut = quickCheckOutInput.value;
-    const guests = quickGuestsInput.value;
+
+    const checkIn  = quickCheckInInput.value.trim();
+    const checkOut = quickCheckOutInput.value.trim();
+    const guests   = quickGuestsInput.value.trim();
 
     if (!checkIn || !checkOut) {
         showMessage('Please select both check-in and check-out dates', 'error');
@@ -483,39 +484,56 @@ quickCheckForm.addEventListener('submit', async (e) => {
     }
 
     try {
-        const response = await fetch(`/api/availability?unit_id=${unitId}&check_in=${checkIn}&check_out=${checkOut}&guests=${guests}`);
-        const data = await response.json();
+        // Use ISO format expected by backend
+        const url = `/api/availability?unit_id=${unitId}&check_in=${checkIn}&check_out=${checkOut}`;
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.error || `HTTP ${response.status}`);
+        }
 
-        const checkInDate = new Date(checkIn);
+        const data = await response.json();
+        console.log('Availability response:', data);
+
+        const checkInDate  = new Date(checkIn);
         const checkOutDate = new Date(checkOut);
-        const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+        const nights       = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+
+        if (nights <= 0) {
+            showMessage('Check-out must be after check-in', 'error');
+            return;
+        }
+
         const totalPrice = nights * basePricePerDay;
 
         if (data.is_available) {
-            showMessage(`Great! This unit is available for your stay`, 'success');
+            showMessage(`Great! This unit is available for your stay (${nights} night${nights !== 1 ? 's' : ''})`, 'success');
+            
             document.getElementById('breakdownNights').textContent = nights;
             document.getElementById('breakdownTotal').textContent = totalPrice.toLocaleString();
             priceBreakdown.classList.remove('hidden');
 
             bookingActions.innerHTML = `
-                <button onclick="proceedToBooking(${unitId}, '${checkIn}', '${checkOut}',${guests})" class="btn-primary w-full text-center py-3 mb-3">
-                    <span>Proceed to Booking</span>
+                <button onclick="proceedToBooking(${unitId}, '${checkIn}', '${checkOut}', ${guests})" 
+                        class="btn-primary w-full text-center py-3 mb-3">
+                    Proceed to Booking
                 </button>
                 <button class="w-full py-3 btn-outline">Enquire</button>
             `;
         } else {
-            showMessage(`Sorry, this unit is not available for these dates.`, 'error');
+            showMessage(`Sorry, this unit is not available for the selected dates.`, 'error');
             priceBreakdown.classList.add('hidden');
             bookingActions.innerHTML = `
                 <a href="/bookings/availability" class="btn-primary w-full text-center block py-3 mb-3">
-                    <span>Search Other Units</span>
+                    Search Other Units
                 </a>
                 <button class="w-full py-3 btn-outline">Enquire</button>
             `;
         }
     } catch (error) {
-        console.error('Error:', error);
-        showMessage('Error checking availability. Please try again.', 'error');
+        console.error('Availability check failed:', error);
+        showMessage(error.message || 'Error checking availability. Please try again.', 'error');
     }
 });
 

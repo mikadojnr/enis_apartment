@@ -4,11 +4,13 @@ from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_cors import CORS
 from config import config
+from flask_mail import Mail
 
 from datetime import datetime
 
 db = SQLAlchemy()
 migrate = Migrate()
+mail = Mail()  # Initialize Flask-Mail
 login_manager = LoginManager()
 
 def create_app(config_name='development'):
@@ -17,6 +19,7 @@ def create_app(config_name='development'):
     
     # Load configuration
     app.config.from_object(config[config_name])
+    mail.init_app(app)  # Initialize Flask-Mail with the app
 
     @app.context_processor
     def inject_current_year():
