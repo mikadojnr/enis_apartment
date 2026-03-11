@@ -7,6 +7,7 @@ from config import config
 from flask_mail import Mail
 
 from datetime import datetime
+from app.tasks.cleanup import init_scheduler
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -55,5 +56,6 @@ def create_app(config_name='development'):
     # Create tables
     with app.app_context():
         db.create_all()
+        init_scheduler(app)      # ← Add this line
     
     return app
