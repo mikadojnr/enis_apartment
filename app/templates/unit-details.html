@@ -517,7 +517,7 @@ quickCheckForm.addEventListener('submit', async (e) => {
             bookingActions.innerHTML = `
                 <button onclick="proceedToBooking(${unitId}, '${checkIn}', '${checkOut}', ${guests})" 
                         class="btn-primary w-full text-center py-3 mb-3">
-                    Proceed to Booking
+                    <span>Proceed to Booking</span>
                 </button>
                 <button class="w-full py-3 btn-outline">Enquire</button>
             `;

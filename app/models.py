@@ -198,3 +198,26 @@ class ServiceRequest(db.Model):
     
     def __repr__(self):
         return f'<ServiceRequest {self.id}>'
+    
+
+class Payment(db.Model):
+    """Track payments made for bookings"""
+    __tablename__ = 'payments'
+
+    id = db.Column(db.Integer, primary_key=True)
+    booking_id = db.Column(db.Integer, db.ForeignKey('bookings.id'), nullable=False)
+    payment_reference = db.Column(db.String(100), unique=True, nullable=False, index=True)  # from Paystack or internal
+    # amount = db.Column(db.Float, nullable=False)
+    amount = db.Column(db.Numeric(10,2), nullable=False)
+    currency = db.Column(db.String(10), default='NGN')
+    status = db.Column(db.String(50), default='pending')  # pending, success, failed, refunded
+    payment_method = db.Column(db.String(50))  # card, bank, ussd, etc.
+    transaction_date = db.Column(db.DateTime, default=datetime.utcnow)
+    gateway_response = db.Column(db.Text)  # raw response from Paystack
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    booking = db.relationship('Booking', backref='payments', lazy='select')
+
+    def __repr__(self):
+        return f'<Payment {self.payment_reference} for Booking {self.booking_id}>'
