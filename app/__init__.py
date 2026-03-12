@@ -11,7 +11,11 @@ from flask_mail import Mail, Message
 from flask_wtf.csrf import CSRFProtect
 
 from datetime import datetime
+<<<<<<< HEAD
 # from app.tasks.cleanup import init_scheduler
+=======
+from app.tasks.cleanup import init_scheduler
+>>>>>>> 7bc39a227ea8df6f1021f33b0e25bbbb67c5c043
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -106,7 +110,14 @@ def create_app(config_name='development'):
 
     # Your scheduler (keep this)
     with app.app_context():
+<<<<<<< HEAD
         from app.tasks.cleanup import init_scheduler
         init_scheduler(app)
 
     return app
+=======
+        db.create_all()
+        init_scheduler(app)      # ← Add this line
+    
+    return app
+>>>>>>> 7bc39a227ea8df6f1021f33b0e25bbbb67c5c043
