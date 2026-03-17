@@ -49,9 +49,7 @@
     <script src="https://js.paystack.co/v1/inline.js"></script>
 
     <script>
-        // ────────────────────────────────────────────────
-        // Countdown Timer
-        // ────────────────────────────────────────────────
+        // Countdown Timer (unchanged)
         const expiryTime = new Date("{{ booking.expires_at.isoformat() }}Z").getTime();
         const countdownEl = document.getElementById('countdown');
 
@@ -74,65 +72,52 @@
         setInterval(updateCountdown, 1000);
         updateCountdown();
 
-        console.log("Public Key:", '{{ paystack_public_key }}');
         // ────────────────────────────────────────────────
-        // Paystack Payment Handler
+        // Paystack Payment – Correct Implementation
         // ────────────────────────────────────────────────
         function initiatePaystackPayment() {
             const handler = PaystackPop.setup({
-                key: '{{ paystack_public_key }}',           // Passed from backend (see below)
+                key: '{{ paystack_public_key }}',                    // From backend config
                 email: '{{ booking.email }}',
-                amount: {{ (booking.total_price * 1.05 * 100) | int }},  // in kobo
-                ref: '{{ booking.booking_reference }}',     // Use booking ref as transaction ref
+                amount: {{ (booking.total_price * 1.05 * 100) | int }}, // kobo
+                ref: '{{ booking.booking_reference }}',              // Unique ref
                 currency: 'NGN',
                 metadata: {
                     booking_reference: '{{ booking.booking_reference }}',
                     custom_fields: [
-                        {
-                            display_name: "Booking Reference",
-                            variable_name: "booking_ref",
-                            value: '{{ booking.booking_reference }}'
-                        },
-                        {
-                            display_name: "Customer Name",
-                            variable_name: "customer_name",
-                            value: '{{ booking.first_name }} {{ booking.last_name }}'
-                        }
+                        { display_name: "Booking Reference", variable_name: "booking_ref", value: '{{ booking.booking_reference }}' },
+                        { display_name: "Customer Name", variable_name: "customer_name", value: '{{ booking.first_name }} {{ booking.last_name }}' }
                     ]
                 },
                 callback: function(response) {
-                    // Payment successful → tell backend
-                    fetch(`/payments/paystack/webhook`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': '{{ csrf_token() }}'  // if you use CSRF
-                        },
-                        body: JSON.stringify({
-                            reference: response.reference,
-                            booking_reference: '{{ booking.booking_reference }}'
-                        })
-                    })
-                    .then(r => r.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert('Payment successful! Your booking is now confirmed.');
-                            window.location.href = `/bookings/details/{{ booking.booking_reference }}`;
-                        } else {
-                            alert('Payment processed but verification failed. Please contact support.');
-                        }
-                    })
-                    .catch(err => {
-                        console.error('Verification error:', err);
-                        alert('Network error during verification. Please check your booking status.');
-                    });
+                    console.log("Paystack success:", response);
+
+                    const bookingRef = '{{ booking.booking_reference }}';
+
+                    // Silent polling - no alerts
+                    const pollStatus = () => {
+                        fetch(`/bookings/${bookingRef}/status`)
+                            .then(r => r.json())
+                            .then(data => {
+                                if (data.status === 'confirmed' || data.paid === true) {
+                                    // Redirect immediately when confirmed
+                                    window.location.href = `/bookings/details/${bookingRef}`;
+                                } else {
+                                    setTimeout(pollStatus, 1000); // Poll every 1 second
+                                }
+                            })
+                            .catch(() => setTimeout(pollStatus, 2000)); // Slower on error
+                    };
+
+                    // Start polling right after popup success
+                    pollStatus();
                 },
                 onClose: function() {
-                    alert('Payment window closed. You can try again within the remaining time.');
+                    alert('Payment window closed. You can try again if time remains.');
                 }
             });
 
-            handler.openIframe();  // Opens in iframe (recommended for mobile/desktop)
+            handler.openIframe(); // Recommended for better UX
         }
 
         // Attach to button

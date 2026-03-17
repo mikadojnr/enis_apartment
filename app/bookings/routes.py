@@ -331,3 +331,13 @@ def cancel_booking(booking_id):
         return redirect(url_for('bookings.dashboard'))
     else:
         return jsonify({'success': True})
+
+@bookings_bp.route('/<string:booking_reference>/status')
+def booking_status(booking_reference):
+    booking = Booking.query.filter_by(booking_reference=booking_reference).first_or_404()
+    return jsonify({
+        "status": booking.status,
+        "paid": booking.paid,
+        "expires_at": booking.expires_at.isoformat() if booking.expires_at else None,
+        "message": "Booking status retrieved"
+    })

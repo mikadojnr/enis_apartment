@@ -38,101 +38,82 @@ def verify_paystack_signature(payload: bytes, signature: str) -> bool:
         current_app.logger.warning(f"Signature mismatch. Expected: {expected[:20]}..., Received: {signature[:20]}...")
     return is_valid
 
-
 @payments_bp.route('/paystack/webhook', methods=['POST'])
 def paystack_webhook():
-    """
-    Paystack webhook endpoint (must return 200 even for ignored events)
-    """
-    # Get raw bytes — NEVER parse JSON before signature check!
-    payload = request.get_data()
+    current_app.logger.info("PAYSTACK WEBHOOK RECEIVED")
+
+    # Read raw payload ONCE – very important!
+    raw_payload = request.get_data()
+    current_app.logger.info(f"Payload length: {len(raw_payload)} bytes")
+
+    # Log headers (for debugging)
     signature = request.headers.get('X-Paystack-Signature')
+    current_app.logger.info(f"X-Paystack-Signature: {signature[:30] + '...' if signature else 'MISSING'}")
 
-    # Debug logging — very useful when troubleshooting 401
-    current_app.logger.info("Paystack webhook received")
-    current_app.logger.info(f"  Headers present: {list(request.headers.keys())}")
-    current_app.logger.info(f"  X-Paystack-Signature present: {bool(signature)}")
-    current_app.logger.info(f"  Payload length: {len(payload)} bytes")
-    secret_prefix = get_paystack_secret()[:8] + '...' if get_paystack_secret() else 'NOT SET'
-    current_app.logger.info(f"  Paystack secret key (first 8 chars): {secret_prefix}")
+    # Quick early return for Paystack health check (they sometimes send empty POST)
+    if not raw_payload:
+        current_app.logger.info("Empty payload - likely health check")
+        return jsonify({"status": "ok"}), 200
 
-    if not signature:
-        current_app.logger.warning("Webhook called without X-Paystack-Signature header")
-        return jsonify({"status": "missing signature"}), 401
+    # Verify signature
+    if not verify_paystack_signature(raw_payload, signature):
+        current_app.logger.warning("Signature verification FAILED")
+        return jsonify({"status": "invalid signature"}), 200  # Paystack wants 200
 
-    # Verify signature — security critical
-    if not verify_paystack_signature(payload, signature):
-        current_app.logger.warning("Invalid Paystack webhook signature")
-        return jsonify({"status": "invalid signature"}), 401
-
+    # Parse JSON safely
     try:
-        event = json.loads(payload)
-    except json.JSONDecodeError:
-        current_app.logger.error("Invalid JSON in Paystack webhook payload")
-        return jsonify({"status": "invalid json"}), 400
+        event = json.loads(raw_payload)
+        current_app.logger.info(f"Event type: {event.get('event')}")
+    except json.JSONDecodeError as e:
+        current_app.logger.error(f"JSON parse failed: {str(e)}")
+        return jsonify({"status": "invalid json"}), 200
 
-    # Paystack requires 200 OK for all non-error responses
+    # Ignore non-success events
     if event.get('event') != 'charge.success':
-        current_app.logger.info(f"Ignored non-charge.success event: {event.get('event')}")
+        current_app.logger.info(f"Ignored event: {event.get('event')}")
         return jsonify({"status": "ignored"}), 200
 
     data = event.get('data', {})
     reference = data.get('reference')
-    amount_kobo = data.get('amount', 0)
-    amount = amount_kobo / 100.0
-    status = data.get('status')
-    paid_at = data.get('paid_at')
+    amount = data.get('amount', 0) / 100
+    metadata = data.get('metadata', {})
+    booking_ref = metadata.get('booking_reference')
 
-    if status != 'success':
-        current_app.logger.info(f"Ignored unsuccessful charge: {status}")
-        return jsonify({"status": "not successful"}), 200
+    if not booking_ref:
+        current_app.logger.warning(f"No booking_reference in metadata for ref: {reference}")
+        return jsonify({"status": "no metadata"}), 200
 
-    # Try to find existing payment record
-    payment = Payment.query.filter_by(payment_reference=reference).first()
+    booking = Booking.query.filter_by(booking_reference=booking_ref).first()
+    if not booking:
+        current_app.logger.warning(f"Booking not found: {booking_ref}")
+        return jsonify({"status": "booking not found"}), 200
 
-    if payment:
-        # Already processed — just update if needed
-        if payment.status != 'success':
-            payment.status = 'success'
-            payment.gateway_response = json.dumps(data)
-            payment.transaction_date = datetime.utcnow()
-            db.session.commit()
-            current_app.logger.info(f"Updated existing payment: {reference}")
-    else:
-        # New payment — try to match via metadata
-        metadata = data.get('metadata', {})
-        booking_ref = metadata.get('booking_reference')
+    if booking.status != 'pending':
+        current_app.logger.info(f"Booking already {booking.status} - skipping")
+        return jsonify({"status": "already processed"}), 200
 
-        if not booking_ref:
-            current_app.logger.warning(f"No booking_reference in metadata for ref: {reference}")
-            return jsonify({"status": "no booking reference"}), 200
+    # Create payment record
+    payment = Payment(
+        booking_id=booking.id,
+        payment_reference=reference,
+        amount=amount,
+        currency=data.get('currency', 'NGN'),
+        status='success',
+        payment_method=data.get('channel', 'card'),
+        gateway_response=json.dumps(data),
+        transaction_date=datetime.utcnow()
+    )
+    db.session.add(payment)
 
-        booking = Booking.query.filter_by(booking_reference=booking_ref).first()
-        if not booking or booking.status != 'pending':
-            current_app.logger.warning(f"Booking not found or not pending: {booking_ref}")
-            return jsonify({"status": "booking not payable"}), 200
+    # Confirm booking
+    booking.status = 'confirmed'
+    booking.paid = True
+    booking.expires_at = None
+    db.session.commit()
 
-        # Create payment record
-        payment = Payment(
-            booking_id=booking.id,
-            payment_reference=reference,
-            amount=amount,
-            status='success',
-            payment_method=data.get('channel', 'unknown'),
-            gateway_response=json.dumps(data),
-            transaction_date=datetime.utcnow()
-        )
-        db.session.add(payment)
+    # Send confirmation email
+    send_booking_confirmed_email(booking)
 
-        # Confirm booking
-        booking.status = 'confirmed'
-        booking.paid = True
-        booking.expires_at = None
-        db.session.commit()
-
-        # Send confirmation email
-        send_booking_confirmed_email(booking)
-
-        current_app.logger.info(f"Payment confirmed via webhook for booking {booking_ref}")
+    current_app.logger.info(f"BOOKING CONFIRMED VIA WEBHOOK → {booking_ref} (ref: {reference})")
 
     return jsonify({"status": "success"}), 200
