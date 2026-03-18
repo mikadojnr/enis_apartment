@@ -2,6 +2,27 @@
 {% block title %}Booking Confirmation - {{ booking.booking_reference }}{% endblock %}
 
 {% block content %}
+<!-- Payment Success Overlay -->
+<div id="paymentSuccessOverlay" class="fixed inset-0 bg-black/60 flex items-center justify-center hidden z-50">
+    <div class="bg-white p-10 text-center max-w-md w-full shadow-2xl">
+        <div class="mb-6">
+            <div class="w-16 h-16 mx-auto border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+
+        <h2 class="text-2xl font-semibold text-green-700 mb-4">
+            <i class="fa-solid fa-circle-check"></i> Payment Successful
+        </h2>
+
+        <p class="text-lg mb-6">
+            Redirecting in <span id="redirectCountdown" class="font-bold text-[#E96C40]">5</span> seconds...
+        </p>
+
+        <p class="text-sm text-neutral">
+            Please wait while we prepare your dashboard
+        </p>
+    </div>
+</div>
+
 <div class="max-w-4xl mx-auto px-6 py-12">
     <h1 class="text-4xl font-light text-center mb-10">Booking Confirmation</h1>
 
@@ -45,11 +66,10 @@
         </p>
     </div>
 
-    <!-- Paystack Inline Script -->
     <script src="https://js.paystack.co/v1/inline.js"></script>
 
     <script>
-        // Countdown Timer (unchanged)
+        // Countdown (your existing code — unchanged)
         const expiryTime = new Date("{{ booking.expires_at.isoformat() }}Z").getTime();
         const countdownEl = document.getElementById('countdown');
 
@@ -73,55 +93,75 @@
         updateCountdown();
 
         // ────────────────────────────────────────────────
-        // Paystack Payment – Correct Implementation
+        // Pay Now Button → Start Paystack Popup
         // ────────────────────────────────────────────────
-        function initiatePaystackPayment() {
+        document.getElementById('payNowBtn')?.addEventListener('click', function () {
             const handler = PaystackPop.setup({
-                key: '{{ paystack_public_key }}',                    // From backend config
+                key: '{{ paystack_public_key }}',                    // from template context
                 email: '{{ booking.email }}',
-                amount: {{ (booking.total_price * 1.05 * 100) | int }}, // kobo
-                ref: '{{ booking.booking_reference }}',              // Unique ref
+                amount: {{ (booking.total_price * 1.05 * 100) | int }},   // in kobo
+                ref: '{{ booking.booking_reference }}',              // unique ref
                 currency: 'NGN',
                 metadata: {
                     booking_reference: '{{ booking.booking_reference }}',
                     custom_fields: [
-                        { display_name: "Booking Reference", variable_name: "booking_ref", value: '{{ booking.booking_reference }}' },
-                        { display_name: "Customer Name", variable_name: "customer_name", value: '{{ booking.first_name }} {{ booking.last_name }}' }
+                        {display_name: "Booking Ref", variable_name: "booking_ref", value: '{{ booking.booking_reference }}'},
+                        {display_name: "Customer", variable_name: "customer_name", value: '{{ booking.first_name }} {{ booking.last_name }}'}
                     ]
                 },
                 callback: function(response) {
                     console.log("Paystack success:", response);
 
-                    const bookingRef = '{{ booking.booking_reference }}';
+                    // Tell backend to verify
+                    fetch('/payments/verify', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({
+                            reference: response.reference
+                        })
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            // alert('Payment successful! Redirecting to your dashboard...');
+                            if (data.success) {
+                                const overlay = document.getElementById('paymentSuccessOverlay');
+                                const countdownEl = document.getElementById('redirectCountdown');
 
-                    // Silent polling - no alerts
-                    const pollStatus = () => {
-                        fetch(`/bookings/${bookingRef}/status`)
-                            .then(r => r.json())
-                            .then(data => {
-                                if (data.status === 'confirmed' || data.paid === true) {
-                                    // Redirect immediately when confirmed
-                                    window.location.href = `/bookings/details/${bookingRef}`;
-                                } else {
-                                    setTimeout(pollStatus, 1000); // Poll every 1 second
-                                }
-                            })
-                            .catch(() => setTimeout(pollStatus, 2000)); // Slower on error
-                    };
+                                overlay.classList.remove('hidden');
 
-                    // Start polling right after popup success
-                    pollStatus();
+                                let seconds = 5;
+
+                                const timer = setInterval(() => {
+                                    seconds--;
+                                    countdownEl.textContent = seconds;
+
+                                    if (seconds <= 0) {
+                                        clearInterval(timer);
+                                        window.location.href = data.redirect_url || '/bookings/dashboard';
+                                    }
+                                }, 1000);
+                            }
+                            // window.location.href = data.redirect_url || '/bookings/dashboard';
+                        } else {
+                            alert(data.message || 'Payment processed but confirmation failed.');
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert('Network error – please check your booking status.');
+                    });
                 },
                 onClose: function() {
-                    alert('Payment window closed. You can try again if time remains.');
+                    alert('Payment window closed. You can try again while time remains.');
                 }
             });
 
-            handler.openIframe(); // Recommended for better UX
-        }
-
-        // Attach to button
-        document.getElementById('payNowBtn')?.addEventListener('click', initiatePaystackPayment);
+            handler.openIframe();
+        });
     </script>
 
     {% else %}
@@ -130,7 +170,7 @@
         <p class="text-lg mb-6">Payment received. Thank you!</p>
         <a href="{{ url_for('bookings.booking_details', booking_reference=booking.booking_reference) }}"
            class="btn-primary inline-block px-10 py-4 text-lg">
-            View Booking Details
+            <span>View Booking Details</span>
         </a>
     </div>
     {% endif %}

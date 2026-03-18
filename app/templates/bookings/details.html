@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% block title %}Booking Details - {{ booking.booking_reference }}{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 py-12">
+    <!-- Header -->
+    <div class="text-center mb-10">
+        <h1 class="text-4xl md:text-5xl font-light text-[#632A89] mb-4">
+            Booking Details
+        </h1>
+        <p class="text-xl text-neutral">
+            Reference: <strong class="font-mono text-[#E96C40]">{{ booking.booking_reference }}</strong>
+        </p>
+    </div>
+
+    <!-- Status Banner -->
+    <div class="mb-10 text-center">
+        {% if booking.status == 'confirmed' %}
+        <div class="inline-block bg-green-100 text-green-800 px-8 py-4 rounded-full text-xl font-semibold">
+            Confirmed ✓
+        </div>
+        {% elif booking.status == 'pending' %}
+        <div class="inline-block bg-amber-100 text-amber-800 px-8 py-4 rounded-full text-xl font-semibold">
+            Awaiting Payment
+        </div>
+        {% elif booking.status == 'expired' %}
+        <div class="inline-block bg-red-100 text-red-800 px-8 py-4 rounded-full text-xl font-semibold">
+            Expired
+        </div>
+        {% elif booking.status == 'cancelled' %}
+        <div class="inline-block bg-gray-200 text-gray-700 px-8 py-4 rounded-full text-xl font-semibold">
+            Cancelled
+        </div>
+        {% else %}
+        <div class="inline-block bg-gray-100 text-gray-700 px-8 py-4 rounded-full text-xl font-semibold">
+            {{ booking.status | capitalize }}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8">
+        <!-- Left: Main Info -->
+        <div class="md:col-span-2 space-y-8">
+            <!-- Stay Details -->
+            <div class="service-card">
+                <h2 class="text-2xl font-light text-[#632A89] mb-6 flex items-center gap-3">
+                    <i class="fa-solid fa-calendar-days text-3xl"></i> Your Stay
+                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <p class="text-sm text-neutral mb-1">Check-in</p>
+                        <p class="text-xl font-semibold">{{ booking.check_in_date.strftime('%d %b %Y') }}</p>
+                        <p class="text-sm text-neutral">From 3:00 PM</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-neutral mb-1">Check-out</p>
+                        <p class="text-xl font-semibold">{{ booking.check_out_date.strftime('%d %b %Y') }}</p>
+                        <p class="text-sm text-neutral">Until 11:00 AM</p>
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <p class="text-sm text-neutral mb-1">Nights</p>
+                    <p class="text-xl font-semibold">
+                        {{ (booking.check_out_date - booking.check_in_date).days }} nights
+                    </p>
+                </div>
+            </div>
+
+            <!-- Guest Information -->
+            <div class="service-card">
+                <h2 class="text-2xl font-light text-[#632A89] mb-6 flex items-center gap-3">
+                    <i class="fa-solid fa-user text-3xl"></i> Guest Information
+                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <p class="text-sm text-neutral mb-1">Full Name</p>
+                        <p class="text-lg font-medium">{{ booking.first_name }} {{ booking.last_name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-neutral mb-1">Email</p>
+                        <p class="text-lg font-medium">{{ booking.email }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-neutral mb-1">Phone</p>
+                        <p class="text-lg font-medium">{{ booking.phone }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-neutral mb-1">ID Type</p>
+                        <p class="text-lg font-medium">{{ booking.id_type | replace('_', ' ') | title }}</p>
+                    </div>
+                </div>
+
+                {% if booking.special_requests %}
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <p class="text-sm text-neutral mb-2">Special Requests</p>
+                    <p class="text-base">{{ booking.special_requests }}</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Add-ons (if any) -->
+            {% if booking.addons %}
+            <div class="service-card">
+                <h2 class="text-2xl font-light text-[#632A89] mb-6 flex items-center gap-3">
+                    <i class="fa-solid fa-gift text-3xl"></i> Selected Add-ons
+                </h2>
+                <div class="space-y-4">
+                    {% for addon in booking.addons %}
+                    <div class="flex justify-between items-center border-b pb-3 last:border-b-0">
+                        <div>
+                            <p class="font-medium">{{ addon.name }}</p>
+                            <p class="text-sm text-neutral">{{ addon.description or '' }}</p>
+                        </div>
+                        <p class="font-semibold text-[#E96C40]">
+                            ₦{{ "%.2f"|format(addon.price) }}
+                        </p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right: Summary Sidebar -->
+        <div class="space-y-8">
+            <!-- Unit Info -->
+            <div class="service-card sticky top-8">
+                <h3 class="text-2xl font-light text-[#632A89] mb-6">Unit Information</h3>
+                <p class="text-xl font-semibold mb-2">{{ booking.unit.unit_number }}</p>
+                <p class="text-neutral mb-4">
+                    {{ booking.unit.apartment_type.name }} • 
+                    {{ booking.unit.apartment_type.bedrooms }} BR • 
+                    {{ booking.unit.apartment_type.bathrooms }} BA
+                </p>
+
+                <!-- Price Breakdown -->
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <h4 class="font-semibold mb-4">Price Breakdown</h4>
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span>Base Price ({{ (booking.check_out_date - booking.check_in_date).days }} nights)</span>
+                            <span>₦{{ "%.2f"|format(booking.total_price) }}</span>
+                        </div>
+
+                        {% if booking.addons %}
+                        <div class="flex justify-between text-sm text-neutral">
+                            <span>Add-ons</span>
+                            <span>₦{{ "%.2f"|format(booking.addons | sum(attribute='price')) }}</span>
+                        </div>
+                        {% endif %}
+
+                        <div class="flex justify-between text-sm text-neutral">
+                            <span>Service Fee (5%)</span>
+                            <span>₦{{ "%.2f"|format(booking.total_price * 0.05) }}</span>
+                        </div>
+
+                        <div class="pt-4 border-t font-bold text-lg flex justify-between">
+                            <span>Total</span>
+                            <span class="text-[#E96C40]">₦{{ "%.2f"|format(booking.total_price * 1.05) }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Status -->
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <h4 class="font-semibold mb-4">Payment Status</h4>
+                    {% if booking.paid %}
+                    <div class="bg-green-50 text-green-800 p-4 rounded-lg">
+                        <p class="font-medium">Paid ✓</p>
+                        <p class="text-sm">Total: ₦{{ "%.2f"|format(booking.total_price * 1.05) }}</p>
+                    </div>
+                    {% else %}
+                    <div class="bg-amber-50 text-amber-800 p-4 rounded-lg">
+                        <p class="font-medium">Pending</p>
+                        <p class="text-sm">Awaiting payment of ₦{{ "%.2f"|format(booking.total_price * 1.05) }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="service-card">
+                <h4 class="font-semibold mb-4">Actions</h4>
+                <div class="space-y-4">
+                    {% if booking.status == 'pending' %}
+                    <a href="{{ url_for('bookings.booking_confirmation', booking_reference=booking.booking_reference) }}"
+                       class="btn-primary block text-center py-4">
+                        Complete Payment
+                    </a>
+                    {% endif %}
+
+                    {% if booking.status in ['pending', 'confirmed'] %}
+                    <form method="POST" action="{{ url_for('bookings.cancel_booking', booking_id=booking.id) }}">
+                        <button type="submit" class="btn-outline block w-full text-center py-4 text-red-600 hover:bg-red-50">
+                            Cancel Booking
+                        </button>
+                    </form>
+                    {% endif %}
+
+                    <a href="mailto:bookings@eniapartments.com" 
+                       class="btn-outline block text-center py-4">
+                        Contact Support
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Note -->
+    <div class="mt-12 text-center text-neutral text-sm">
+        <p>Questions? Reach us at <a href="mailto:bookings@eniapartments.com" class="text-[#E96C40] hover:underline">bookings@eniapartments.com</a></p>
+        <p class="mt-2">© {{ current_year }} Eni's Apartments. All rights reserved.</p>
+    </div>
+</div>
+{% endblock %}

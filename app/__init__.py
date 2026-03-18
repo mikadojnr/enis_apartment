@@ -78,7 +78,7 @@ def create_app(config_name='development'):
     app.register_blueprint(services_bp, url_prefix='/services')
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(api_bp, url_prefix='/api')
-    app.register_blueprint(payments_bp)
+    app.register_blueprint(payments_bp, url_prefix='/payments')
 
     # Context processor for current year
     @app.context_processor

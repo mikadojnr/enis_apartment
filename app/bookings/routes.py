@@ -11,6 +11,7 @@ import random
 from flask_mail import Message
 from app import mail
 from flask import current_app
+from flask_wtf.csrf import generate_csrf
 
 
 def generate_guest_code():
@@ -265,7 +266,8 @@ def booking_confirmation(booking_reference):
     return render_template(
         'bookings/confirmation.html',
         booking=booking,
-        paystack_public_key=current_app.config.get('PAYSTACK_PUBLIC_KEY', 'pk_test_xxxxxxxxxxxxxxxxxxxxxxxx')
+        paystack_public_key=current_app.config.get('PAYSTACK_PUBLIC_KEY'),
+        csrf_token=generate_csrf()
     )
 
 # ────────────────────────────────────────────────────────────────
@@ -301,13 +303,21 @@ def guest_booking_access(guest_code):
 @bookings_bp.route('/dashboard')
 @login_required
 def dashboard():
-    """Guest dashboard"""
     bookings = current_user.bookings.all()
     service_requests = current_user.service_requests.all()
-    
-    return render_template('guest/dashboard.html',
-                         bookings=bookings,
-                         service_requests=service_requests)
+
+    # Calculate total spent (only confirmed/paid bookings)
+    total_spent = sum(b.total_price for b in bookings if b.paid and b.status == 'confirmed')
+
+    return render_template(
+        'bookings/dashboard.html',
+        bookings=bookings,
+        service_requests=service_requests,
+        active_bookings_count=len([b for b in bookings if b.status == 'confirmed']),
+        pending_services_count=len([r for r in service_requests if r.status == 'pending']),
+        total_spent=total_spent,
+        upcoming_booking=next((b for b in bookings if b.status == 'confirmed' and b.check_in_date > datetime.utcnow()), None)
+    )
 
 @bookings_bp.route('/<int:booking_id>/cancel', methods=['POST'])
 def cancel_booking(booking_id):
@@ -341,3 +351,26 @@ def booking_status(booking_reference):
         "expires_at": booking.expires_at.isoformat() if booking.expires_at else None,
         "message": "Booking status retrieved"
     })
+
+@bookings_bp.route('/access')
+def guest_access():
+    ref = request.args.get('ref')
+    if not ref:
+        flash("Booking reference required", "warning")
+        return redirect(url_for('main.index'))
+
+    booking = Booking.query.filter_by(booking_reference=ref).first_or_404()
+
+    # For guest: only show this one booking
+    total_spent = booking.total_price if booking.paid else 0
+
+    return render_template(
+        'bookings/dashboard.html',
+        bookings=[booking],
+        service_requests=booking.service_requests.all(),
+        active_bookings_count=1 if booking.status == 'confirmed' else 0,
+        pending_services_count=len([r for r in booking.service_requests.all() if r.status == 'pending']),
+        total_spent=total_spent,
+        upcoming_booking=booking if booking.check_in_date > datetime.utcnow() else None,
+        is_guest=True
+    )

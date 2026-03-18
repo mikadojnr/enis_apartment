@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}My Dashboard - Eni's Apartments{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <!-- Mobile Hamburger Toggle -->
+    <button id="sidebarToggle" class="fixed top-4 left-4 z-50 lg:hidden p-3 bg-white shadow-md">
+        <i class="fa-solid fa-bars text-[#632A89] text-xl"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-72 bg-white shadow-xl transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+        <div class="p-6 border-b border-gray-100">
+            <h1 class="text-2xl font-serif font-light text-[#632A89]">Eni's Dashboard</h1>
+            <p class="text-sm text-gray-500 mt-1">Manage your stay</p>
+        </div>
+
+        <nav class="p-4 space-y-1">
+            <a href="#dashboard" class="nav-item active flex items-center px-4 py-3 text-[#632A89] bg-[#632A89]/10 font-medium">
+                <i class="fa-solid fa-house mr-3 text-xl"></i> Overview
+            </a>
+            <a href="#bookings" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100">
+                <i class="fa-solid fa-calendar-days mr-3 text-xl"></i> My Bookings
+            </a>
+            <a href="#services" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100">
+                <i class="fa-solid fa-bell-concierge mr-3 text-xl"></i> Service Requests
+            </a>
+            <a href="#payments" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100">
+                <i class="fa-solid fa-credit-card mr-3 text-xl"></i> Payments & Invoices
+            </a>
+            <a href="#profile" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100">
+                <i class="fa-solid fa-user mr-3 text-xl"></i> Profile & Settings
+            </a>
+            <a href="#help" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100">
+                <i class="fa-solid fa-circle-question mr-3 text-xl"></i> Help & Contact
+            </a>
+        </nav>
+
+        <!-- Logout -->
+        <div class="absolute bottom-6 left-6 right-6">
+            <a href="/auth/logout" class="flex items-center justify-center px-4 py-3 bg-red-50 text-red-700 hover:bg-red-100 transition">
+                <i class="fa-solid fa-right-from-bracket mr-2"></i> Sign Out
+            </a>
+        </div>
+    </aside>
+
+    <!-- Overlay for mobile sidebar close -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/40 z-30 hidden lg:hidden"></div>
+
+    <!-- Main Content -->
+    <main class="lg:ml-72 min-h-screen pb-20 lg:pb-0">
+        <!-- Dashboard Overview -->
+        <section id="dashboard" class="p-6 lg:p-10">
+            <h2 class="text-3xl font-light text-[#632A89] mb-8">Dashboard Overview</h2>
+
+            <!-- Welcome & Quick Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                <div class="bg-white p-6 shadow-sm border border-gray-100">
+                    <p class="text-sm text-gray-500">Upcoming Stay</p>
+                    <p class="text-2xl font-semibold mt-2 text-[#632A89]">
+                        {% if upcoming_booking %}
+                            {{ upcoming_booking.check_in_date.strftime('%d %b') }}
+                        {% else %}
+                            None
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div class="bg-white p-6 shadow-sm border border-gray-100">
+                    <p class="text-sm text-gray-500">Active Bookings</p>
+                    <p class="text-3xl font-bold text-[#94CA3E]">{{ active_bookings_count|default(0) }}</p>
+                </div>
+
+                <div class="bg-white p-6 shadow-sm border border-gray-100">
+                    <p class="text-sm text-gray-500">Pending Services</p>
+                    <p class="text-3xl font-bold text-amber-500">{{ pending_services_count|default(0) }}</p>
+                </div>
+
+                <div class="bg-white p-6 shadow-sm border border-gray-100">
+                    <p class="text-sm text-gray-500">Total Spent</p>
+                    <p class="text-3xl font-bold text-[#E96C40]">
+                        ₦{{ "{:,.0f}".format(total_spent) }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                <a href="#services" class="bg-gradient-to-br from-[#632A89] to-[#4a1f6a] text-white p-6 hover:shadow-lg transition">
+                    <i class="fa-solid fa-bell-concierge text-4xl mb-4"></i>
+                    <h3 class="text-xl font-semibold">Request Service</h3>
+                    <p class="mt-2 opacity-90">Laundry • Cleaning • Maintenance</p>
+                </a>
+
+                <a href="#" class="bg-gradient-to-br from-[#E96C40] to-[#d55a2e] text-white p-6 hover:shadow-lg transition">
+                    <i class="fa-solid fa-calendar-plus text-4xl mb-4"></i>
+                    <h3 class="text-xl font-semibold">Extend Stay</h3>
+                    <p class="mt-2 opacity-90">Add more nights to your booking</p>
+                </a>
+
+                <a href="#" class="bg-gradient-to-br from-[#94CA3E] to-[#7eb52f] text-white p-6 hover:shadow-lg transition">
+                    <i class="fa-solid fa-file-invoice-dollar text-4xl mb-4"></i>
+                    <h3 class="text-xl font-semibold">View Invoices</h3>
+                    <p class="mt-2 opacity-90">Payment history & receipts</p>
+                </a>
+
+                <a href="#profile" class="bg-gradient-to-br from-gray-700 to-gray-900 text-white p-6 hover:shadow-lg transition">
+                    <i class="fa-solid fa-user-gear text-4xl mb-4"></i>
+                    <h3 class="text-xl font-semibold">My Profile</h3>
+                    <p class="mt-2 opacity-90">Update details & preferences</p>
+                </a>
+            </div>
+
+            <!-- Upcoming Booking Highlight -->
+            {% if upcoming_booking %}
+            <div class="bg-white p-8 shadow-md border border-[#94CA3E]/30 mb-10">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    <div>
+                        <h3 class="text-2xl font-semibold text-[#632A89] mb-2">
+                            Upcoming Stay • {{ upcoming_booking.unit.unit_number }}
+                        </h3>
+                        <p class="text-lg text-gray-700">
+                            {{ upcoming_booking.check_in_date.strftime('%d %b %Y') }} — 
+                            {{ upcoming_booking.check_out_date.strftime('%d %b %Y') }}
+                        </p>
+                        <p class="text-sm text-gray-500 mt-1">
+                            {{ upcoming_booking.number_of_guests }} 
+                            guest{{ 's' if upcoming_booking.number_of_guests != 1 else '' }}
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <span class="inline-block px-4 py-2 bg-[#94CA3E] text-white font-medium">
+                            Confirmed
+                        </span>
+                        <div class="mt-4">
+                            <a href="#" class="text-[#E96C40] hover:underline font-medium">
+                                View Details →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- Bookings Section -->
+        <section id="bookings" class="p-6 lg:p-10 bg-gray-50">
+            <h2 class="text-3xl font-light text-[#632A89] mb-8">My Bookings</h2>
+
+            <div class="flex border-b border-gray-200 mb-6 overflow-x-auto">
+                <button class="tab-btn px-6 py-3 font-medium border-b-2 border-[#632A89] text-[#632A89] whitespace-nowrap">Active</button>
+                <button class="tab-btn px-6 py-3 font-medium text-gray-600 hover:text-[#632A89] whitespace-nowrap">Upcoming</button>
+                <button class="tab-btn px-6 py-3 font-medium text-gray-600 hover:text-[#632A89] whitespace-nowrap">Past</button>
+                <button class="tab-btn px-6 py-3 font-medium text-gray-600 hover:text-[#632A89] whitespace-nowrap">Cancelled</button>
+            </div>
+
+            <div id="bookings-content" class="space-y-6">
+                {% for booking in bookings %}
+                <div class="bg-white p-6 shadow-sm border border-gray-100">
+                    <div class="flex flex-col md:flex-row justify-between gap-6">
+                        <div>
+                            <p class="text-sm text-gray-500">Reference</p>
+                            <p class="font-mono font-semibold text-[#632A89]">{{ booking.booking_reference }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Unit</p>
+                            <p class="font-semibold">{{ booking.unit.unit_number }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Dates</p>
+                            <p class="font-semibold">
+                                {{ booking.check_in_date.strftime('%d %b %Y') }} — 
+                                {{ booking.check_out_date.strftime('%d %b %Y') }}
+                            </p>
+                        </div>
+                        <div class="text-right">
+                            <span class="inline-block px-4 py-1 text-sm font-medium
+                                {% if booking.status == 'confirmed' %}bg-green-100 text-green-800
+                                {% elif booking.status == 'pending' %}bg-amber-100 text-amber-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ booking.status|capitalize }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="bg-white p-10 text-center text-gray-500">
+                    No bookings found.
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Service Requests Section -->
+        <section id="services" class="p-6 lg:p-10">
+            <h2 class="text-3xl font-light text-[#632A89] mb-8">Service Requests</h2>
+            <div class="bg-white p-10 text-center text-gray-500">
+                No service requests yet.
+            </div>
+        </section>
+
+        <!-- Payments Section -->
+        <section id="payments" class="p-6 lg:p-10 bg-gray-50">
+            <h2 class="text-3xl font-light text-[#632A89] mb-8">Payments & Invoices</h2>
+            <div class="bg-white p-10 text-center text-gray-500">
+                No payments recorded yet.
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- Mobile Sidebar Toggle Script -->
+<script>
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.getElementById('sidebarToggle');
+    const overlay = document.getElementById('sidebarOverlay');
+
+    toggleBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('-translate-x-full');
+        overlay.classList.toggle('hidden');
+    });
+
+    overlay.addEventListener('click', () => {
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+    });
+
+    // Close sidebar when clicking nav items on mobile
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+            if (window.innerWidth < 1024) {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        });
+    });
+</script>
+
+<style>
+    .nav-item {
+        transition: all 0.2s ease;
+    }
+    .nav-item:hover {
+        background-color: #f3f4f6;
+        color: #632A89;
+    }
+    .nav-item.active {
+        background-color: #632A89/10;
+        color: #632A89;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
