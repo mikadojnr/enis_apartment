@@ -1,18 +1,21 @@
-{% extends "base.html" %}
+{% extends "bookings/base.html" %}
 
 {% block title %}My Dashboard - Eni's Apartments{% endblock %}
 
 {% block content %}
 <div class="min-h-screen bg-gray-50">
     <!-- Mobile Hamburger Toggle -->
-    <button id="sidebarToggle" class="fixed top-4 left-4 z-50 lg:hidden p-3 bg-white shadow-md">
-        <i class="fa-solid fa-bars text-[#632A89] text-xl"></i>
+    <button id="sidebarToggle" class="fixed top-4 left-4 z-50 lg:hidden p-3 bg-white shadow-md transition-all duration-300 ease-in-out">
+        <i id="sidebarToggleIcon" class="fa-solid fa-bars text-[#632A89] text-xl"></i>
     </button>
 
     <!-- Sidebar -->
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-72 bg-white shadow-xl transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+        
         <div class="p-6 border-b border-gray-100">
-            <h1 class="text-2xl font-serif font-light text-[#632A89]">Eni's Dashboard</h1>
+            <a href="/" class=" serif text-3xl font-semibold tracking-tight">
+                Eni's <span class="text-[#E96C40]">Apartments</span>
+            </a>
             <p class="text-sm text-gray-500 mt-1">Manage your stay</p>
         </div>
 
@@ -214,11 +217,16 @@
 <script>
     const sidebar = document.getElementById('sidebar');
     const toggleBtn = document.getElementById('sidebarToggle');
+    const toggleIcon = document.getElementById('sidebarToggleIcon');
     const overlay = document.getElementById('sidebarOverlay');
 
     toggleBtn.addEventListener('click', () => {
         sidebar.classList.toggle('-translate-x-full');
         overlay.classList.toggle('hidden');
+        toggleBtn.classList.toggle('right-4');
+        toggleBtn.classList.toggle('left-4');
+        toggleIcon.classList.toggle('fa-times');
+        toggleIcon.classList.toggle('fa-bars');
     });
 
     overlay.addEventListener('click', () => {
