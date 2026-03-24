@@ -212,15 +212,27 @@
                 <a href="/contact" class="text-sm font-medium hover:text-[#E96C40] transition-colors">Contact</a>
             </div>
             
-            <div class="hidden md:flex items-center gap-4">
+            <!-- Desktop Auth Links (RBAC) -->
+            <div class="hidden md:flex items-center gap-6">
                 {% if current_user.is_authenticated %}
-                    <a href="/bookings/dashboard" class="text-sm font-medium hover:text-[#E96C40]">Dashboard</a>
-                    <a href="/auth/logout" class="btn-primary" onclick="return confirm('Logout?')">
+                    <!-- Regular user dashboard -->
+                    <a href="/bookings/dashboard" class="text-sm font-medium hover:text-[#E96C40] transition-colors">
+                        Dashboard
+                    </a>
+                    
+                    <!-- Admin-only link -->
+                    {% if current_user.is_admin %}
+                        <a href="/admin/dashboard" class="text-sm font-medium text-[#E96C40] hover:text-[#632A89] transition-colors font-semibold">
+                            Admin Panel
+                        </a>
+                    {% endif %}
+                    
+                    <a href="/auth/logout" class="btn-primary px-6 py-2 text-sm" onclick="return confirm('Logout?')">
                         <span>Logout</span>
                     </a>
                 {% else %}
-                    <a href="/auth/login" class="text-sm font-medium hover:text-[#E96C40]">Sign In</a>
-                    <a href="/bookings/availability" class="btn-primary">
+                    <a href="/auth/login" class="text-sm font-medium hover:text-[#E96C40] transition-colors">Sign In</a>
+                    <a href="/bookings/availability" class="btn-primary px-6 py-2 text-sm">
                         <span>Book Now</span>
                     </a>
                 {% endif %}
@@ -228,36 +240,51 @@
             
             <!-- Mobile Menu Button -->
             <button onclick="toggleMobileMenu()" class="md:hidden p-2">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-6 h-6 text-[#632A89]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                 </svg>
             </button>
         </div>
         
-        <!-- Mobile Menu -->
-        <div id="mobileMenu" class="mobile-menu fixed top-0 right-0 bottom-0 w-64 bg-white shadow-2xl md:hidden">
-            <button onclick="toggleMobileMenu()" class="absolute top-6 right-6">
+        <!-- Mobile Menu (RBAC-aware) -->
+        <div id="mobileMenu" class="mobile-menu fixed top-0 right-0 bottom-0 w-64 bg-white shadow-2xl md:hidden transform translate-x-full transition-transform duration-300 ease-in-out">
+            <button onclick="toggleMobileMenu()" class="absolute top-6 right-6 text-gray-700">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
             </button>
-            <div class="flex flex-col bg-white gap-6 p-8 mt-16">
-                <a href="/" onclick="toggleMobileMenu()" class="text-lg font-medium">Home</a>
-                <a href="/units" onclick="toggleMobileMenu()" class="text-lg font-medium">Apartments</a>
-                <a href="/services" onclick="toggleMobileMenu()" class="text-lg font-medium">Services</a>
-                <a href="/about" onclick="toggleMobileMenu()" class="text-lg font-medium">About</a>
-                <a href="/contact" onclick="toggleMobileMenu()" class="text-lg font-medium">Contact</a>
-                {% if current_user.is_authenticated %}
-                    <a href="/bookings/dashboard" onclick="toggleMobileMenu()" class="text-lg font-medium">Dashboard</a>
-                    <a href="/auth/logout" class="btn-primary mt-4" onclick="return confirm('Logout?')">
-                        <span>Logout</span>
-                    </a>
-                {% else %}
-                    <a href="/auth/login" class="text-lg font-medium">Sign In</a>
-                    <a href="/bookings/availability" class="btn-primary mt-4">
-                        <span>Book Now</span>
-                    </a>
-                {% endif %}
+            
+            <div class="flex flex-col gap-6 p-8 mt-16">
+                <a href="/" onclick="toggleMobileMenu()" class="text-lg font-medium hover:text-[#E96C40]">Home</a>
+                <a href="/units" onclick="toggleMobileMenu()" class="text-lg font-medium hover:text-[#E96C40]">Apartments</a>
+                <a href="/services" onclick="toggleMobileMenu()" class="text-lg font-medium hover:text-[#E96C40]">Services</a>
+                <a href="/about" onclick="toggleMobileMenu()" class="text-lg font-medium hover:text-[#E96C40]">About</a>
+                <a href="/contact" onclick="toggleMobileMenu()" class="text-lg font-medium hover:text-[#E96C40]">Contact</a>
+                
+                <div class="pt-6 border-t border-gray-200">
+                    {% if current_user.is_authenticated %}
+                        <a href="/bookings/dashboard" onclick="toggleMobileMenu()" class="block text-lg font-medium hover:text-[#E96C40] mb-4">
+                            Dashboard
+                        </a>
+                        
+                        {% if current_user.is_admin %}
+                            <a href="/admin/dashboard" onclick="toggleMobileMenu()" class="block text-lg font-medium text-[#E96C40] hover:text-[#632A89] mb-4">
+                                Admin Panel
+                            </a>
+                        {% endif %}
+                        
+                        <a href="/auth/logout" onclick="return confirm('Logout?')" class="btn-primary block text-center py-3">
+                            <span>Logout</span>
+                        </a>
+                    {% else %}
+                        <a href="/auth/login" onclick="toggleMobileMenu()" class="block text-lg font-medium hover:text-[#E96C40] mb-4">
+                            Sign In
+                        </a>
+                        <a href="/bookings/availability" onclick="toggleMobileMenu()" class="btn-primary block text-center py-3">
+                            <span>Book Now</span>
+                        </a>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </nav>
@@ -311,16 +338,54 @@
                 </ul>
             </div>
             
-            <div>
+           <div>
                 <h4 class="font-semibold mb-4">Contact</h4>
-                <p class="text-sm mb-2">+234-800-ENI-APTS</p>
-                <p class="text-sm mb-2">info@eniapartments.com</p>
-                <p class="text-sm">Abuja, Nigeria</p>
-            </div>
+
+                <!-- Address -->
+                <a href="https://www.google.com/maps/search/?api=1&query=River+Park+Estate+Closter+4+Jonah+Height+Airport+Road+Abuja+Nigeria" target="_blank" class="flex items-start space-x-2 mb-2">
+                    <i class="fa-solid fa-location-dot mt-1"></i>
+                    <p class="text-sm">
+                    River Park Estate<br>
+                    Closter 4, Jonah Height<br>
+                    Airport Road, FCT – Abuja, Nigeria
+                    </p>
+                </a>
+
+                <!-- Phone Numbers -->
+                <div class="text-sm mb-2 space-y-1">
+                    <a href="tel:+2349118818881" class="flex items-center space-x-2">
+                    <i class="fa-solid fa-phone"></i>
+                    <span>09118818881</span>
+                    </a>
+                    <a href="tel:+2349122220275" class="flex items-center space-x-2">
+                    <i class="fa-solid fa-phone"></i>
+                    <span>09122220275</span>
+                    </a>
+                </div>
+
+                <!-- Email -->
+                <a href="mailto:info@enisapartment.com" class="flex items-center space-x-2 text-sm mb-2">
+                    <i class="fa-solid fa-envelope"></i>
+                    <span>info@enisapartment.com</span>
+                </a>
+
+                <!-- Social Media -->
+                <div class="flex items-center space-x-4 pt-2">
+                    <a href="https://www.tiktok.com/@eniapartments" target="_blank" class="hover:text-black">
+                    <i class="fa-brands fa-tiktok text-lg"></i>
+                    </a>
+                    <a href="https://www.instagram.com/eniapartments" target="_blank" class="hover:text-pink-500">
+                    <i class="fa-brands fa-instagram text-lg"></i>
+                    </a>
+                    <a href="https://www.facebook.com/eniapartments" target="_blank" class="hover:text-blue-600">
+                    <i class="fa-brands fa-facebook text-lg"></i>
+                    </a>
+                </div>
+                </div>
         </div>
         
         <div class="border-t border-white/20 pt-8 text-center text-sm">
-            <p>&copy; 2024 Eni's Apartments. All rights reserved.</p>
+            <p>&copy;{{ current_year }}  Eni's Serviced Apartment</p>
         </div>
     </footer>
 

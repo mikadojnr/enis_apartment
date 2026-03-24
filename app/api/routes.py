@@ -1,8 +1,19 @@
 from flask import jsonify, request
 from app.api import api_bp
-from app.models import Unit, Service, Booking
+from app.models import Unit, Service, Booking, User
 from datetime import datetime
 from app import db
+
+@api_bp.route('/users')
+def get_users():
+    users = User.query.all()
+    return jsonify([{
+        'id': u.id,
+        'first_name': u.first_name,
+        'last_name': u.last_name,
+        'email': u.email,
+        'is_admin': u.is_admin
+    } for u in users])
 
 @api_bp.route('/units')
 def get_units():
@@ -87,56 +98,66 @@ def get_services():
 
 @api_bp.route('/availability', methods=['GET'])
 def check_availability():
-    """
-    Check unit availability.
-    - Confirmed bookings always block dates.
-    - Pending bookings only block if not yet expired.
-    """
-    unit_id   = request.args.get('unit_id', type=int)
-    check_in  = request.args.get('check_in')
+    check_in = request.args.get('check_in')
     check_out = request.args.get('check_out')
+    unit_id = request.args.get('unit_id', type=int)
 
-    if not all([unit_id, check_in, check_out]):
-        return jsonify({'error': 'Missing required parameters'}), 400
+    if not check_in or not check_out:
+        return jsonify({'error': 'Missing check_in and check_out parameters'}), 400
 
     try:
-        check_in_date  = datetime.fromisoformat(check_in)
+        check_in_date = datetime.fromisoformat(check_in)
         check_out_date = datetime.fromisoformat(check_out)
     except ValueError:
-        return jsonify({'error': 'Invalid date format (use ISO: YYYY-MM-DD)'}), 400
+        return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD'}), 400
 
     if check_out_date <= check_in_date:
         return jsonify({'error': 'Check-out must be after check-in'}), 400
 
     now = datetime.utcnow()
 
-    # Build filter conditions
-    confirmed = Booking.status == 'confirmed'
-    pending_and_active = db.and_(
-        Booking.status == 'pending',
+    # Query for overlapping bookings (confirmed or active pending)
+    overlapping_query = Booking.query.filter(
         db.or_(
-            Booking.expires_at.is_(None),          # no expiry set → treat as active
-            Booking.expires_at > now
-        )
-    )
-
-    overlapping = Booking.query.filter(
-        Booking.unit_id == unit_id,
-        db.or_(confirmed, pending_and_active),     # ← This is the key fix
+            Booking.status == 'confirmed',
+            db.and_(
+                Booking.status == 'pending',
+                db.or_(
+                    Booking.expires_at.is_(None),
+                    Booking.expires_at > now
+                )
+            )
+        ),
         Booking.check_in_date < check_out_date,
         Booking.check_out_date > check_in_date
-    ).count()
+    )
 
-    is_available = overlapping == 0
+    if unit_id:
+        # Single unit check (used in unit details page - unchanged behavior)
+        overlapping = overlapping_query.filter(Booking.unit_id == unit_id).count()
+        return jsonify({
+            'unit_id': unit_id,
+            'check_in': check_in,
+            'check_out': check_out,
+            'is_available': overlapping == 0,
+            'overlapping_count': overlapping
+        })
 
-    return jsonify({
-        'unit_id': unit_id,
-        'check_in': check_in,
-        'check_out': check_out,
-        'is_available': is_available,
-        'overlapping_count': overlapping,          # useful for debugging
-        'now_utc': now.isoformat()
-    })
+    # Admin mode: return availability for ALL units
+    units = Unit.query.all()
+    result = []
+
+    for unit in units:
+        count = overlapping_query.filter(Booking.unit_id == unit.id).count()
+        result.append({
+            'unit_id': unit.id,
+            'is_available': count == 0,
+            'base_price': float(unit.apartment_type.base_price) if unit.apartment_type else None,
+            'unit_number': unit.unit_number,
+            'apartment_type': unit.apartment_type.name if unit.apartment_type else ''
+        })
+
+    return jsonify(result)
 
 @api_bp.route('/price', methods=['GET'])
 def calculate_price():

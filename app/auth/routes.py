@@ -5,38 +5,56 @@ from app import db
 from app.models import User
 from app.auth.forms import LoginForm, RegisterForm
 
+
+def get_user_dashboard_url():
+    """
+    Helper to decide where to redirect after login/register
+    - Admin → admin dashboard
+    - Regular user → bookings dashboard
+    """
+    if current_user.is_authenticated:
+        if current_user.is_admin:
+            return url_for('admin.dashboard')  # adjust blueprint/route name as needed
+        else:
+            return url_for('bookings.dashboard')
+    return url_for('main.index')  # fallback
+
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     """User login"""
     if current_user.is_authenticated:
-        return redirect(url_for('main.index'))
-    
+        return redirect(get_user_dashboard_url())
+
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
-        
+
         if user is None or not user.check_password(form.password.data):
             flash('Invalid email or password', 'danger')
             return redirect(url_for('auth.login'))
-        
+
+        # Log the user in
         login_user(user, remember=form.remember_me.data)
-        next_page = request.args.get('next')
-        return redirect(next_page) if next_page else redirect(url_for('bookings.dashboard'))
-    
+
+        # Redirect based on role
+        flash('Login successful!', 'success')
+        return redirect(get_user_dashboard_url())
+
     return render_template('auth/login.html', form=form)
+
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
-    """User registration"""
+    """User registration + auto-login after success"""
     if current_user.is_authenticated:
-        return redirect(url_for('main.index'))
-    
+        return redirect(get_user_dashboard_url())
+
     form = RegisterForm()
     if form.validate_on_submit():
         if User.query.filter_by(email=form.email.data).first():
             flash('Email already registered', 'danger')
             return redirect(url_for('auth.register'))
-        
+
         user = User(
             email=form.email.data,
             first_name=form.first_name.data,
@@ -44,13 +62,16 @@ def register():
             phone=form.phone.data
         )
         user.set_password(form.password.data)
-        
+
         db.session.add(user)
         db.session.commit()
-        
-        flash('Registration successful! Please log in.', 'success')
-        return redirect(url_for('auth.login'))
-    
+
+        # Automatically log the new user in
+        login_user(user)
+
+        flash('Registration successful! Welcome to Eni\'s Apartments.', 'success')
+        return redirect(get_user_dashboard_url())
+
     return render_template('auth/register.html', form=form)
 
 @auth_bp.route('/logout')

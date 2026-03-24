@@ -1,10 +1,16 @@
-from flask import render_template, redirect, url_for, flash, request, jsonify
+import json
+import os
+
+from flask import current_app, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 from functools import wraps
+
+from werkzeug.utils import secure_filename
 from app.admin import admin_bp
 from app import db
+from app.bookings.routes import send_booking_confirmed_email, send_booking_created_email
 from app.models import Booking, Unit, Service, ServiceRequest, User, ApartmentType, UnitImage
-from datetime import datetime
+from datetime import date, datetime
 import uuid
 import string
 import random
@@ -46,77 +52,106 @@ def dashboard():
 @login_required
 @admin_required
 def create_booking():
-    """Admin creates booking for guest"""
     if request.method == 'POST':
-        data = request.get_json()
-        
-        unit = Unit.query.get_or_404(data.get('unit_id'))
-        
-        check_in = datetime.fromisoformat(data.get('check_in'))
-        check_out = datetime.fromisoformat(data.get('check_out'))
+        data = request.form.to_dict()
+        unit = Unit.query.get_or_404(int(data['unit_id']))
+        check_in = datetime.fromisoformat(data['check_in'])
+        check_out = datetime.fromisoformat(data['check_out'])
         days = (check_out - check_in).days
-        total_price = days * unit.apartment_type.base_price
-        
-        # Generate unique codes
-        booking_ref = f'ENI-{uuid.uuid4().hex[:8].upper()}'
+
+        base_total = days * float(unit.apartment_type.base_price)
+
+        # Add-ons
+        addons_ids = json.loads(data.get('addons', '[]'))
+        selected_addons = Service.query.filter(Service.id.in_(addons_ids)).all()
+        addons_total = sum(svc.price for svc in selected_addons)
+        total_price = base_total + addons_total
+
         guest_code = generate_guest_code()
-        
-        # Determine user and guest info
-        user_id = data.get('user_id')
+
+        # Guest handling
+        user_id = None
+        is_guest_booking = False
         guest_email = None
         guest_phone = None
-        is_guest_booking = False
-        
-        if not user_id:
-            # Create new guest user
+
+        if data['guest_type'] == 'registered':
+            user_id = int(data['user_id'])
+        else:
             is_guest_booking = True
-            guest_email = data.get('guest_email')
-            guest_phone = data.get('guest_phone')
-            
-            existing_user = User.query.filter_by(email=guest_email).first()
-            if existing_user:
-                user_id = existing_user.id
+            guest_email = data['email']
+            guest_phone = data['phone']
+
+            existing = User.query.filter_by(email=guest_email).first()
+            if existing:
+                user_id = existing.id
             else:
-                guest_user = User(
+                new_user = User(
                     email=guest_email,
-                    first_name=data.get('guest_first_name', 'Guest'),
-                    last_name=data.get('guest_last_name', ''),
+                    first_name=data['first_name'],
+                    last_name=data['last_name'],
                     phone=guest_phone,
                     password_hash=''
                 )
-                db.session.add(guest_user)
+                db.session.add(new_user)
                 db.session.flush()
-                user_id = guest_user.id
-        
-        # Create booking
+                user_id = new_user.id
+
+        # ID Upload
+        id_upload_url = None
+        if 'id_upload' in request.files:
+            file = request.files['id_upload']
+            if file and file.filename:
+                filename = secure_filename(file.filename)
+                upload_path = os.path.join('uploads/ids', filename)
+                os.makedirs(os.path.dirname(upload_path), exist_ok=True)
+                file.save(upload_path)
+                id_upload_url = f"/{upload_path}"
+
+        # Create Booking
         booking = Booking(
-            booking_reference=booking_ref,
+            booking_reference=f"ENI-{uuid.uuid4().hex[:8].upper()}",
             user_id=user_id,
-            unit_id=data.get('unit_id'),
+            unit_id=unit.id,
+            first_name=data.get('first_name', ''),
+            last_name=data.get('last_name', ''),
+            email=data.get('email', guest_email),
+            phone=data.get('phone', guest_phone),
             check_in_date=check_in,
             check_out_date=check_out,
-            number_of_guests=data.get('num_guests', 2),
+            number_of_guests=int(data['number_of_guests']),
             total_price=total_price,
-            status='confirmed' if data.get('mark_paid') else 'pending',
-            paid=data.get('mark_paid', False),
+            status='confirmed' if data.get('mark_paid') == 'on' else 'pending',
+            paid=data.get('mark_paid') == 'on',
             special_requests=data.get('special_requests', ''),
             guest_code=guest_code,
             is_guest_booking=is_guest_booking,
             guest_email=guest_email,
-            guest_phone=guest_phone
+            guest_phone=guest_phone,
+            id_upload_url=id_upload_url
         )
-        
+
+        if selected_addons:
+            booking.addons = selected_addons
+
         db.session.add(booking)
         db.session.commit()
-        
+
+        # Email handling
+        if booking.paid:
+            send_booking_confirmed_email(booking)   # confirmed email with dashboard link
+        else:
+            send_booking_created_email(booking)     # awaiting payment email with Paystack link
+
         return jsonify({
             'success': True,
-            'booking_id': booking.id,
-            'booking_reference': booking_ref,
-            'guest_code': guest_code
+            'booking_reference': booking.booking_reference,
+            'redirect': url_for('admin.manage_bookings')
         })
-    
-    return render_template('admin/create-booking.html')
+
+    today = date.today().isoformat()
+    return render_template('admin/create-booking.html', today=today)
+
 
 @admin_bp.route('/units')
 @login_required

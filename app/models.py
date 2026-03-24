@@ -126,6 +126,7 @@ class Booking(db.Model):
     email            = db.Column(db.String(120), nullable=False, index=True)
     phone            = db.Column(db.String(30), nullable=False)
     id_type          = db.Column(db.String(50))           # passport, nin, drivers_license
+    id_upload_url = db.Column(db.String(255), nullable=True)  # path/URL to uploaded ID doc
     num_adults       = db.Column(db.Integer, default=0)
     
     check_in_date = db.Column(db.DateTime, nullable=False)

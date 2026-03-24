@@ -14,27 +14,31 @@
     <!-- Filter Section -->
     <section class="py-12 px-6 bg-white border-b border-gray-200">
         <div class="max-w-7xl mx-auto">
-            <div class="flex flex-col md:flex-row gap-6 items-center justify-between">
-                <div>
-                    <h3 class="font-semibold mb-4">Filter by Type:</h3>
+           <div class="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
+
+                <!-- Filter by Type -->
+                <div class="flex flex-col w-full md:w-auto space-y-4">
+                    <h3 class="font-semibold mb-2">Filter by Type:</h3>
                     <div class="flex flex-wrap gap-3">
-                        <a href="/units" class="px-6 py-2 rounded-full border-2 border-[#E96C40] text-[#E96C40] hover:bg-[#E96C40] hover:text-white transition">
-                            All Units
-                        </a>
-                        {% for apt_type in apartment_types %}
-                        <a href="/units?type={{ apt_type.id }}" class="px-6 py-2 rounded-full border-2 border-gray-300 text-gray-600 hover:border-[#E96C40] transition">
-                            {{ apt_type.bedrooms }}BR - N{{ "%.0f"|format(apt_type.base_price * 30) }}/mo
-                        </a>
-                        {% endfor %}
+                    <a href="/units" class="px-4 py-2 rounded-full border-2 border-[#E96C40] text-[#E96C40] hover:bg-[#E96C40] hover:text-white transition text-sm md:text-base">
+                        All Units
+                    </a>
+                    {% for apt_type in apartment_types %}
+                    <a href="/units?type={{ apt_type.id }}" class="px-4 py-2 rounded-full border-2 border-gray-300 text-gray-600 hover:border-[#E96C40] transition text-sm md:text-base">
+                        {{ apt_type.bedrooms }}BR - N{{ "%.0f"|format(apt_type.base_price * 30) }}/mo
+                    </a>
+                    {% endfor %}
                     </div>
                 </div>
-                
-                <div>
-                    <h3 class="font-semibold mb-4">Availability:</h3>
-                    <a href="/bookings/availability" class="btn-primary">
-                        <span>Check Dates</span>
+
+                <!-- Availability -->
+                <div class="flex flex-col w-full md:w-auto space-y-4 mt-4 md:mt-0">
+                    <h3 class="font-semibold mb-2">Availability:</h3>
+                    <a href="/bookings/availability" class="btn-primary w-full md:w-auto text-center">
+                    <span>Check Dates</span>
                     </a>
                 </div>
+
             </div>
         </div>
     </section>

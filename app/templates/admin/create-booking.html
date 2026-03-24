@@ -2,338 +2,463 @@
 
 {% block title %}Create Booking - Admin - Eni's Apartments{% endblock %}
 
+{% block extra_css %}
+<style>
+    .unit-option-available { color: #166534; font-weight: 500; }
+    .unit-option-unavailable { color: #991b1b; font-style: italic; }
+    
+    .tooltip { position: relative; display: inline-block; }
+    .tooltip .tooltiptext {
+        visibility: hidden;
+        width: 240px;
+        background-color: #1f2937;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 10px;
+        position: absolute;
+        z-index: 10;
+        bottom: 125%;
+        left: 50%;
+        margin-left: -120px;
+        opacity: 0;
+        transition: opacity 0.3s;
+        font-size: 0.875rem;
+    }
+    .tooltip:hover .tooltiptext {
+        visibility: visible;
+        opacity: 1;
+    }
+
+    .file-upload-label {
+        display: block;
+        padding: 20px;
+        border: 2px dashed #9ca3af;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .file-upload-label:hover {
+        border-color: #E96C40;
+        background-color: #fef3c7;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-    <div class="max-w-4xl mx-auto px-6 py-12">
-        <nav class="mb-8 text-sm text-neutral">
-            <a href="/admin/dashboard" class="hover:text-[#E96C40]">Admin</a> / 
-            <a href="/admin/bookings" class="hover:text-[#E96C40]">Bookings</a> / 
-            <span>New Booking</span>
+<div class="min-h-screen bg-gray-50 pb-32 lg:pb-0">
+    <div class="max-w-7xl mx-auto px-6 py-10">
+        <nav class="mb-8 text-sm text-gray-600 flex items-center gap-2">
+            <a href="/admin/dashboard" class="hover:text-[#E96C40]">Admin</a> /
+            <a href="/admin/bookings" class="hover:text-[#E96C40]">Bookings</a> /
+            <span class="font-medium text-[#632A89]">New Booking</span>
         </nav>
-        
-        <h1 class="serif text-5xl font-light mb-12">Create Booking for Guest</h1>
-        
-        <div class="grid md:grid-cols-3 gap-8">
-            <!-- Booking Form -->
-            <div class="md:col-span-2">
-                <form id="adminBookingForm" class="space-y-8">
+
+        <h1 class="text-4xl font-light text-[#632A89] mb-10">Create New Booking</h1>
+
+        <div class="grid lg:grid-cols-3 gap-10">
+            <!-- Main Form -->
+            <div class="lg:col-span-2 space-y-10">
+                <form id="adminBookingForm" class="space-y-10" enctype="multipart/form-data">
                     <!-- Guest Information -->
-                    <div class="service-card">
-                        <h2 class="serif text-2xl font-light mb-6">Guest Information</h2>
-                        
-                        <div class="mb-6">
-                            <label for="guestType" class="block text-sm font-semibold mb-2 text-[#632A89]">Guest Type</label>
-                            <select id="guestType" name="guestType" required class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]">
+                    <div class="bg-white p-8 shadow-sm border border-gray-200">
+                        <h2 class="text-2xl font-light text-[#632A89] mb-8">Guest Information</h2>
+
+                        <div class="mb-8">
+                            <label for="guestType" class="block text-sm font-semibold mb-3 text-[#632A89]">Guest Type *</label>
+                            <select id="guestType" name="guest_type" required class="w-full px-5 py-4 border border-gray-300 focus:border-[#E96C40] focus:outline-none transition-colors">
                                 <option value="">Select guest type</option>
                                 <option value="registered">Registered User</option>
                                 <option value="new">New Guest</option>
                             </select>
                         </div>
-                        
-                        <!-- Registered User Selection -->
-                        <div id="registeredUserSection" class="hidden mb-6">
-                            <label for="userId" class="block text-sm font-semibold mb-2 text-[#632A89]">Select Registered User</label>
-                            <select id="userId" name="userId" class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]">
-                                <option value="">Choose a user...</option>
+
+                        <div id="registeredUserSection" class="hidden mb-8">
+                            <label for="userId" class="block text-sm font-semibold mb-3 text-[#632A89]">Select User *</label>
+                            <select id="userId" name="user_id" class="w-full px-5 py-4 border border-gray-300 focus:border-[#E96C40] focus:outline-none transition-colors">
+                                <option value="">Loading users...</option>
                             </select>
                         </div>
-                        
-                        <!-- New Guest Info -->
-                        <div id="newGuestSection" class="hidden space-y-4">
-                            <div class="grid md:grid-cols-2 gap-4">
+
+                        <div id="newGuestSection" class="hidden space-y-6">
+                            <div class="grid md:grid-cols-2 gap-6">
                                 <div>
-                                    <label for="guestFirst" class="block text-sm font-semibold mb-2 text-[#632A89]">First Name *</label>
-                                    <input type="text" id="guestFirst" name="first_name"
-                                           class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]">
+                                    <label for="first_name" class="block text-sm font-semibold mb-3 text-[#632A89]">First Name *</label>
+                                    <input type="text" id="first_name" name="first_name" required class="w-full px-5 py-4 border border-gray-300 focus:border-[#E96C40] focus:outline-none transition-colors">
                                 </div>
                                 <div>
-                                    <label for="guestLast" class="block text-sm font-semibold mb-2 text-[#632A89]">Last Name *</label>
-                                    <input type="text" id="guestLast" name="last_name"
-                                           class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]">
+                                    <label for="last_name" class="block text-sm font-semibold mb-3 text-[#632A89]">Last Name *</label>
+                                    <input type="text" id="last_name" name="last_name" required class="w-full px-5 py-4 border border-gray-300 focus:border-[#E96C40] focus:outline-none transition-colors">
                                 </div>
                             </div>
                             <div>
-                                <label for="guestEmail" class="block text-sm font-semibold mb-2 text-[#632A89]">Email Address *</label>
-                                <input type="email" id="guestEmail" name="email"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]">
+                                <label for="email" class="block text-sm font-semibold mb-3 text-[#632A89]">Email *</label>
+                                <input type="email" id="email" name="email" required class="w-full px-5 py-4 border border-gray-300 focus:border-[#E96C40] focus:outline-none transition-colors">
                             </div>
                             <div>
-                                <label for="guestPhone" class="block text-sm font-semibold mb-2 text-[#632A89]">Phone Number *</label>
-                                <input type="tel" id="guestPhone" name="phone"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]">
+                                <label for="phone" class="block text-sm font-semibold mb-3 text-[#632A89]">Phone *</label>
+                                <input type="tel" id="phone" name="phone" required class="w-full px-5 py-4 border border-gray-300 focus:border-[#E96C40] focus:outline-none transition-colors">
+                            </div>
+
+                            <div>
+                                <label for="id_upload" class="block text-sm font-semibold mb-3 text-[#632A89]">Upload ID (NIN / Passport / Driver's License) *</label>
+                                <label class="file-upload-label cursor-pointer">
+                                    <input type="file" id="id_upload" name="id_upload" accept="image/*,.pdf" class="hidden" required>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400"></i>
+                                        <span class="text-sm text-gray-600">Click to upload or drag & drop</span>
+                                        <span class="text-xs text-gray-500">PNG, JPG, PDF (max 5MB)</span>
+                                    </div>
+                                </label>
+                                <p id="idFileName" class="mt-2 text-sm text-gray-600"></p>
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Unit & Dates -->
-                    <div class="service-card">
-                        <h2 class="serif text-2xl font-light mb-6">Unit & Dates</h2>
-                        
-                        <div class="mb-6">
-                            <label for="unitId" class="block text-sm font-semibold mb-2 text-[#632A89]">Select Unit *</label>
-                            <select id="unitId" name="unitId" required class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]">
-                                <option value="">Choose a unit...</option>
+
+                    <!-- Stay Details -->
+                    <div class="bg-white p-8 shadow-sm border border-gray-200">
+                        <h2 class="text-2xl font-light text-[#632A89] mb-8">Stay Details</h2>
+
+                        <div class="grid md:grid-cols-2 gap-6 mb-8">
+                            <div>
+                                <label for="check_in" class="block text-sm font-semibold mb-3 text-[#632A89]">Check-in Date *</label>
+                                <input type="date" id="check_in" name="check_in" required min="{{ today }}" class="w-full px-5 py-4 border border-gray-300 focus:border-[#E96C40] focus:outline-none transition-colors">
+                            </div>
+                            <div>
+                                <label for="check_out" class="block text-sm font-semibold mb-3 text-[#632A89]">Check-out Date *</label>
+                                <input type="date" id="check_out" name="check_out" required class="w-full px-5 py-4 border border-gray-300 focus:border-[#E96C40] focus:outline-none transition-colors">
+                            </div>
+                        </div>
+
+                        <div class="mb-8">
+                            <label for="unit_id" class="block text-sm font-semibold mb-3 text-[#632A89]">Select Unit *</label>
+                            <select id="unit_id" name="unit_id" required class="w-full px-5 py-4 border border-gray-300 focus:border-[#E96C40] focus:outline-none transition-colors">
+                                <option value="">Select dates first to see availability...</option>
                             </select>
                         </div>
-                        
-                        <div class="grid md:grid-cols-2 gap-4 mb-6">
-                            <div>
-                                <label for="checkIn" class="block text-sm font-semibold mb-2 text-[#632A89]">Check In *</label>
-                                <input type="date" id="checkIn" name="checkIn" required
-                                       class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]"
-                                       min="{% now 'Y-m-d' %}">
-                            </div>
-                            <div>
-                                <label for="checkOut" class="block text-sm font-semibold mb-2 text-[#632A89]">Check Out *</label>
-                                <input type="date" id="checkOut" name="checkOut" required
-                                       class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]">
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <label for="guests" class="block text-sm font-semibold mb-2 text-[#632A89]">Number of Guests</label>
-                            <select id="guests" name="guests" class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]">
+
+                        <div class="mb-8">
+                            <label for="number_of_guests" class="block text-sm font-semibold mb-3 text-[#632A89]">Number of Guests *</label>
+                            <select id="number_of_guests" name="number_of_guests" required class="w-full px-5 py-4 border border-gray-300 focus:border-[#E96C40] focus:outline-none transition-colors">
                                 <option value="1">1 Guest</option>
                                 <option value="2" selected>2 Guests</option>
                                 <option value="3">3 Guests</option>
                                 <option value="4">4 Guests</option>
+                                <option value="5">5 Guests</option>
                             </select>
                         </div>
+
+                        <!-- Add-ons -->
+                        <div>
+                            <label class="block text-sm font-semibold mb-3 text-[#632A89]">Optional Add-ons</label>
+                            <div id="addonsContainer" class="space-y-4 max-h-60 overflow-y-auto pr-2"></div>
+                        </div>
                     </div>
-                    
-                    <!-- Additional Details -->
-                    <div class="service-card">
-                        <h2 class="serif text-2xl font-light mb-6">Additional Details</h2>
-                        
-                        <div class="mb-6">
-                            <label for="specialRequests" class="block text-sm font-semibold mb-2 text-[#632A89]">Special Requests</label>
-                            <textarea id="specialRequests" name="special_requests" rows="4"
-                                      class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]"
-                                      placeholder="Any special preferences or needs..."></textarea>
+
+                    <!-- Additional Info -->
+                    <div class="bg-white p-8 shadow-sm border border-gray-200">
+                        <h2 class="text-2xl font-light text-[#632A89] mb-8">Additional Information</h2>
+
+                        <div class="mb-8">
+                            <label for="special_requests" class="block text-sm font-semibold mb-3 text-[#632A89]">Special Requests</label>
+                            <textarea id="special_requests" name="special_requests" rows="4" class="w-full px-5 py-4 border border-gray-300 focus:border-[#E96C40] focus:outline-none transition-colors"></textarea>
                         </div>
-                        
-                        <div class="mb-6">
-                            <label for="notes" class="block text-sm font-semibold mb-2 text-[#632A89]">Admin Notes</label>
-                            <textarea id="notes" name="notes" rows="3"
-                                      class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]"
-                                      placeholder="Internal notes about this booking..."></textarea>
+
+                        <div>
+                            <label for="admin_notes" class="block text-sm font-semibold mb-3 text-[#632A89]">Admin Notes</label>
+                            <textarea id="admin_notes" name="admin_notes" rows="3" class="w-full px-5 py-4 border border-gray-300 focus:border-[#E96C40] focus:outline-none transition-colors"></textarea>
                         </div>
-                        
-                        <label class="flex items-center gap-3 cursor-pointer">
-                            <input type="checkbox" id="markPaid" name="markPaid"
-                                   class="w-4 h-4 cursor-pointer">
-                            <span class="text-sm font-semibold text-[#632A89]">Mark booking as paid</span>
+
+                        <label class="flex items-center gap-3 cursor-pointer select-none mt-8">
+                            <input type="checkbox" id="mark_paid" name="mark_paid" class="w-5 h-5 cursor-pointer">
+                            <span class="text-base font-medium text-[#632A89]">Mark as Paid (confirmed immediately, no payment link)</span>
                         </label>
                     </div>
-                    
-                    <div id="formMessage" class="hidden p-4 rounded text-sm"></div>
-                    
-                    <div class="flex gap-4">
-                        <button type="submit" class="btn-primary py-3 px-8" id="submitBtn">
-                            <span>Create Booking</span>
+
+                    <div class="flex flex-col sm:flex-row gap-4 pt-6">
+                        <button type="submit" id="submitBtn" class="btn-primary py-4 px-12 text-lg font-medium flex-1 flex items-center justify-center gap-2">
+                            <span><i class="fa-solid fa-check"></i> Create Booking</span>
                         </button>
-                        <a href="/admin/bookings" class="btn-outline py-3 px-8 text-center">
-                            <span>Cancel</span>
+                        <a href="/admin/bookings" class="btn-outline py-4 px-12 text-lg font-medium text-center flex-1 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-xmark"></i> Cancel
                         </a>
                     </div>
+
+                    <div id="formMessage" class="hidden p-5 border text-sm mt-6"></div>
                 </form>
             </div>
-            
-            <!-- Summary Sidebar -->
-            <div class="md:col-span-1">
-                <div class="service-card sticky top-32">
-                    <h3 class="serif text-2xl font-light mb-6">Booking Summary</h3>
-                    
-                    <div id="bookingSummary" class="space-y-4">
-                        <div class="p-3 bg-gray-100 rounded text-center text-neutral text-sm">
-                            Fill in the form to see summary
-                        </div>
+
+            <!-- Summary -->
+            <div class="lg:col-span-1">
+                <div class="bg-white p-8 shadow-sm border border-gray-200 lg:sticky lg:top-32">
+                    <h3 class="text-2xl font-light text-[#632A89] mb-8">Booking Summary</h3>
+
+                    <div id="bookingSummary" class="min-h-[140px] flex items-center justify-center text-center text-gray-500 border border-dashed border-gray-300 p-6 mb-8">
+                        Select dates to see available units
                     </div>
-                    
-                    <div class="border-t border-gray-200 mt-6 pt-6">
-                        <div class="flex justify-between mb-3">
-                            <span class="text-neutral">Subtotal</span>
-                            <span id="summarySubtotal" class="font-semibold">N0</span>
-                        </div>
-                        <div class="flex justify-between mb-3">
-                            <span class="text-neutral">Taxes (5%)</span>
-                            <span id="summaryTax" class="font-semibold">N0</span>
-                        </div>
-                        <div class="flex justify-between text-lg font-semibold border-t border-gray-200 pt-3 mt-3">
+
+                    <div class="space-y-4 text-sm">
+                        <div class="flex justify-between"><span class="text-gray-600">Nights</span><span id="nightsCount">0</span></div>
+                        <div class="flex justify-between"><span class="text-gray-600">Base Price</span><span id="basePrice">₦0</span></div>
+                        <div class="flex justify-between"><span class="text-gray-600">Add-ons</span><span id="addonsTotal">₦0</span></div>
+                        <div class="flex justify-between text-lg font-semibold pt-4 border-t border-gray-200">
                             <span>Total</span>
-                            <span id="summaryTotal" class="text-[#E96C40]">N0</span>
+                            <span id="grandTotal" class="text-[#E96C40]">₦0</span>
                         </div>
                     </div>
-                    
-                    <div class="mt-6 p-3 bg-[#E96C40]/10 rounded text-sm">
-                        <p class="text-[#632A89] font-semibold mb-2">Guest Access Code</p>
-                        <p class="font-mono text-[#E96C40]" id="guestCodeDisplay">Will be generated</p>
+
+                    <div class="mt-8 p-5 bg-[#E96C40]/10 border border-[#E96C40]/30">
+                        <p class="text-[#632A89] font-semibold mb-2">Guest Access Code (preview)</p>
+                        <p class="font-mono text-lg text-[#E96C40]" id="guestCodePreview">Will be generated</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        const form = document.getElementById('adminBookingForm');
-        const guestTypeSelect = document.getElementById('guestType');
-        const registeredUserSection = document.getElementById('registeredUserSection');
-        const newGuestSection = document.getElementById('newGuestSection');
-        const unitSelect = document.getElementById('unitId');
-        const checkInInput = document.getElementById('checkIn');
-        const checkOutInput = document.getElementById('checkOut');
-        const formMessage = document.getElementById('formMessage');
-        const submitBtn = document.getElementById('submitBtn');
-        
-        let units = [];
-        
-        // Load units
-        async function loadUnits() {
-            try {
-                const response = await fetch('/api/units');
-                units = await response.json();
-                
-                unitSelect.innerHTML = '<option value="">Choose a unit...</option>';
-                units.forEach(unit => {
-                    const option = document.createElement('option');
-                    option.value = unit.id;
-                    option.textContent = `${unit.unit_number} (${unit.apartment_type.bedrooms}BR)`;
-                    unitSelect.appendChild(option);
-                });
-            } catch (error) {
-                console.error('Error loading units:', error);
-            }
+    <!-- Mobile Total Bar -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-5 lg:hidden z-40 shadow-2xl">
+        <div class="flex items-center justify-between max-w-7xl mx-auto">
+            <div>
+                <p class="text-sm text-gray-600">Total</p>
+                <p class="text-2xl font-bold text-[#E96C40]" id="mobileGrandTotal">₦0</p>
+            </div>
+            <button type="submit" form="adminBookingForm" class="btn-primary py-4 px-10 text-base font-medium">
+                Create Booking
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ====================== ELEMENT REFERENCES ======================
+    const form = document.getElementById('adminBookingForm');
+    const guestType = document.getElementById('guestType');
+    const registeredSection = document.getElementById('registeredUserSection');
+    const newGuestSection = document.getElementById('newGuestSection');
+    const unitSelect = document.getElementById('unit_id');
+    const checkIn = document.getElementById('check_in');
+    const checkOut = document.getElementById('check_out');
+    const addonsContainer = document.getElementById('addonsContainer');
+    const formMessage = document.getElementById('formMessage');
+    const submitBtn = document.getElementById('submitBtn');
+    const guestCodePreview = document.getElementById('guestCodePreview');
+    const idUpload = document.getElementById('id_upload');
+    const idFileName = document.getElementById('idFileName');
+
+    let allUnits = [];
+    let allServices = [];
+    let selectedAddons = new Set();
+
+    // ====================== LOAD DATA ======================
+    async function loadData() {
+        try {
+            const [uRes, sRes] = await Promise.all([
+                fetch('/api/units'),
+                fetch('/api/services')
+            ]);
+            allUnits = await uRes.json();
+            allServices = await sRes.json();
+
+            // Populate optional add-ons
+            addonsContainer.innerHTML = '';
+            allServices.forEach(svc => {
+                if (svc.category === 'optional' && svc.is_active) {
+                    const div = document.createElement('div');
+                    div.className = 'flex items-start gap-3 p-4 border border-gray-200 rounded-xl';
+                    div.innerHTML = `
+                        <input type="checkbox" id="addon-${svc.id}" value="${svc.id}" class="w-5 h-5 mt-1 accent-[#94CA3E]">
+                        <label for="addon-${svc.id}" class="cursor-pointer flex-1">
+                            <div class="font-medium">${svc.name}</div>
+                            <div class="text-xs text-gray-500">${svc.description || ''}</div>
+                            <div class="text-[#632A89] font-semibold">+₦${svc.price.toLocaleString()}</div>
+                        </label>
+                    `;
+                    addonsContainer.appendChild(div);
+
+                    div.querySelector('input').addEventListener('change', (e) => {
+                        if (e.target.checked) selectedAddons.add(Number(svc.id));
+                        else selectedAddons.delete(Number(svc.id));
+                        updateSummary();
+                    });
+                }
+            });
+        } catch (e) {
+            console.error(e);
+            showMessage('Failed to load units/services', 'error');
         }
+    }
+
+    // Load registered users
+    async function loadRegisteredUsers() {
+        try {
+            const res = await fetch('/api/users');
+            const users = await res.json();
+            const select = document.getElementById('userId');
+            select.innerHTML = '<option value="">Choose user...</option>';
+            users.forEach(user => {
+                const opt = document.createElement('option');
+                opt.value = user.id;
+                opt.textContent = `${user.first_name} ${user.last_name} (${user.email})`;
+                select.appendChild(opt);
+            });
+        } catch (e) {
+            document.getElementById('userId').innerHTML = '<option value="">Error loading users</option>';
+        }
+    }
+
+    // Guest type toggle
+    guestType.addEventListener('change', () => {
+        const isReg = guestType.value === 'registered';
+        registeredSection.classList.toggle('hidden', !isReg);
+        newGuestSection.classList.toggle('hidden', isReg);
+        if (isReg) loadRegisteredUsers();
+    });
+
+    // ID file preview
+    idUpload.addEventListener('change', () => {
+        idFileName.textContent = idUpload.files.length ? idUpload.files[0].name : '';
+    });
+
+    let currentAvailability = [];
+
+    // ====================== AVAILABILITY ======================
+    async function checkAvailabilityAndUpdateUnits() {
+        const cin = checkIn.value;
+        const cout = checkOut.value;
+        if (!cin || !cout) return;
+
+        try {
+            const res = await fetch(`/api/availability?check_in=${cin}&check_out=${cout}`);
+            const availability = await res.json();
+            
+            window.currentAvailability = availability;   // ← Save globally
+
+            unitSelect.innerHTML = '<option value="">Choose available unit...</option>';
+
+            allUnits.forEach(unit => {
+                const avail = availability.find(a => Number(a.unit_id) === Number(unit.id));
+                const basePrice = avail?.base_price ?? unit.apartment_type?.base_price ?? 0;
+                const aptName = avail?.apartment_type ?? unit.apartment_type?.name ?? '';
+
+                const label = `${unit.unit_number} (${aptName}) - ₦${basePrice}/night`;
+
+                const opt = document.createElement('option');
+                opt.value = unit.id;
+
+                if (avail?.is_available) {
+                    opt.textContent = label;
+                    opt.className = 'unit-option-available';
+                } else {
+                    opt.disabled = true;
+                    opt.className = 'unit-option-unavailable tooltip';
+                    opt.innerHTML = `${label} <span class="tooltiptext">Currently booked</span>`;
+                }
+                unitSelect.appendChild(opt);
+            });
+        } catch (e) {
+            console.error(e);
+            showMessage('Failed to check availability', 'error');
+        }
+    }
+
+    checkIn.addEventListener('change', () => { checkAvailabilityAndUpdateUnits(); updateSummary(); });
+    checkOut.addEventListener('change', () => { checkAvailabilityAndUpdateUnits(); updateSummary(); });
+
+    // Trigger when unit is selected
+    unitSelect.addEventListener('change', updateSummary);
+
+    // ====================== PRICE CALCULATION (NOW FULLY WORKING) ======================
+    function updateSummary() {
+        const unitId = unitSelect.value;
+        const cin = checkIn.value;
+        const cout = checkOut.value;
+
+        if (!unitId || !cin || !cout) {
+            setSummary(0, 0, 0, 0);
+            guestCodePreview.textContent = 'Will be generated';
+            return;
+        }
+
+        const unit = allUnits.find(u => String(u.id) === String(unitId));
+        if (!unit) {
+            setSummary(0, 0, 0, 0);
+            return;
+        }
+
+        // Calculate nights
+        const checkInDate = new Date(cin);
+        const checkOutDate = new Date(cout);
+        const nights = Math.max(0, Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24)));
+
+        // === IMPORTANT: Use price from availability if available ===
+        const availabilityData = window.currentAvailability || []; // we'll store this globally
+        const avail = availabilityData.find(a => Number(a.unit_id) === Number(unitId));
         
-        // Toggle guest type sections
-        guestTypeSelect.addEventListener('change', function() {
-            if (this.value === 'registered') {
-                registeredUserSection.classList.remove('hidden');
-                newGuestSection.classList.add('hidden');
-                document.getElementById('userId').required = true;
-            } else if (this.value === 'new') {
-                registeredUserSection.classList.add('hidden');
-                newGuestSection.classList.remove('hidden');
-                document.getElementById('guestFirst').required = true;
-                document.getElementById('guestEmail').required = true;
-                document.getElementById('guestPhone').required = true;
+        const basePricePerNight = Number(avail?.base_price) || 
+                                Number(unit.apartment_type?.base_price) || 0;
+
+        const baseTotal = nights * basePricePerNight;
+
+        // Add-ons total
+        let addonsTotal = 0;
+        selectedAddons.forEach(id => {
+            const svc = allServices.find(s => Number(s.id) === Number(id));
+            if (svc) addonsTotal += Number(svc.price);
+        });
+
+        const grandTotal = baseTotal + addonsTotal;
+
+        setSummary(nights, baseTotal, addonsTotal, grandTotal);
+        
+        // Guest code preview
+        guestCodePreview.textContent = Math.random().toString(36).substring(2, 8).toUpperCase();
+    }
+
+    function setSummary(nights, base, addons, grand) {
+        document.getElementById('nightsCount').textContent = nights;
+        document.getElementById('basePrice').textContent = `₦${Math.round(base).toLocaleString()}`;
+        document.getElementById('addonsTotal').textContent = `₦${Math.round(addons).toLocaleString()}`;
+        document.getElementById('grandTotal').textContent = `₦${Math.round(grand).toLocaleString()}`;
+        document.getElementById('mobileGrandTotal').textContent = `₦${Math.round(grand).toLocaleString()}`;
+    }
+
+    function showMessage(msg, type) {
+        formMessage.textContent = msg;
+        formMessage.className = `p-5 border text-sm rounded-xl ${
+            type === 'success' ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800'
+        }`;
+        formMessage.classList.remove('hidden');
+    }
+
+    // Submit handler
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        formData.append('addons', JSON.stringify(Array.from(selectedAddons)));
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creating...';
+
+        try {
+            const res = await fetch('/admin/create-booking', { method: 'POST', body: formData });
+            const result = await res.json();
+
+            if (result.success) {
+                showMessage('Booking created successfully!', 'success');
+                setTimeout(() => window.location.href = result.redirect || '/admin/bookings', 1500);
             } else {
-                registeredUserSection.classList.add('hidden');
-                newGuestSection.classList.add('hidden');
+                showMessage(result.message || 'Failed', 'error');
             }
-        });
-        
-        // Set minimum checkout date
-        checkInInput.addEventListener('change', function() {
-            const checkInDate = new Date(this.value);
-            const minCheckOut = new Date(checkInDate);
-            minCheckOut.setDate(minCheckOut.getDate() + 1);
-            checkOutInput.min = minCheckOut.toISOString().split('T')[0];
-            updateSummary();
-        });
-        
-        checkOutInput.addEventListener('change', updateSummary);
-        unitSelect.addEventListener('change', updateSummary);
-        
-        function updateSummary() {
-            const unitId = unitSelect.value;
-            const checkIn = checkInInput.value;
-            const checkOut = checkOutInput.value;
-            
-            if (!unitId || !checkIn || !checkOut) {
-                return;
-            }
-            
-            const unit = units.find(u => u.id == unitId);
-            if (!unit) return;
-            
-            const checkInDate = new Date(checkIn);
-            const checkOutDate = new Date(checkOut);
-            const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
-            
-            const subtotal = nights * unit.base_price;
-            const tax = subtotal * 0.05;
-            const total = subtotal + tax;
-            
-            document.getElementById('bookingSummary').innerHTML = `
-                <div class="space-y-2 text-sm">
-                    <div class="flex justify-between">
-                        <span class="text-neutral">${unit.unit_number}</span>
-                        <span class="font-semibold">${nights} night${nights > 1 ? 's' : ''}</span>
-                    </div>
-                </div>
-            `;
-            
-            document.getElementById('summarySubtotal').textContent = `N${subtotal.toLocaleString()}`;
-            document.getElementById('summaryTax').textContent = `N${Math.round(tax).toLocaleString()}`;
-            document.getElementById('summaryTotal').textContent = `N${Math.round(total).toLocaleString()}`;
+        } catch (err) {
+            showMessage('Network error', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<span>Create Booking</span>`;
         }
-        
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const guestType = guestTypeSelect.value;
-            if (!guestType) {
-                showMessage('Please select guest type', 'error');
-                return;
-            }
-            
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span>Creating...</span>';
-            
-            try {
-                const bookingData = {
-                    unit_id: parseInt(unitSelect.value),
-                    check_in: checkInInput.value,
-                    check_out: checkOutInput.value,
-                    num_guests: parseInt(document.getElementById('guests').value),
-                    special_requests: document.getElementById('specialRequests').value,
-                    is_admin_booking: true,
-                    mark_paid: document.getElementById('markPaid').checked
-                };
-                
-                if (guestType === 'registered') {
-                    bookingData.user_id = parseInt(document.getElementById('userId').value);
-                } else {
-                    bookingData.guest_email = document.getElementById('guestEmail').value;
-                    bookingData.guest_phone = document.getElementById('guestPhone').value;
-                    bookingData.guest_first_name = document.getElementById('guestFirst').value;
-                    bookingData.guest_last_name = document.getElementById('guestLast').value;
-                }
-                
-                const response = await fetch('/admin/create-booking', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(bookingData)
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showMessage('Booking created successfully!', 'success');
-                    setTimeout(() => {
-                        window.location.href = `/admin/bookings/${data.booking_id}`;
-                    }, 1500);
-                } else {
-                    showMessage(data.message || 'Error creating booking', 'error');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showMessage('Error creating booking. Please try again.', 'error');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<span>Create Booking</span>';
-            }
-        });
-        
-        function showMessage(msg, type) {
-            formMessage.textContent = msg;
-            formMessage.className = `p-4 rounded text-sm ${type === 'success' ? 'bg-[#94CA3E]/20 text-[#632A89] border border-[#94CA3E]' : 'bg-red-50 text-red-600 border border-red-200'}`;
-            formMessage.classList.remove('hidden');
-        }
-        
-        // Load data on page load
-        loadUnits();
-    </script>
+    });
+
+    // Init
+    loadData();
+</script>
 {% endblock %}
