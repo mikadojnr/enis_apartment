@@ -4,20 +4,28 @@
 
 {% block content %}
     <div class="max-w-7xl mx-auto px-6 py-12">
+        
         <!-- Header -->
-        <div class="flex justify-between items-start mb-12">
+        <div class="flex flex-col md:flex-row md:justify-between md:items-start mb-8 md:mb-12 gap-6">
+            
+            <!-- Title Section -->
             <div>
-                <h1 class="serif text-5xl font-light mb-2">Manage Apartments</h1>
-                <p class="text-lg text-neutral">Create and manage apartment types</p>
+                <div>
+                    <h1 class="serif text-5xl font-light mb-2">Manage Apartments</h1>
+                    <p class="text-lg text-neutral">Create and manage apartment types</p>
+                </div>
             </div>
-            <div class="space-y-2">
-                <button onclick="openCreateModal()" class="btn-primary inline-block">
+
+            <!-- Buttons -->
+            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
+                <button onclick="openCreateModal()" class="btn-primary w-full sm:w-auto text-center">
                     <span>+ New Apartment Type</span>
                 </button>
-                <a href="/admin/dashboard" class="btn-outline inline-block ml-2">
+                <a href="/admin/dashboard" class="btn-outline w-full sm:w-auto text-center">
                     Back to Dashboard
                 </a>
             </div>
+
         </div>
 
         <!-- Apartments Grid -->
@@ -32,7 +40,7 @@
                         </div>
                         
                         <!-- Details -->
-                        <div class="bg-[#f8f6f3] p-4 rounded mb-6">
+                        <div class="bg-[#f8f6f3] p-4  mb-6">
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <p class="text-xs text-neutral mb-1">Bedrooms</p>
@@ -61,10 +69,10 @@
                         
                         <!-- Actions -->
                         <div class="space-y-2">
-                            <button onclick="editApartment({{ apartment.id }})" class="w-full text-sm font-semibold px-4 py-2 rounded transition bg-blue-100 text-blue-600 hover:bg-blue-200">
+                            <button onclick="editApartment({{ apartment.id }})" class="w-full text-sm font-semibold px-4 py-2  transition bg-blue-100 text-blue-600 hover:bg-blue-200">
                                 Edit
                             </button>
-                            <button onclick="deleteApartment({{ apartment.id }})" class="w-full text-sm font-semibold px-4 py-2 rounded transition bg-red-100 text-red-600 hover:bg-red-200">
+                            <button onclick="deleteApartment({{ apartment.id }})" class="w-full text-sm font-semibold px-4 py-2  transition bg-red-100 text-red-600 hover:bg-red-200">
                                 Delete
                             </button>
                         </div>
@@ -86,46 +94,48 @@
 
     <!-- Create/Edit Modal -->
     <div id="apartmentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-6">
-        <div class="bg-white rounded-lg max-w-2xl w-full max-h-96 overflow-y-auto">
+        <div class="bg-white max-w-2xl w-full max-h-96 overflow-y-auto">
             <div class="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 flex justify-between items-center">
                 <h2 id="modalTitle" class="serif text-3xl font-light">New Apartment Type</h2>
                 <button onclick="closeModal()" class="text-2xl text-gray-400 hover:text-gray-600">&times;</button>
             </div>
             
             <form id="apartmentForm" class="p-8 space-y-6">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
                 <div class="grid md:grid-cols-2 gap-6">
                     <div>
                         <label for="name" class="block text-sm font-semibold mb-2">Name</label>
-                        <input type="text" id="name" name="name" required class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]" placeholder="e.g., 2-Bedroom Luxury">
+                        <input type="text" id="name" name="name" required class="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-[#E96C40]" placeholder="e.g., 2-Bedroom Luxury">
                     </div>
                     <div>
                         <label for="base_price" class="block text-sm font-semibold mb-2">Daily Price (₦)</label>
-                        <input type="number" id="base_price" name="base_price" required step="0.01" class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]">
+                        <input type="number" id="base_price" name="base_price" required step="0.01" class="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-[#E96C40]">
                     </div>
                 </div>
                 
                 <div class="grid md:grid-cols-3 gap-6">
                     <div>
                         <label for="bedrooms" class="block text-sm font-semibold mb-2">Bedrooms</label>
-                        <input type="number" id="bedrooms" name="bedrooms" required min="1" class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]">
+                        <input type="number" id="bedrooms" name="bedrooms" required min="0" class="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-[#E96C40]">
                     </div>
                     <div>
                         <label for="bathrooms" class="block text-sm font-semibold mb-2">Bathrooms</label>
-                        <input type="number" id="bathrooms" name="bathrooms" required min="1" class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]">
+                        <input type="number" id="bathrooms" name="bathrooms" required min="1" class="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-[#E96C40]">
                     </div>
                     <div>
                         <label for="area_sqm" class="block text-sm font-semibold mb-2">Area (sqm)</label>
-                        <input type="number" id="area_sqm" name="area_sqm" required step="0.01" class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]">
+                        <input type="number" id="area_sqm" name="area_sqm" required step="0.01" class="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-[#E96C40]">
                     </div>
                 </div>
                 
                 <div>
                     <label for="description" class="block text-sm font-semibold mb-2">Description</label>
-                    <textarea id="description" name="description" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]" placeholder="Describe this apartment type..."></textarea>
+                    <textarea id="description" name="description" rows="3" class="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-[#E96C40]" placeholder="Describe this apartment type..."></textarea>
                 </div>
                 
                 <div class="flex gap-4 pt-4 border-t">
-                    <button type="submit" class="btn-primary flex-1">Save Apartment Type</button>
+                    <button type="submit" class="btn-primary flex-1"><span>Save Apartment Type</span></button>
                     <button type="button" onclick="closeModal()" class="btn-outline flex-1">Cancel</button>
                 </div>
             </form>

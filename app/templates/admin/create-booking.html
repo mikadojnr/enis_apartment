@@ -60,6 +60,7 @@
             <!-- Main Form -->
             <div class="lg:col-span-2 space-y-10">
                 <form id="adminBookingForm" class="space-y-10" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <!-- Guest Information -->
                     <div class="bg-white p-8 shadow-sm border border-gray-200">
                         <h2 class="text-2xl font-light text-[#632A89] mb-8">Guest Information</h2>
@@ -130,12 +131,6 @@
                             </div>
                         </div>
 
-                        <div class="mb-8">
-                            <label for="unit_id" class="block text-sm font-semibold mb-3 text-[#632A89]">Select Unit *</label>
-                            <select id="unit_id" name="unit_id" required class="w-full px-5 py-4 border border-gray-300 focus:border-[#E96C40] focus:outline-none transition-colors">
-                                <option value="">Select dates first to see availability...</option>
-                            </select>
-                        </div>
 
                         <div class="mb-8">
                             <label for="number_of_guests" class="block text-sm font-semibold mb-3 text-[#632A89]">Number of Guests *</label>
@@ -147,6 +142,15 @@
                                 <option value="5">5 Guests</option>
                             </select>
                         </div>
+
+                        <div class="mb-8">
+                            <label for="unit_id" class="block text-sm font-semibold mb-3 text-[#632A89]">Select Unit *</label>
+                            <select id="unit_id" name="unit_id" required class="w-full px-5 py-4 border border-gray-300 focus:border-[#E96C40] focus:outline-none transition-colors">
+                                <option value="">Select dates first to see availability...</option>
+                            </select>
+                        </div>
+
+                        
 
                         <!-- Add-ons -->
                         <div>
@@ -193,8 +197,8 @@
                 <div class="bg-white p-8 shadow-sm border border-gray-200 lg:sticky lg:top-32">
                     <h3 class="text-2xl font-light text-[#632A89] mb-8">Booking Summary</h3>
 
-                    <div id="bookingSummary" class="min-h-[140px] flex items-center justify-center text-center text-gray-500 border border-dashed border-gray-300 p-6 mb-8">
-                        Select dates to see available units
+                    <div id="bookingSummary" class="min-h-[140px] border border-dashed border-gray-300 p-6 mb-8 bg-gray-50 hidden">
+                        <!-- This will be filled by JavaScript -->
                     </div>
 
                     <div class="space-y-4 text-sm">
@@ -224,7 +228,7 @@
                 <p class="text-2xl font-bold text-[#E96C40]" id="mobileGrandTotal">₦0</p>
             </div>
             <button type="submit" form="adminBookingForm" class="btn-primary py-4 px-10 text-base font-medium">
-                Create Booking
+                <span><i class="fa-solid fa-check"></i> Create Booking</span>
             </button>
         </div>
     </div>
@@ -239,16 +243,58 @@
     const unitSelect = document.getElementById('unit_id');
     const checkIn = document.getElementById('check_in');
     const checkOut = document.getElementById('check_out');
-    const addonsContainer = document.getElementById('addonsContainer');
-    const formMessage = document.getElementById('formMessage');
+    const numberOfGuests = document.getElementById('number_of_guests');
     const submitBtn = document.getElementById('submitBtn');
     const guestCodePreview = document.getElementById('guestCodePreview');
     const idUpload = document.getElementById('id_upload');
     const idFileName = document.getElementById('idFileName');
+    const formMessage = document.getElementById('formMessage');   // ← Fixed: was missing
 
     let allUnits = [];
     let allServices = [];
     let selectedAddons = new Set();
+    let currentAvailability = [];
+
+    // ====================== ENABLE/DISABLE SUBMIT BUTTON ======================
+    function validateFormAndToggleButton() {
+        let isValid = true;
+
+        // 1. Guest Type must be selected
+        if (!guestType.value) isValid = false;
+
+        // 2. Registered User
+        if (guestType.value === 'registered') {
+            const userId = document.getElementById('userId');
+            if (!userId || !userId.value) isValid = false;
+        }
+
+        // 3. New Guest
+        if (guestType.value === 'new') {
+            const firstName = document.getElementById('first_name').value.trim();
+            const lastName = document.getElementById('last_name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+
+            if (!firstName || !lastName || !email || !phone || !idUpload.files.length) {
+                isValid = false;
+            }
+        }
+
+        // 4. Stay Details
+        if (!checkIn.value || !checkOut.value || !unitSelect.value || !numberOfGuests.value) {
+            isValid = false;
+        }
+
+        // Enable/Disable button
+        submitBtn.disabled = !isValid;
+
+        // Visual feedback
+        if (isValid) {
+            submitBtn.style.opacity = '1';
+        } else {
+            submitBtn.style.opacity = '0.75';
+        }
+    }
 
     // ====================== LOAD DATA ======================
     async function loadData() {
@@ -260,8 +306,9 @@
             allUnits = await uRes.json();
             allServices = await sRes.json();
 
-            // Populate optional add-ons
+            const addonsContainer = document.getElementById('addonsContainer');
             addonsContainer.innerHTML = '';
+
             allServices.forEach(svc => {
                 if (svc.category === 'optional' && svc.is_active) {
                     const div = document.createElement('div');
@@ -276,8 +323,8 @@
                     `;
                     addonsContainer.appendChild(div);
 
-                    div.querySelector('input').addEventListener('change', (e) => {
-                        if (e.target.checked) selectedAddons.add(Number(svc.id));
+                    div.querySelector('input').addEventListener('change', () => {
+                        if (event.target.checked) selectedAddons.add(Number(svc.id));
                         else selectedAddons.delete(Number(svc.id));
                         updateSummary();
                     });
@@ -289,7 +336,6 @@
         }
     }
 
-    // Load registered users
     async function loadRegisteredUsers() {
         try {
             const res = await fetch('/api/users');
@@ -307,20 +353,71 @@
         }
     }
 
+    // ====================== VALIDATION LISTENERS ======================
+    function setupValidationListeners() {
+        const fields = [
+            guestType, checkIn, checkOut, unitSelect, numberOfGuests,
+            document.getElementById('first_name'),
+            document.getElementById('last_name'),
+            document.getElementById('email'),
+            document.getElementById('phone'),
+            idUpload
+        ];
+
+        fields.forEach(field => {
+            if (field) {
+                field.addEventListener('change', validateFormAndToggleButton);
+                if (field.tagName === 'INPUT' && field.type !== 'file') {
+                    field.addEventListener('input', validateFormAndToggleButton);
+                }
+            }
+        });
+
+        // User select (registered)
+        const userIdSelect = document.getElementById('userId');
+        if (userIdSelect) userIdSelect.addEventListener('change', validateFormAndToggleButton);
+    }
+
     // Guest type toggle
+        // Guest type toggle
     guestType.addEventListener('change', () => {
         const isReg = guestType.value === 'registered';
         registeredSection.classList.toggle('hidden', !isReg);
         newGuestSection.classList.toggle('hidden', isReg);
+
         if (isReg) loadRegisteredUsers();
+
+        // === FIX FOR "invalid form control is not focusable" ===
+        toggleRequiredFields(isReg);
+
+        setTimeout(validateFormAndToggleButton, 100);
     });
 
-    // ID file preview
+    // New function to fix the focusable error
+    function toggleRequiredFields(isRegistered) {
+        const newGuestFields = [
+            document.getElementById('first_name'),
+            document.getElementById('last_name'),
+            document.getElementById('email'),
+            document.getElementById('phone'),
+            document.getElementById('id_upload')
+        ];
+
+        newGuestFields.forEach(field => {
+            if (field) {
+                if (isRegistered) {
+                    field.removeAttribute('required');     // Remove required when hidden
+                } else {
+                    field.setAttribute('required', 'required'); // Add required when shown
+                }
+            }
+        });
+    }
+
     idUpload.addEventListener('change', () => {
         idFileName.textContent = idUpload.files.length ? idUpload.files[0].name : '';
+        validateFormAndToggleButton();
     });
-
-    let currentAvailability = [];
 
     // ====================== AVAILABILITY ======================
     async function checkAvailabilityAndUpdateUnits() {
@@ -332,7 +429,7 @@
             const res = await fetch(`/api/availability?check_in=${cin}&check_out=${cout}`);
             const availability = await res.json();
             
-            window.currentAvailability = availability;   // ← Save globally
+            window.currentAvailability = availability;
 
             unitSelect.innerHTML = '<option value="">Choose available unit...</option>';
 
@@ -362,13 +459,75 @@
         }
     }
 
-    checkIn.addEventListener('change', () => { checkAvailabilityAndUpdateUnits(); updateSummary(); });
-    checkOut.addEventListener('change', () => { checkAvailabilityAndUpdateUnits(); updateSummary(); });
+    checkIn.addEventListener('change', () => { 
+        checkAvailabilityAndUpdateUnits(); 
+        updateSummary(); 
+    });
+    checkOut.addEventListener('change', () => { 
+        checkAvailabilityAndUpdateUnits(); 
+        updateSummary(); 
+    });
 
-    // Trigger when unit is selected
     unitSelect.addEventListener('change', updateSummary);
 
-    // ====================== PRICE CALCULATION (NOW FULLY WORKING) ======================
+    // ====================== SUMMARY & CARD ======================
+    function updateBookingSummaryCard() {
+        const summaryDiv = document.getElementById('bookingSummary');
+        const unitId = unitSelect.value;
+        const cin = checkIn.value;
+        const cout = checkOut.value;
+        const guests = numberOfGuests.value;
+
+        if (!unitId || !cin || !cout) {
+            summaryDiv.classList.add('hidden');
+            summaryDiv.innerHTML = `
+                <div class="flex items-center justify-center text-center text-gray-500">
+                    Select dates to see available units
+                </div>`;
+            return;
+        }
+
+        const unit = allUnits.find(u => String(u.id) === String(unitId));
+        if (!unit) {
+            summaryDiv.classList.add('hidden');
+            return;
+        }
+
+        const avail = (window.currentAvailability || []).find(a => Number(a.unit_id) === Number(unitId));
+        const aptName = avail?.apartment_type || unit.apartment_type?.name || 'Apartment';
+
+        summaryDiv.innerHTML = `
+            <div class="flex flex-col gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 bg-[#632A89]/10 text-[#632A89] flex items-center justify-center text-3xl">
+                        <i class="fa-solid fa-house-chimney"></i>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-lg text-[#632A89]">${unit.unit_number}</p>
+                        <p class="text-sm text-gray-600">${aptName}</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <span class="text-gray-500 block">Check-in</span>
+                        <span class="font-medium">${new Date(cin).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500 block">Check-out</span>
+                        <span class="font-medium">${new Date(cout).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                    </div>
+                </div>
+
+                <div class="pt-3 border-t border-gray-200">
+                    <span class="text-gray-500">Guests:</span> 
+                    <span class="font-medium">${guests} guests</span>
+                </div>
+            </div>
+        `;
+        summaryDiv.classList.remove('hidden');
+    }
+
     function updateSummary() {
         const unitId = unitSelect.value;
         const cin = checkIn.value;
@@ -377,30 +536,27 @@
         if (!unitId || !cin || !cout) {
             setSummary(0, 0, 0, 0);
             guestCodePreview.textContent = 'Will be generated';
+            updateBookingSummaryCard();
             return;
         }
 
         const unit = allUnits.find(u => String(u.id) === String(unitId));
         if (!unit) {
             setSummary(0, 0, 0, 0);
+            updateBookingSummaryCard();
             return;
         }
 
-        // Calculate nights
         const checkInDate = new Date(cin);
         const checkOutDate = new Date(cout);
         const nights = Math.max(0, Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24)));
 
-        // === IMPORTANT: Use price from availability if available ===
-        const availabilityData = window.currentAvailability || []; // we'll store this globally
+        const availabilityData = window.currentAvailability || [];
         const avail = availabilityData.find(a => Number(a.unit_id) === Number(unitId));
         
-        const basePricePerNight = Number(avail?.base_price) || 
-                                Number(unit.apartment_type?.base_price) || 0;
-
+        const basePricePerNight = Number(avail?.base_price) || Number(unit.apartment_type?.base_price) || 0;
         const baseTotal = nights * basePricePerNight;
 
-        // Add-ons total
         let addonsTotal = 0;
         selectedAddons.forEach(id => {
             const svc = allServices.find(s => Number(s.id) === Number(id));
@@ -410,9 +566,8 @@
         const grandTotal = baseTotal + addonsTotal;
 
         setSummary(nights, baseTotal, addonsTotal, grandTotal);
-        
-        // Guest code preview
         guestCodePreview.textContent = Math.random().toString(36).substring(2, 8).toUpperCase();
+        updateBookingSummaryCard();
     }
 
     function setSummary(nights, base, addons, grand) {
@@ -431,34 +586,59 @@
         formMessage.classList.remove('hidden');
     }
 
-    // Submit handler
+    // ====================== SUBMIT HANDLER ======================
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<span>Creating...</span>`;
+
         const formData = new FormData(form);
         formData.append('addons', JSON.stringify(Array.from(selectedAddons)));
 
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Creating...';
-
         try {
-            const res = await fetch('/admin/create-booking', { method: 'POST', body: formData });
+            const res = await fetch('/admin/create-booking', { 
+                method: 'POST', 
+                body: formData 
+            });
             const result = await res.json();
 
             if (result.success) {
                 showMessage('Booking created successfully!', 'success');
-                setTimeout(() => window.location.href = result.redirect || '/admin/bookings', 1500);
+                setTimeout(() => {
+                    window.location.href = result.redirect || '/admin/bookings';
+                }, 1500);
             } else {
-                showMessage(result.message || 'Failed', 'error');
+                showMessage(result.message || 'Failed to create booking', 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<span><i class="fa-solid fa-check"></i> Create Booking</span>`;
             }
         } catch (err) {
-            showMessage('Network error', 'error');
-        } finally {
+            showMessage('Network error. Please try again.', 'error');
             submitBtn.disabled = false;
-            submitBtn.innerHTML = `<span>Create Booking</span>`;
+            submitBtn.innerHTML = `<span><i class="fa-solid fa-check"></i> Create Booking</span>`;
         }
     });
 
-    // Init
-    loadData();
+    // ====================== INIT ======================
+    // async function init() {
+    //    await loadData();
+    //    setupValidationListeners();
+    //    validateFormAndToggleButton();   // Start with button disabled
+    // }
+
+    async function init() {
+        await loadData();
+        setupValidationListeners();
+        
+        // Initial required fields setup (default is "new" hidden → remove required)
+        toggleRequiredFields(false);   // false = registered mode (hidden)
+        
+        validateFormAndToggleButton();   // Start with button disabled
+    }
+
+    init();
+
+    init();
 </script>
 {% endblock %}

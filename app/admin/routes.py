@@ -9,8 +9,8 @@ from werkzeug.utils import secure_filename
 from app.admin import admin_bp
 from app import db
 from app.bookings.routes import send_booking_confirmed_email, send_booking_created_email
-from app.models import Booking, Unit, Service, ServiceRequest, User, ApartmentType, UnitImage
-from datetime import date, datetime
+from app.models import Booking, Payment, Unit, Service, ServiceRequest, User, ApartmentType, UnitImage
+from datetime import date, datetime, timedelta
 import uuid
 import string
 import random
@@ -54,22 +54,29 @@ def dashboard():
 def create_booking():
     if request.method == 'POST':
         data = request.form.to_dict()
-        unit = Unit.query.get_or_404(int(data['unit_id']))
-        check_in = datetime.fromisoformat(data['check_in'])
-        check_out = datetime.fromisoformat(data['check_out'])
+
+        try:
+            unit = Unit.query.get_or_404(int(data['unit_id']))
+            check_in = datetime.fromisoformat(data['check_in'])
+            check_out = datetime.fromisoformat(data['check_out'])
+        except (KeyError, ValueError, TypeError):
+            return jsonify({'success': False, 'message': 'Invalid date or unit data'}), 400
+
         days = (check_out - check_in).days
+        if days <= 0:
+            return jsonify({'success': False, 'message': 'Check-out must be after check-in'}), 400
 
         base_total = days * float(unit.apartment_type.base_price)
 
         # Add-ons
         addons_ids = json.loads(data.get('addons', '[]'))
-        selected_addons = Service.query.filter(Service.id.in_(addons_ids)).all()
+        selected_addons = Service.query.filter(Service.id.in_(addons_ids)).all() if addons_ids else []
         addons_total = sum(svc.price for svc in selected_addons)
         total_price = base_total + addons_total
 
         guest_code = generate_guest_code()
 
-        # Guest handling
+        # ====================== Guest Handling ======================
         user_id = None
         is_guest_booking = False
         guest_email = None
@@ -79,8 +86,8 @@ def create_booking():
             user_id = int(data['user_id'])
         else:
             is_guest_booking = True
-            guest_email = data['email']
-            guest_phone = data['phone']
+            guest_email = data.get('email')
+            guest_phone = data.get('phone')
 
             existing = User.query.filter_by(email=guest_email).first()
             if existing:
@@ -88,8 +95,8 @@ def create_booking():
             else:
                 new_user = User(
                     email=guest_email,
-                    first_name=data['first_name'],
-                    last_name=data['last_name'],
+                    first_name=data.get('first_name', ''),
+                    last_name=data.get('last_name', ''),
                     phone=guest_phone,
                     password_hash=''
                 )
@@ -97,7 +104,7 @@ def create_booking():
                 db.session.flush()
                 user_id = new_user.id
 
-        # ID Upload
+        # ====================== ID Upload ======================
         id_upload_url = None
         if 'id_upload' in request.files:
             file = request.files['id_upload']
@@ -108,7 +115,9 @@ def create_booking():
                 file.save(upload_path)
                 id_upload_url = f"/{upload_path}"
 
-        # Create Booking
+        # ====================== Create Booking ======================
+        mark_paid = data.get('mark_paid') == 'on'
+
         booking = Booking(
             booking_reference=f"ENI-{uuid.uuid4().hex[:8].upper()}",
             user_id=user_id,
@@ -121,27 +130,46 @@ def create_booking():
             check_out_date=check_out,
             number_of_guests=int(data['number_of_guests']),
             total_price=total_price,
-            status='confirmed' if data.get('mark_paid') == 'on' else 'pending',
-            paid=data.get('mark_paid') == 'on',
+            status='confirmed' if mark_paid else 'pending',
+            paid=mark_paid,
             special_requests=data.get('special_requests', ''),
             guest_code=guest_code,
             is_guest_booking=is_guest_booking,
             guest_email=guest_email,
             guest_phone=guest_phone,
-            id_upload_url=id_upload_url
+            id_upload_url=id_upload_url,
+            # === NEW: Expiry logic ===
+            expires_at=None if mark_paid else datetime.utcnow() + timedelta(minutes=10)
         )
 
+        # Add addons
         if selected_addons:
             booking.addons = selected_addons
 
         db.session.add(booking)
+        db.session.flush()   # So we can use booking.id for Payment
+
+        # ====================== Create Payment Record if Marked Paid ======================
+        if mark_paid:
+            payment = Payment(
+                booking_id=booking.id,
+                payment_reference=f"PAY-{uuid.uuid4().hex[:12].upper()}",
+                amount=total_price,
+                currency='NGN',
+                status='success',
+                payment_method='admin_marked_paid',
+                transaction_date=datetime.utcnow(),
+                gateway_response='Marked as paid by admin'
+            )
+            db.session.add(payment)
+
         db.session.commit()
 
-        # Email handling
-        if booking.paid:
-            send_booking_confirmed_email(booking)   # confirmed email with dashboard link
+        # ====================== Email ======================
+        if mark_paid:
+            send_booking_confirmed_email(booking)
         else:
-            send_booking_created_email(booking)     # awaiting payment email with Paystack link
+            send_booking_created_email(booking)
 
         return jsonify({
             'success': True,
@@ -149,9 +177,9 @@ def create_booking():
             'redirect': url_for('admin.manage_bookings')
         })
 
+    # GET request
     today = date.today().isoformat()
     return render_template('admin/create-booking.html', today=today)
-
 
 @admin_bp.route('/units')
 @login_required
