@@ -127,6 +127,54 @@
                         </div>
                     </div>
 
+                    <!-- ID VERIFICATION SECTION -->
+                    <div class="service-card" id="idVerificationSection">
+                        <h2 class="serif text-2xl font-light mb-8 flex items-center gap-3">
+                            <span class="text-3xl"><i class="fa-solid fa-id-card"></i></span> 
+                            ID VERIFICATION
+                        </h2>
+
+                        <div id="idStatus" class="hidden mb-6 p-5 bg-green-50 border border-green-200 rounded-2xl">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-circle-check text-3xl text-green-600"></i>
+                                <div>
+                                    <p class="font-semibold text-green-700">ID Already Verified</p>
+                                    <p id="verifiedUserName" class="text-sm text-green-600"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="idUploadArea">
+                            <label class="block text-sm font-semibold mb-3 text-[#632A89]">Upload ID Document (NIN, Passport, Driver's License) *</label>
+                            
+                            <div id="dropZone" class="border-2 border-dashed border-gray-300 rounded-2xl p-10 text-center hover:border-[#E96C40] transition-all cursor-pointer">
+                                <i class="fa-solid fa-cloud-arrow-up text-4xl text-gray-400 mb-4 block"></i>
+                                <p class="font-medium text-gray-700">Click or drag & drop your ID</p>
+                                <p class="text-xs text-neutral mt-2">PNG, JPG, PDF • Max 5MB</p>
+                                <p id="selectedFileName" class="mt-4 text-sm font-medium text-[#632A89] hidden"></p>
+                            </div>
+
+                            <input type="file" id="idDocument" accept="image/*,.pdf" class="hidden">
+                        </div>
+
+                        <div id="idVerificationResult" class="hidden mt-6 p-6 bg-green-50 border border-green-200 rounded-2xl">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-circle-check text-3xl text-green-600"></i>
+                                <div>
+                                    <p class="text-green-700 font-semibold">ID Verified Successfully</p>
+                                    <p id="verifiedNameDisplay" class="text-sm text-green-600"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button id="verifyIdBtn" 
+                                onclick="verifyID()"
+                                class="btn-primary w-full mt-8 py-4 text-lg font-semibold disabled:opacity-50"
+                                disabled>
+                            Verify ID Document
+                        </button>
+                    </div>
+
                     <!-- ADD-ON SERVICES -->
                     <div class="service-card">
                         <h2 class="serif text-2xl font-light mb-8 flex items-center gap-3">
@@ -250,7 +298,7 @@
                         </div>
                         <div class="flex justify-between pt-4 border-t border-gray-200">
                             <span class="text-neutral">Service fee (5%)</span>
-                            <span id="serviceFee" class="font-semibold bg-gray-300 w-32 h-6 rounded animate-pulse"></span>
+                            <span id="serviceFee" class="font-semibold bg-gray-300 w-32 h-6 rounded animate-pulse">---</span>
                         </div>
                         <div class="flex justify-between md:text-xl lg:text-3xl font-light pt-6 border-t">
                             <span>Total</span>
@@ -297,6 +345,11 @@
                 }
             }
 
+            // Require ID verification
+            if (!verifiedIdId) {
+                return false;
+            }
+
             return calculateNights() > 0;
         }
 
@@ -337,8 +390,10 @@
             const basePrice = (fetchedData.apartment_type?.base_price || 0) * nights;
             const { total: addonsTotal, lines } = calculateAddonsTotalAndLines();
             const subtotal = basePrice + addonsTotal;
-            const serviceFee = Math.round(subtotal * 0.05);
-            const grandTotal = subtotal + serviceFee;
+            // const serviceFee = Math.round(subtotal * 0.05);
+            const serviceFee = 0;
+            // const grandTotal = subtotal + serviceFee;
+            const grandTotal = subtotal;
 
             // Update UI
             document.getElementById('unitPricing').textContent = nights > 0
@@ -634,5 +689,170 @@
                 }
             } catch {}
         }
+
+
+        // ID Verification logic
+        // ====================== ID VERIFICATION ======================
+        // ====================== GLOBAL VARIABLES ======================
+        let verifiedIdId = null;
+        let hasVerifiedId = false;        // For logged-in users who already have verified ID
+        let selectedFile = null;
+
+        // ====================== ID VERIFICATION ======================
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('idDocument');
+        const selectedFileNameEl = document.getElementById('selectedFileName');
+        const verifyBtn = document.getElementById('verifyIdBtn');
+        const idStatusDiv = document.getElementById('idStatus');
+        const idUploadArea = document.getElementById('idUploadArea');
+        const idVerificationResult = document.getElementById('idVerificationResult');
+
+        // Drag & Drop + Click
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                selectedFile = e.target.files[0];
+                selectedFileNameEl.textContent = selectedFile.name;
+                selectedFileNameEl.classList.remove('hidden');
+                verifyBtn.disabled = false;
+            }
+        });
+
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.borderColor = '#E96C40'; });
+        dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = '#d1d5db'; });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#d1d5db';
+            if (e.dataTransfer.files.length) {
+                selectedFile = e.dataTransfer.files[0];
+                selectedFileNameEl.textContent = selectedFile.name;
+                selectedFileNameEl.classList.remove('hidden');
+                verifyBtn.disabled = false;
+            }
+        });
+
+        // Main Verify Function
+        async function verifyID() {
+            if (!selectedFile) return alert("Please select an ID document");
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            formData.append('id_type', document.getElementById('idType').value || 'passport');
+            formData.append('email', document.getElementById('email').value.trim());
+
+            
+            verifyBtn.disabled = true;
+            verifyBtn.innerHTML = 'Verifying...';
+
+            try {
+                const res = await fetch('/verify-id', { 
+                    method: 'POST', 
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token() }}'   // ← This is the correct way for FormData
+                    } 
+                });
+                const result = await res.json();
+
+                if (result.success) {
+                    verifiedIdId = result.verified_id_id;
+                    idVerificationResult.classList.remove('hidden');
+                    document.getElementById('verifiedNameDisplay').textContent = `Verified as: ${result.full_name || 'Valid Holder'}`;
+                    updateButtonState();
+                    showMessage('ID verified successfully!', 'success');
+                } else {
+                    showMessage(result.message || 'Verification failed', 'error');
+                }
+            } catch (err) {
+                showMessage('Verification service error', 'error');
+            } finally {
+                verifyBtn.disabled = false;
+                verifyBtn.innerHTML = 'Verify ID Document';
+            }
+        }
+
+        // ====================== PREFILL FOR LOGGED-IN USERS + SKIP LOGIC ======================
+        async function checkUserAndPrefill() {
+            try {
+                const res = await fetch('/api/me');   // You need to create this endpoint
+                if (!res.ok) return;
+
+                const user = await res.json();
+
+                if (user.is_authenticated) {
+                    // Prefill guest information
+                    document.getElementById('firstName').value = user.first_name || '';
+                    document.getElementById('lastName').value = user.last_name || '';
+                    document.getElementById('email').value = user.email || '';
+                    document.getElementById('phone').value = user.phone || '';
+
+                    // Check if user already has verified ID
+                    if (user.has_verified_id) {
+                        hasVerifiedId = true;
+                        verifiedIdId = user.verified_id_id;   // optional: pass from backend
+
+                        idStatusDiv.classList.remove('hidden');
+                        document.getElementById('verifiedUserName').textContent = 
+                            `Verified as: ${user.full_name || user.first_name + ' ' + user.last_name}`;
+
+                        idUploadArea.style.display = 'none';        // Hide upload area
+                        verifyBtn.style.display = 'none';
+                    }
+                }
+            } catch (e) {
+                console.warn("Could not prefill user data");
+            }
+        }
+
+        // ====================== FORM READY CHECK (Updated) ======================
+        function isFormReady() {
+            if (!fetchedData) return false;
+
+            const required = ['checkIn', 'checkOut', 'guests', 'firstName', 'lastName', 'email', 'phone', 'termsCheck'];
+
+            for (const id of required) {
+                const el = document.getElementById(id);
+                if (!el) return false;
+                if (el.type === 'checkbox') {
+                    if (!el.checked) return false;
+                } else if (!el.value?.trim()) {
+                    return false;
+                }
+            }
+
+            // ID Verification Requirement
+            if (!hasVerifiedId && !verifiedIdId) {
+                return false;
+            }
+
+            return calculateNights() > 0;
+        }
+
+        // ====================== INIT ======================
+        window.addEventListener('load', async () => {
+            const bookingData = sessionStorage.getItem('bookingData');
+            if (bookingData) {
+                try {
+                    const { unit_id, check_in, check_out, num_guests } = JSON.parse(bookingData);
+                    if (unit_id) {
+                        document.getElementById('unitId').value = unit_id;
+                        if (check_in) document.getElementById('checkIn').value = check_in;
+                        if (check_out) document.getElementById('checkOut').value = check_out;
+                        if (num_guests) document.getElementById('guests').value = num_guests;
+                        loadUnitData(unit_id);
+                    }
+                } catch (e) {}
+            }
+
+            await checkUserAndPrefill();     // ← Prefill + skip logic
+            updateButtonState();
+
+            // Add listeners
+            ['checkIn', 'checkOut', 'guests', 'children', 'firstName', 'lastName', 'email', 'phone', 'termsCheck'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', () => { updatePricingDisplay(); updateButtonState(); });
+            });
+        });
     </script>
 {% endblock %}

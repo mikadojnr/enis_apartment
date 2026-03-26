@@ -27,7 +27,7 @@
     <h1 class="text-4xl font-light text-center mb-10">Booking Confirmation</h1>
 
     {% if booking.status == 'expired' %}
-    <div class="bg-red-50 border border-red-200 p-10 text-center rounded-2xl">
+    <div class="bg-red-50 border border-red-200 p-10 text-center ">
         <h2 class="text-3xl font-semibold text-red-700 mb-6">Booking Expired</h2>
         <p class="text-lg text-red-600 mb-8">
             The 10-minute payment window has elapsed.<br>
@@ -39,7 +39,7 @@
     </div>
 
     {% elif booking.status == 'pending' %}
-    <div class="service-card text-center py-12 rounded-2xl">
+    <div class="service-card text-center py-12 ">
         <h2 class="text-3xl font-light text-[#632A89] mb-6">Awaiting Payment</h2>
         <p class="text-xl mb-4">
             Booking Reference: <strong class="font-mono text-[#E96C40]">{{ booking.booking_reference }}</strong>
@@ -165,7 +165,7 @@
     </script>
 
     {% else %}
-    <div class="bg-green-50 border border-green-200 rounded-2xl p-10 text-center">
+    <div class="bg-green-50 border border-green-200 p-10 text-center">
         <h2 class="text-3xl font-semibold text-green-700 mb-6">Booking Confirmed</h2>
         <p class="text-lg mb-6">Payment received. Thank you!</p>
         <a href="{{ url_for('bookings.booking_details', booking_reference=booking.booking_reference) }}"
@@ -177,8 +177,8 @@
 
     <div class="mt-12 text-center text-neutral">
         <p>Questions? Contact us at 
-            <a href="mailto:bookings@eniapartments.com" class="text-[#E96C40] hover:underline">
-                bookings@eniapartments.com
+            <a href="mailto:stay@enisapartment.com" class="text-[#E96C40] hover:underline">
+                stay@enisapartment.com
             </a>
         </p>
     </div>

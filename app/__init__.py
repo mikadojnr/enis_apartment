@@ -70,6 +70,7 @@ def create_app(config_name='development'):
     from app.admin import admin_bp
     from app.api import api_bp
     from app.payment import payments_bp
+    from app.verification import verification_bp
 
    
     app.register_blueprint(main_bp)
@@ -79,6 +80,7 @@ def create_app(config_name='development'):
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(payments_bp, url_prefix='/payments')
+    app.register_blueprint(verification_bp, url_prefix='/verify-id')
 
     # Context processor for current year
     @app.context_processor

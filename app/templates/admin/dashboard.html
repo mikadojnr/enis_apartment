@@ -123,6 +123,8 @@
                                 <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold
                                     {% if booking.status == 'confirmed' %}bg-[#94CA3E] text-white
                                     {% elif booking.status == 'pending' %}bg-yellow-400 text-white
+                                    {% elif booking.status == 'cancelled' %}bg-red-400 text-white
+                                    {% elif booking.status == 'expired' %}bg-gray-400 text-white
                                     {% else %}bg-gray-400 text-white{% endif %}">
                                     {{ booking.status|capitalize }}
                                 </span>

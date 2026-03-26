@@ -29,21 +29,25 @@
 
         <!-- Filters -->
         <div class="mb-8 space-x-3">
-            <a href="/admin/bookings?status=all" class="px-6 py-2 rounded-full border-2 transition
+            <a href="/admin/bookings?status=all" class="px-6 py-2 border-2 transition
                 {% if current_status == 'all' %}border-[#E96C40] bg-[#E96C40] text-white{% else %}border-gray-300 text-gray-600 hover:border-[#E96C40]{% endif %}">
                 All
             </a>
-            <a href="/admin/bookings?status=pending" class="px-6 py-2 rounded-full border-2 transition
+            <a href="/admin/bookings?status=pending" class="px-6 py-2 border-2 transition
                 {% if current_status == 'pending' %}border-yellow-400 bg-yellow-400 text-white{% else %}border-gray-300 text-gray-600 hover:border-yellow-400{% endif %}">
                 Pending
             </a>
-            <a href="/admin/bookings?status=confirmed" class="px-6 py-2 rounded-full border-2 transition
+            <a href="/admin/bookings?status=confirmed" class="px-6 py-2 border-2 transition
                 {% if current_status == 'confirmed' %}border-[#94CA3E] bg-[#94CA3E] text-white{% else %}border-gray-300 text-gray-600 hover:border-[#94CA3E]{% endif %}">
                 Confirmed
             </a>
-            <a href="/admin/bookings?status=completed" class="px-6 py-2 rounded-full border-2 transition
+            <a href="/admin/bookings?status=completed" class="px-6 py-2 border-2 transition
                 {% if current_status == 'completed' %}border-blue-400 bg-blue-400 text-white{% else %}border-gray-300 text-gray-600 hover:border-blue-400{% endif %}">
                 Completed
+            </a>
+            <a href="/admin/bookings?status=expired" class="px-6 py-2 border-2 transition
+                {% if current_status == 'expired' %}border-red-400 bg-red-400 text-white{% else %}border-gray-300 text-gray-600 hover:border-red-400{% endif %}">
+                Expired
             </a>
         </div>
 
@@ -83,7 +87,7 @@
                         <div>
                             <p class="text-sm text-neutral mb-2">Status</p>
                             <select onchange="updateBookingStatus({{ booking.id }}, this.value)" 
-                                    class="px-3 py-1 rounded text-sm font-semibold bg-white border
+                                    class="px-3 py-1 text-sm font-semibold bg-white border
                                     {% if booking.status == 'confirmed' %}border-[#94CA3E] text-[#94CA3E]
                                     {% elif booking.status == 'pending' %}border-yellow-400 text-yellow-600
                                     {% elif booking.status == 'completed' %}border-blue-400 text-blue-600
@@ -92,6 +96,7 @@
                                 <option value="confirmed" {% if booking.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
                                 <option value="completed" {% if booking.status == 'completed' %}selected{% endif %}>Completed</option>
                                 <option value="cancelled" {% if booking.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                                <option value="expired" {% if booking.status == 'expired' %}selected{% endif %}>Expired</option>
                             </select>
                         </div>
                     </div>
@@ -124,7 +129,8 @@
             const response = await fetch(`/admin/bookings/${bookingId}/status`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
                 },
                 body: JSON.stringify({ status: newStatus })
             });

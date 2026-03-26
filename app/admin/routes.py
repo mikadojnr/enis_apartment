@@ -4,7 +4,7 @@ import os
 from flask import current_app, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 from functools import wraps
-
+from flask_wtf.csrf import validate_csrf
 from werkzeug.utils import secure_filename
 from app.admin import admin_bp
 from app import db
@@ -284,23 +284,51 @@ def manage_apartments():
 def create_apartment():
     """Create new apartment type"""
     if request.method == 'POST':
-        data = request.get_json()
+        # Support both JSON and form data
+        if request.is_json:
+            data = request.get_json()
+        else:
+            data = request.form.to_dict()
+
+        try:
+            apartment = ApartmentType(
+                name=data.get('name'),
+                bedrooms=int(data.get('bedrooms', 0)),
+                bathrooms=int(data.get('bathrooms', 0)),
+                area_sqm=float(data.get('area_sqm', 0)),
+                description=data.get('description', ''),
+                base_price=float(data.get('base_price', 0))
+            )
+            
+            db.session.add(apartment)
+            db.session.commit()
+            
+            return jsonify({'success': True, 'apartment_id': apartment.id})
         
-        apartment = ApartmentType(
-            name=data.get('name'),
-            bedrooms=int(data.get('bedrooms')),
-            bathrooms=int(data.get('bathrooms')),
-            area_sqm=float(data.get('area_sqm')),
-            description=data.get('description'),
-            base_price=float(data.get('base_price'))
-        )
-        
-        db.session.add(apartment)
-        db.session.commit()
-        
-        return jsonify({'success': True, 'apartment_id': apartment.id})
-    
+        except (ValueError, TypeError) as e:
+            return jsonify({'success': False, 'message': 'Invalid data provided'}), 400
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'message': str(e)}), 500
+
     return render_template('admin/apartment-form.html', apartment=None)
+
+@admin_bp.route('/apartments/<int:apartment_id>', methods=['GET'])
+@login_required
+@admin_required
+def get_apartment(apartment_id):
+    """Get single apartment type for editing"""
+    apartment = ApartmentType.query.get_or_404(apartment_id)
+    
+    return jsonify({
+        'id': apartment.id,
+        'name': apartment.name,
+        'bedrooms': apartment.bedrooms,
+        'bathrooms': apartment.bathrooms,
+        'area_sqm': apartment.area_sqm,
+        'base_price': apartment.base_price,
+        'description': apartment.description or ''
+    })
 
 @admin_bp.route('/apartments/<int:apartment_id>/edit', methods=['GET', 'POST'])
 @login_required

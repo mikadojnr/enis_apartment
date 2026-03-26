@@ -139,7 +139,7 @@
                             <span class="text-[#E96C40]">●</span> {{ unit.view }}
                         </li>
                         <li class="flex items-center gap-2">
-                            <span class="text-[#E96C40]">●</span> N{{ "%.0f"|format(unit.apartment_type.base_price * 30) }}/month
+                            <span class="text-[#E96C40]">●</span> ₦{{ "{:,}".format(unit.apartment_type.base_price * 30) }}/month
                         </li>
                     </ul>
                     <a href="/unit/{{ unit.unit_number }}" class="w-full mt-6 inline-block btn-primary text-center">

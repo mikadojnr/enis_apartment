@@ -2,7 +2,7 @@ from flask import render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user, login_user
 from app.bookings import bookings_bp
 from app import db
-from app.models import Booking, Payment, Unit, ApartmentType, User
+from app.models import Booking, Payment, Service, Unit, ApartmentType, User, VerifiedID
 from datetime import datetime, time, timedelta
 import uuid
 import string
@@ -108,6 +108,23 @@ def new_booking():
         return jsonify({"success": False, "message": "JSON payload required"}), 415
 
     data = request.get_json()
+
+    # === ID Verification Check ===
+    email = str(data.get('email', '')).strip().lower()
+    id_type = data.get('id_type')
+
+    # If user is logged in or has previously verified ID with this email
+    verified = False
+    if current_user.is_authenticated:
+        verified = VerifiedID.query.filter_by(user_id=current_user.id, is_verified=True).first()
+    else:
+        verified = VerifiedID.query.filter_by(email=email, is_verified=True).first()
+
+    if not verified and not data.get('verified_id_id'):
+        return jsonify({
+            "success": False,
+            "message": "ID verification required before booking"
+        }), 400
 
     required = ['unit_id', 'check_in', 'check_out', 'first_name', 'last_name', 'email', 'phone']
     missing = [f for f in required if f not in data or not data[f]]

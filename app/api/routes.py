@@ -1,6 +1,7 @@
 from flask import jsonify, request
+from flask_login import current_user
 from app.api import api_bp
-from app.models import Unit, Service, Booking, User
+from app.models import Unit, Service, Booking, User, VerifiedID
 from datetime import datetime
 from app import db
 
@@ -14,6 +15,22 @@ def get_users():
         'email': u.email,
         'is_admin': u.is_admin
     } for u in users])
+
+@api_bp.route('/me')
+def api_me():
+    if current_user.is_authenticated:
+        verified = VerifiedID.query.filter_by(user_id=current_user.id, is_verified=True).first()
+        return jsonify({
+            "is_authenticated": True,
+            "first_name": current_user.first_name,
+            "last_name": current_user.last_name,
+            "email": current_user.email,
+            "phone": current_user.phone,
+            "has_verified_id": bool(verified),
+            "verified_id_id": verified.id if verified else None,
+            "full_name": f"{current_user.first_name} {current_user.last_name}"
+        })
+    return jsonify({"is_authenticated": False})
 
 @api_bp.route('/units')
 def get_units():

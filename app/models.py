@@ -162,6 +162,29 @@ class Booking(db.Model):
     def __repr__(self):
         return f'<Booking {self.booking_reference}>'
     
+
+class VerifiedID(db.Model):
+    """Stores successfully verified IDs (both logged-in and guest users)"""
+    __tablename__ = 'verified_ids'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    email = db.Column(db.String(120), nullable=True, index=True)   # for guests
+    id_type = db.Column(db.String(50), nullable=False)             # nin, passport, drivers_license
+    id_number = db.Column(db.String(100), nullable=False)
+    full_name = db.Column(db.String(200))
+    date_of_birth = db.Column(db.Date, nullable=True)
+    verification_id = db.Column(db.String(100))                    # from IDAnalyzer/DocuPass
+    document_url = db.Column(db.String(255))
+    selfie_url = db.Column(db.String(255), nullable=True)
+    is_verified = db.Column(db.Boolean, default=True)
+    verified_at = db.Column(db.DateTime, default=datetime.utcnow)
+    expires_at = db.Column(db.DateTime, nullable=True)             # optional: re-verify after 1 year
+
+    user = db.relationship('User', backref=db.backref('verified_ids', lazy=True))
+
+    def __repr__(self):
+        return f'<VerifiedID {self.id_type} - {self.email or self.user_id}>'
  
 class Service(db.Model):
     """Available services"""
