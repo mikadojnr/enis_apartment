@@ -81,7 +81,7 @@
                         
                         <div>
                             <p class="text-sm text-neutral mb-1">Total</p>
-                            <p class="font-semibold text-lg text-[#E96C40]">N{{ "%.0f"|format(booking.total_price) }}</p>
+                            <p class="font-semibold text-lg text-[#E96C40]">N{{ "{:,.2f}".format(booking.total_price) }}</p>
                         </div>
                         
                         <div>

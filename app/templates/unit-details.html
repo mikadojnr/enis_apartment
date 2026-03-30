@@ -72,7 +72,6 @@
         max-width: 92vw;
         max-height: 88vh;
         object-fit: contain;
-        border-radius: 8px;
         box-shadow: 0 10px 60px rgba(0,0,0,0.7);
         transition: opacity 0.3s ease;
     }
@@ -85,10 +84,10 @@
         color: white;
         border: none;
         font-size: 3.5rem;
-        padding: 12px 20px;
+        padding: 4px 15px;
         cursor: pointer;
         user-select: none;
-        border-radius: 50%;
+        
         transition: background 0.2s;
     }
 
@@ -110,6 +109,18 @@
         cursor: pointer;
     }
 
+    #lightboxCaption {
+        position: absolute;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: white;
+        font-size: 1rem;
+        background: rgba(0,0,0,0.5);
+        padding: 6px 14px;
+        backdrop-filter: blur(4px);
+    }
+
     #lightboxCounter {
         position: absolute;
         bottom: 30px;
@@ -119,7 +130,6 @@
         font-size: 1.1rem;
         background: rgba(0,0,0,0.5);
         padding: 8px 18px;
-        border-radius: 999px;
         backdrop-filter: blur(4px);
     }
 </style>
@@ -128,7 +138,6 @@
 {% block content %}
 
     <div class="max-w-7xl mx-auto px-6 py-12">
-
         <!-- Breadcrumb -->
         <nav class="mb-8 text-sm text-neutral">
             <a href="/" class="hover:text-[#E96C40]">Home</a> /
@@ -137,115 +146,94 @@
         </nav>
 
         <!-- Gallery -->
-        <div class="gallery-grid mb-10">
-            <!-- Using dummy images for now – replace with real logic later -->
+        <div class="gallery-grid mb-12">
+            <!-- Main Featured Image -->
             <div class="gallery-main">
-                <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=900&q=80"
-                     class="gallery-img"
-                     alt="Main living area"
-                     onclick="openLightbox(0)">
+                {% if unit.image_url %}
+                <img src="{{ unit.image_url }}" 
+                    class="gallery-img" 
+                    alt="{{ unit.unit_number }} - Main View"
+                    onclick="openLightbox(0)">
+                {% else %}
+                <div class="h-full bg-gray-200 flex items-center justify-center text-gray-400 text-2xl">
+                    No main image
+                </div>
+                {% endif %}
             </div>
 
-            <div class="gallery-thumb">
-                <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=500&q=80"
-                     alt="Bedroom"
-                     onclick="openLightbox(1)">
-            </div>
+            <!-- Gallery Thumbnails -->
+            {% for image in gallery_images[:4] %}
+                {% if loop.index0 == 3 and gallery_images|length > 4 %}
+                    <!-- LAST SLOT becomes "more" overlay -->
+                    <div class="gallery-thumb" onclick="openLightbox({{ loop.index }})">
+                        <img src="{{ image.image_url }}" 
+                            alt="More images"
+                            style="filter: brightness(0.7);">
 
-            <div class="gallery-thumb">
-                <img src="https://images.unsplash.com/photo-1484154218962-a197022b5858?w=500&q=80"
-                     alt="Kitchen"
-                     onclick="openLightbox(2)">
-            </div>
-
-            <div class="gallery-thumb">
-                <img src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=500&q=80"
-                     alt="Pool view"
-                     onclick="openLightbox(3)">
-            </div>
-
-            <div class="gallery-thumb" onclick="openLightbox(4)">
-                <img src="https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=500&q=80"
-                     alt="Additional view">
-            </div>
+                        <div class="absolute inset-0 flex items-center justify-center text-white font-bold text-lg bg-black/50">
+                            +{{ gallery_images|length - 4 }} more
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="gallery-thumb">
+                        <img src="{{ image.image_url }}" 
+                            alt="{{ image.label or 'Gallery Image' }}"
+                            onclick="openLightbox({{ loop.index }})">
+                    </div>
+                {% endif %}
+            {% endfor %}
 
             
         </div>
 
-        <!-- Lightbox (only one!) -->
+        <!-- Lightbox -->
         <div id="lightbox">
-            <button id="closeLightbox" aria-label="Close gallery">×</button>
-            <button id="prevBtn" class="lightbox-nav" aria-label="Previous image">‹</button>
+            <button id="closeLightbox" aria-label="Close">×</button>
+            <button id="prevBtn" class="lightbox-nav">‹</button>
             <img id="lightboxImage" src="" alt="Gallery image">
-            <button id="nextBtn" class="lightbox-nav" aria-label="Next image">›</button>
+            
+            <button id="nextBtn" class="lightbox-nav">›</button>
+            <div id="lightboxCaption"></div>
             <div id="lightboxCounter">1 / 5</div>
+
         </div>
 
-        <!-- Rest of your content: title, description, booking card, etc. -->
-        <div class="grid md:grid-cols-5 gap-8">
-            <div class="md:col-span-3 bg-white service-card">
-
-                <!-- Title & Location -->
+        <!-- Unit Details -->
+        <div class="grid md:grid-cols-5 gap-10">
+            <div class="md:col-span-3">
+                <!-- Title -->
                 <div class="mb-10">
-                    <h1 class="serif text-3xl md:text-5xl font-light mb-3">{{ unit.unit_number }} - {{ unit.apartment_type.name }}</h1>
-                    <p class="text-xl text-neutral flex items-center gap-2 ">
-                        <span class="md:text-2xl text-xl"><i class="fa-solid fa-map-pin"></i></span> <span class="text-gray-500">Victoria Island, Lagos</span>
+                    <h1 class="serif text-4xl md:text-5xl font-light leading-tight">
+                        {{ unit.unit_number }} — {{ unit.apartment_type.name }}
+                    </h1>
+                    <p class="text-xl text-neutral mt-3 flex items-center gap-2">
+                        <i class="fa-solid fa-map-pin"></i> Victoria Island, Lagos
                     </p>
                 </div>
 
-                <!-- Amenities Badges -->
+                <!-- Amenities -->
                 <div class="flex flex-wrap gap-3 mb-12">
-                    <span class="px-4 py-2.5 bg-[#94CA3E]/10 text-[#94CA3E] font-medium text-base shadow-sm">4 Beds</span>
-                    <span class="px-4 py-2.5 bg-[#94CA3E]/10 text-[#94CA3E] font-medium text-base shadow-sm">Pool</span>
-                    <span class="px-4 py-2.5 bg-[#94CA3E]/10 text-[#94CA3E] font-medium text-base shadow-sm">WIFI</span>
-                    <span class="px-4 py-2.5 bg-[#94CA3E]/10 text-[#94CA3E] font-medium text-base shadow-sm">Gym</span>
-                    <span class="px-4 py-2.5 bg-[#94CA3E]/10 text-[#94CA3E] font-medium text-base shadow-sm">4 Bedrooms</span>
-                    <span class="px-4 py-2.5 bg-[#94CA3E]/10 text-[#94CA3E] font-medium text-base shadow-sm">3 Bathrooms</span>
-                    <span class="px-4 py-2.5 bg-[#94CA3E]/10 text-[#94CA3E] font-medium text-base shadow-sm">Ocean View</span>
+                    <span class="px-5 py-2.5 bg-[#94CA3E]/10 text-[#94CA3E]-2xl text-sm font-medium">
+                        {{ unit.apartment_type.bedrooms }} Bedroom
+                    </span>
+                    <span class="px-5 py-2.5 bg-[#94CA3E]/10 text-[#94CA3E]-2xl text-sm font-medium">
+                        {{ unit.apartment_type.bathrooms }} Bathroom
+                    </span>
+                    <span class="px-5 py-2.5 bg-[#94CA3E]/10 text-[#94CA3E]-2xl text-sm font-medium">
+                        {{ unit.apartment_type.area_sqm }} sqm
+                    </span>
+                    {% for amenity in unit.apartment_type.amenities or [] %}
+                    <span class="px-5 py-2.5 bg-gray-100 text-gray-700-2xl text-sm font-medium">
+                        {{ amenity }}
+                    </span>
+                    {% endfor %}
                 </div>
 
-                <!-- About Section -->
-                <div class="mb-16">
-                    <h2 class="serif text-4xl font-light mb-6">About This Unit</h2>
-                    <p class="text-lg text-neutral leading-relaxed mb-6">
-                        This exquisitely designed {{ unit.apartment_type.bedrooms }}-bedroom apartment offers the perfect blend of luxury and comfort. 
-                        Located on Floor {{ unit.floor }} with {{ unit.view }}, this unit features premium finishes, modern appliances, and thoughtful 
-                        design elements that create the ideal living space for discerning residents.
-                    </p>
-                    <p class="text-lg text-neutral leading-relaxed">
-                        {{ unit.apartment_type.description }}
-                    </p>
+                <!-- Description -->
+                <div class="prose max-w-none text-neutral leading-relaxed">
+                    <h2 class="text-2xl font-light mb-6">About This Unit</h2>
+                    <p>{{ unit.apartment_type.description or "Luxurious and well-appointed apartment perfect for both short and long stays." }}</p>
                 </div>
-
-                <!-- Features & Amenities -->
-                <div class="mb-12">
-                    <h2 class="serif text-3xl font-light mb-8">Features & Amenities</h2>
-                    <div class="grid md:grid-cols-2 gap-10">
-                        <div>
-                            <h3 class="font-semibold text-xl mb-5">Interior</h3>
-                            <ul class="space-y-4 text-base">
-                                <li class="flex items-center gap-4"><span class="text-[#E96C40] text-xl"><i class="fa-solid fa-check"></i></span> Modern kitchen with stainless steel appliances</li>
-                                <li class="flex items-center gap-4"><span class="text-[#E96C40] text-xl"><i class="fa-solid fa-check"></i></span> Spacious living and dining area</li>
-                                <li class="flex items-center gap-4"><span class="text-[#E96C40] text-xl"><i class="fa-solid fa-check"></i></span> Ensuite master bedroom</li>
-                                <li class="flex items-center gap-4"><span class="text-[#E96C40] text-xl"><i class="fa-solid fa-check"></i></span> Designer bathrooms with rainfall shower</li>
-                                <li class="flex items-center gap-4"><span class="text-[#E96C40] text-xl"><i class="fa-solid fa-check"></i></span> Hardwood floors throughout</li>
-                                <li class="flex items-center gap-4"><span class="text-[#E96C40] text-xl"><i class="fa-solid fa-check"></i></span> Climate control and smart home system</li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold text-xl mb-5">Building & Grounds</h3>
-                            <ul class="space-y-4 text-base">
-                                <li class="flex items-center gap-4"><span class="text-[#E96C40] text-xl"><i class="fa-solid fa-check"></i></span> 24/7 security with CCTV</li>
-                                <li class="flex items-center gap-4"><span class="text-[#E96C40] text-xl"><i class="fa-solid fa-check"></i></span> Dedicated parking space</li>
-                                <li class="flex items-center gap-4"><span class="text-[#E96C40] text-xl"><i class="fa-solid fa-check"></i></span> High-speed WiFi</li>
-                                <li class="flex items-center gap-4"><span class="text-[#E96C40] text-xl"><i class="fa-solid fa-check"></i></span> On-site maintenance team</li>
-                                <li class="flex items-center gap-4"><span class="text-[#E96C40] text-xl"><i class="fa-solid fa-check"></i></span> Housekeeping services</li>
-                                <li class="flex items-center gap-4"><span class="text-[#E96C40] text-xl"><i class="fa-solid fa-check"></i></span> Laundry and dry cleaning</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
             </div>
 
             <div class="md:col-span-2">
@@ -256,14 +244,14 @@
                     <div class="mb-6">
                         <p class="text-sm text-neutral mb-2">Price per Day</p>
                         <div class="text-3xl font-semibold text-[#E96C40]">
-                            ₦{{ "{:,}".format(unit.apartment_type.base_price) }}
+                            ₦{{ "{:,.2f}".format(unit.apartment_type.base_price) }}
                         </div>
                     </div>
                     
                     <div class="mb-6 pb-6 border-b border-gray-200">
                         <p class="text-sm text-neutral mb-2">Per Month</p>
                         <div class="text-2xl font-semibold text-[#632A89]">
-                            ₦{{ "{:,}".format(unit.apartment_type.base_price * 30) }}
+                            ₦{{ "{:,.2f}".format(unit.apartment_type.base_price * 30) }}
                         </div>
                     </div>
                     
@@ -292,19 +280,19 @@
                         <div class="mb-4">
                             <label for="quickCheckIn" class="block text-sm font-semibold mb-2 text-[#632A89]">Check In</label>
                             <input type="date" id="quickCheckIn" name="checkIn" required 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-[#E96C40]"
+                                   class="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-[#E96C40]"
                                    min="{{ today }}">
                         </div>
                         
                         <div class="mb-4">
                             <label for="quickCheckOut" class="block text-sm font-semibold mb-2 text-[#632A89]">Check Out</label>
                             <input type="date" id="quickCheckOut" name="checkOut" required
-                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-[#E96C40]">
+                                   class="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-[#E96C40]">
                         </div>
                         
                         <div class="mb-4">
                             <label for="quickGuests" class="block text-sm font-semibold mb-2 text-[#632A89]">Guests</label>
-                            <select id="quickGuests" name="guests" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-[#E96C40]">
+                            <select id="quickGuests" name="guests" class="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-[#E96C40]">
                                 <option value="1">1 Guest</option>
                                 <option value="2" selected>2 Guests</option>
                                 <option value="3">3 Guests</option>
@@ -312,9 +300,9 @@
                             </select>
                         </div>
                         
-                        <div id="availabilityMessage" class="mb-4 p-3 rounded hidden text-sm"></div>
+                        <div id="availabilityMessage" class="mb-4 p-3 hidden text-sm"></div>
                         
-                        <div id="priceBreakdown" class="mb-4 p-3 bg-[#f8f6f3] rounded hidden">
+                        <div id="priceBreakdown" class="mb-4 p-3 bg-[#f8f6f3] hidden">
                             <div class="space-y-2 text-sm">
                                 <div class="flex justify-between">
                                     <span class="text-neutral">Nights</span>
@@ -322,11 +310,11 @@
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-neutral">Daily Rate</span>
-                                    <span class="font-semibold">N{{ "%.0f"|format(unit.apartment_type.base_price) }}</span>
+                                    <span class="font-semibold">₦{{ "{:,.2f}".format(unit.apartment_type.base_price) }}</span>
                                 </div>
                                 <div class="border-t border-gray-300 pt-2 mt-2 flex justify-between font-semibold">
                                     <span>Total</span>
-                                    <span class="text-[#E96C40]">N<span id="breakdownTotal">0</span></span>
+                                    <span class="text-[#E96C40]">₦<span id="breakdownTotal">0</span></span>
                                 </div>
                             </div>
                         </div>
@@ -376,46 +364,45 @@
 
 {% block extra_js %}
 <script>
-// ── Gallery images (dummy for testing) ────────────────────────────────
-const galleryImages = [
-    "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&q=90",
-    "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&q=90",
-    "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=1200&q=90",
-    "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1200&q=90",
-    "https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=1200&q=90",
-
-    "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&q=90",
-    "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&q=90",
-    "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=1200&q=90",
-    "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1200&q=90",
-    "https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=1200&q=90"
-    // Add more if you want
+// All gallery images including main featured image
+const allImages = [
+    {% if unit.image_url %}"{{ unit.image_url }}",{% endif %}
+    {% for image in gallery_images %}
+    "{{ image.image_url }}"{% if not loop.last %},{% endif %}
+    {% endfor %}
 ];
 
 let currentIndex = 0;
-
-const lightbox        = document.getElementById('lightbox');
-const lightboxImg     = document.getElementById('lightboxImage');
-const counter         = document.getElementById('lightboxCounter');
-const closeBtn        = document.getElementById('closeLightbox');
-const prevBtn         = document.getElementById('prevBtn');
-const nextBtn         = document.getElementById('nextBtn');
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightboxImage');
+const lightboxCaption = document.getElementById('lightboxCaption');
+const counter = document.getElementById('lightboxCounter');
 
 function openLightbox(index) {
-    currentIndex = Math.max(0, Math.min(index, galleryImages.length - 1));
-    updateImage();
+    currentIndex = Math.max(0, Math.min(index, allImages.length - 1));
+    updateLightboxImage();
+    updateLightboxCaption();
     lightbox.style.display = 'flex';
     document.body.style.overflow = 'hidden';
 }
 
-function updateImage() {
+function updateLightboxCaption() {
+    const captions = [
+        {% if unit.image_url %}"Main view of {{ unit.unit_number }}",{% endif %}
+        {% for image in gallery_images %}
+        "{{ image.label or 'Gallery Image' }}"{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+    lightboxCaption.textContent = captions[currentIndex] || '';
+}
+
+function updateLightboxImage() {
     lightboxImg.style.opacity = '0';
     setTimeout(() => {
-        lightboxImg.src = galleryImages[currentIndex];
-        lightboxImg.alt = `Image ${currentIndex + 1} of ${galleryImages.length}`;
-        counter.textContent = `${currentIndex + 1} / ${galleryImages.length}`;
+        lightboxImg.src = allImages[currentIndex];
+        counter.textContent = `${currentIndex + 1} / ${allImages.length}`;
         lightboxImg.style.opacity = '1';
-    }, 180);
+    }, 150);
 }
 
 function closeLightbox() {
@@ -424,36 +411,38 @@ function closeLightbox() {
 }
 
 function prevImage() {
-    currentIndex = (currentIndex - 1 + galleryImages.length) % galleryImages.length;
-    updateImage();
+    currentIndex = (currentIndex - 1 + allImages.length) % allImages.length;
+    updateLightboxImage();
+    updateLightboxCaption();
 }
 
 function nextImage() {
-    currentIndex = (currentIndex + 1) % galleryImages.length;
-    updateImage();
+    currentIndex = (currentIndex + 1) % allImages.length;
+    updateLightboxImage();
+    updateLightboxCaption();
 }
 
-// Event listeners
-closeBtn?.addEventListener('click', closeLightbox);
-lightbox?.addEventListener('click', e => {
+// Event Listeners
+document.getElementById('closeLightbox').addEventListener('click', closeLightbox);
+document.getElementById('prevBtn').addEventListener('click', prevImage);
+document.getElementById('nextBtn').addEventListener('click', nextImage);
+
+lightbox.addEventListener('click', (e) => {
     if (e.target === lightbox) closeLightbox();
 });
-prevBtn?.addEventListener('click', prevImage);
-nextBtn?.addEventListener('click', nextImage);
 
-// Keyboard support
-document.addEventListener('keydown', e => {
-    if (lightbox?.style.display !== 'flex') return;
+document.addEventListener('keydown', (e) => {
+    if (lightbox.style.display !== 'flex') return;
     if (e.key === 'Escape') closeLightbox();
-    if (e.key === 'ArrowLeft')  prevImage();
+    if (e.key === 'ArrowLeft') prevImage();
     if (e.key === 'ArrowRight') nextImage();
 });
 
-// Expose to onclick attributes
+// Expose to global scope for onclick
 window.openLightbox = openLightbox;
 
 // ──────────────────────────────────────────────
-// Existing availability check script (unchanged)
+// Availability check script
 // ──────────────────────────────────────────────
 const unitId = {{ unit.id }};
 const basePricePerDay = {{ unit.apartment_type.base_price }};
@@ -544,7 +533,7 @@ quickCheckForm.addEventListener('submit', async (e) => {
 
 function showMessage(msg, type) {
     availabilityMessage.textContent = msg;
-    availabilityMessage.className = `mb-4 p-3 rounded text-sm ${type === 'success' ? 'bg-[#94CA3E]/20 text-[#632A89] border border-[#94CA3E]' : 'bg-red-50 text-red-600 border border-red-200'}`;
+    availabilityMessage.className = `mb-4 p-3 text-sm ${type === 'success' ? 'bg-[#94CA3E]/20 text-[#632A89] border border-[#94CA3E]' : 'bg-red-50 text-red-600 border border-red-200'}`;
     availabilityMessage.classList.remove('hidden');
 }
 

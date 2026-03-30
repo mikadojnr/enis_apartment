@@ -1,4 +1,4 @@
-from flask import render_template, request, jsonify
+from flask import current_app, render_template, request, jsonify, send_from_directory
 from flask_login import current_user
 from app.main import main_bp
 from app import db
@@ -16,6 +16,10 @@ def index():
                          essential_services=essential_services,
                          optional_services=optional_services)
 
+@main_bp.route('/uploads/<path:filename>')
+def uploaded_file(filename):
+    return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)
+    
 @main_bp.route('/units')
 def units():
     """All units page"""
@@ -34,7 +38,8 @@ def units():
 def unit_details(unit_number):
     """Individual unit details"""
     unit = Unit.query.filter_by(unit_number=unit_number).first_or_404()
-    return render_template('unit-details.html', unit=unit)
+    gallery_images = unit.gallery_images.all()
+    return render_template('unit-details.html', unit=unit, gallery_images=gallery_images)
 
 @main_bp.route('/services')
 def services():

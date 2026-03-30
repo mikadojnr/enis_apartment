@@ -19,19 +19,19 @@
                         <div class="mb-6">
                             <label for="checkIn" class="block text-sm font-semibold mb-2 text-[#632A89]">Check In</label>
                             <input type="date" id="checkIn" name="checkIn" required 
-                                   class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]"
+                                   class="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:border-[#E96C40]"
                                    min="{{ today }}">
                         </div>
                         
                         <div class="mb-6">
                             <label for="checkOut" class="block text-sm font-semibold mb-2 text-[#632A89]">Check Out</label>
                             <input type="date" id="checkOut" name="checkOut" required
-                                   class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]">
+                                   class="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
                         </div>
                         
                         <div class="mb-6">
                             <label for="guests" class="block text-sm font-semibold mb-2 text-[#632A89]">Number of Guests</label>
-                            <select id="guests" name="guests" class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]">
+                            <select id="guests" name="guests" class="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
                                 <option value="1">1 Guest</option>
                                 <option value="2" selected>2 Guests</option>
                                 <option value="3">3 Guests</option>
@@ -195,5 +195,23 @@
         // Redirect to booking page with unit and dates
         window.location.href = `/bookings/new?unit_id=${unitId}&check_in=${checkIn}&check_out=${checkOut}&guests=${guests}`;
     }
+
+    // Init on page load
+    window.addEventListener('load', () => {
+        const avaialabilityData = sessionStorage.getItem('avaialabilityData');
+        if (avaialabilityData) {
+            try {
+                const { unit_id, check_in, check_out, num_guests } = JSON.parse(avaialabilityData);
+        
+                if (check_in) document.getElementById('checkIn').value = check_in;
+                if (check_out) document.getElementById('checkOut').value = check_out;
+                if (num_guests) document.getElementById('guests').value = num_guests;
+                
+            } catch (e) {
+                console.warn('Invalid avaialabilityData in sessionStorage', e);
+            }
+        }
+    });
+
 </script>
 {% endblock %}

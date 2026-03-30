@@ -18,9 +18,14 @@
 
             <!-- Buttons -->
             <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
-                <button onclick="openCreateModal()" class="btn-primary w-full sm:w-auto text-center">
+                <!-- <button onclick="openCreateModal()" class="btn-primary w-full sm:w-auto text-center">
                     <span>+ New Apartment Type</span>
-                </button>
+                </button> -->
+
+                <a href="{{ url_for('admin.create_apartment') }}" class="btn-primary w-full sm:w-auto text-center">
+                    <span>+ New Apartment Type</span>
+                </a>
+
                 <a href="/admin/dashboard" class="btn-outline w-full sm:w-auto text-center">
                     Back to Dashboard
                 </a>
@@ -56,7 +61,7 @@
                                 </div>
                                 <div>
                                     <p class="text-xs text-neutral mb-1">Daily Rate</p>
-                                    <p class="font-semibold">N{{ "%.0f"|format(apartment.base_price) }}</p>
+                                    <p class="font-semibold">N{{ "{:,.2f}".format(apartment.base_price) }}</p>
                                 </div>
                             </div>
                         </div>
@@ -69,9 +74,13 @@
                         
                         <!-- Actions -->
                         <div class="space-y-2">
-                            <button onclick="editApartment({{ apartment.id }})" class="w-full text-sm font-semibold px-4 py-2  transition bg-blue-100 text-blue-600 hover:bg-blue-200">
+                            <!-- <button onclick="editApartment({{ apartment.id }})" class="w-full text-sm font-semibold px-4 py-2  transition bg-blue-100 text-blue-600 hover:bg-blue-200">
                                 Edit
-                            </button>
+                            </button> -->
+
+                            <a href="{{ url_for('admin.edit_apartment', apartment_id=apartment.id) }}" class="w-full block text-center text-sm font-semibold px-4 py-2  transition bg-blue-100 text-blue-600 hover:bg-blue-200">
+                                Edit
+                            </a>
                             <button onclick="deleteApartment({{ apartment.id }})" class="w-full text-sm font-semibold px-4 py-2  transition bg-red-100 text-red-600 hover:bg-red-200">
                                 Delete
                             </button>

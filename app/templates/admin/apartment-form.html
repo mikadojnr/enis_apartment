@@ -3,7 +3,7 @@
 {% block title %}{{ 'Edit' if apartment else 'Create' }} Apartment - Eni's Apartments{% endblock %}
 
 {% block content %}
-    <div class="max-w-2xl mx-auto px-6 py-12">
+    <div class="max-w-7xl mx-auto px-6 py-12">
         <!-- Header -->
         <div class="mb-12">
             <h1 class="serif text-5xl font-light mb-2">{{ 'Edit Apartment Type' if apartment else 'Create New Apartment Type' }}</h1>
@@ -67,15 +67,15 @@
                 <div class="space-y-2 text-sm">
                     <div class="flex justify-between">
                         <span>Daily Rate:</span>
-                        <span id="dailyRate" class="font-semibold">₦{{ apartment.base_price if apartment else '0' }}</span>
+                        <span id="dailyRate" class="font-semibold">₦{{ "{:,.2f}".format(apartment.base_price) if apartment else '0' }}</span>
                     </div>
                     <div class="flex justify-between border-t pt-2">
                         <span>Monthly Rate (30 days):</span>
-                        <span id="monthlyRate" class="font-semibold">₦{{ (apartment.base_price * 30) if apartment else '0' }}</span>
+                        <span id="monthlyRate" class="font-semibold">₦{{ "{:,.2f}".format((apartment.base_price * 30)) if apartment else '0' }}</span>
                     </div>
                     <div class="flex justify-between border-t pt-2">
                         <span>Yearly Rate (365 days):</span>
-                        <span id="yearlyRate" class="font-semibold">₦{{ (apartment.base_price * 365) if apartment else '0' }}</span>
+                        <span id="yearlyRate" class="font-semibold">₦{{ "{:,.2f}".format((apartment.base_price * 365)) if apartment else '0' }}</span>
                     </div>
                 </div>
             </div>

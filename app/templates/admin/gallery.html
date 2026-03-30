@@ -1,204 +1,310 @@
 {% extends "base.html" %}
-
 {% block title %}Gallery - {{ unit.unit_number }} - Eni's Apartments{% endblock %}
 
 {% block content %}
-    <div class="max-w-7xl mx-auto px-6 py-12">
-        <!-- Header -->
-        <div class="flex justify-between items-start mb-12">
-            <div>
-                <h1 class="serif text-5xl font-light mb-2">Gallery - {{ unit.unit_number }}</h1>
-                <p class="text-lg text-neutral">Manage images for {{ unit.apartment_type.name }}</p>
-            </div>
-            <div class="space-y-2">
-                <button onclick="openUploadModal()" class="btn-primary inline-block">
-                    <span>+ Add Image</span>
-                </button>
-                <a href="/admin/units" class="btn-outline inline-block ml-2">
-                    Back to Units
-                </a>
-            </div>
+<div class="max-w-7xl mx-auto px-6 py-12">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start gap-6 mb-12">
+        <div>
+            <h1 class="serif text-5xl font-light mb-2">Gallery — {{ unit.unit_number }}</h1>
+            <p class="text-lg text-neutral">{{ unit.apartment_type.name }} • Floor {{ unit.floor }}</p>
         </div>
-
-        <!-- Gallery Images -->
-        {% if images %}
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="galleryGrid">
-                {% for image in images %}
-                <div class="service-card gallery-item" data-image-id="{{ image.id }}">
-                    <div class="mb-4">
-                        <div class="relative h-48 overflow-hidden rounded mb-4">
-                            <img src="{{ image.image_url }}" alt="{{ image.label }}" class="w-full h-full object-cover">
-                            {% if image.is_featured %}
-                            <div class="absolute top-2 right-2 bg-[#94CA3E] text-white px-3 py-1 rounded text-xs font-semibold">
-                                Featured
-                            </div>
-                            {% endif %}
-                        </div>
-                        
-                        <h3 class="font-semibold text-lg mb-2">{{ image.label or 'Untitled' }}</h3>
-                        {% if image.description %}
-                        <p class="text-sm text-neutral mb-4">{{ image.description }}</p>
-                        {% endif %}
-                        
-                        <div class="flex gap-2">
-                            <button onclick="editImage({{ image.id }})" class="flex-1 text-sm font-semibold px-3 py-2 rounded bg-blue-100 text-blue-600 hover:bg-blue-200 transition">
-                                Edit
-                            </button>
-                            <button onclick="deleteImage({{ image.id }})" class="flex-1 text-sm font-semibold px-3 py-2 rounded bg-red-100 text-red-600 hover:bg-red-200 transition">
-                                Delete
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="service-card text-center py-12">
-                <div class="text-5xl mb-4">📸</div>
-                <h3 class="font-semibold text-xl mb-2">No Images Yet</h3>
-                <p class="text-neutral mb-6">Add images to showcase this apartment unit</p>
-                <button onclick="openUploadModal()" class="btn-primary inline-block">
-                    Add First Image
-                </button>
-            </div>
-        {% endif %}
+        <div class="flex gap-3">
+            <button onclick="openUploadModal()" class="btn-primary flex items-center gap-2">
+                <i class="fa-solid fa-plus"></i>
+                <span>Add Image</span>
+            </button>
+            <a href="/admin/units" class="btn-outline">Back to Units</a>
+        </div>
     </div>
 
-    <!-- Upload/Edit Modal -->
-    <div id="imageModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-6">
-        <div class="bg-white rounded-lg max-w-2xl w-full max-h-screen overflow-y-auto">
-            <div class="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 flex justify-between items-center">
-                <h2 id="modalTitle" class="serif text-3xl font-light">Add Image</h2>
-                <button onclick="closeModal()" class="text-2xl text-gray-400 hover:text-gray-600">&times;</button>
+    <!-- Gallery Grid -->
+    {% if images %}
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="galleryGrid">
+        {% for image in images %}
+        <div class="service-card gallery-item group" data-image-id="{{ image.id }}">
+            <div class="relative h-64 overflow-hidden mb-4">
+                <img src="{{ image.image_url }}" 
+                     alt="{{ image.label or 'Image' }}" 
+                     class="w-full h-full object-cover transition-transform group-hover:scale-105">
+
+                {% if image.is_featured %}
+                <div class="absolute top-4 right-4 bg-[#94CA3E] text-white text-xs font-bold px-4 py-1.5  shadow">
+                    ★ Featured
+                </div>
+                {% endif %}
             </div>
-            
-            <form id="imageForm" class="p-8 space-y-6">
+
+            <h4 class="font-semibold text-base mb-1 line-clamp-1">{{ image.label or 'Untitled' }}</h4>
+            {% if image.description %}
+            <p class="text-sm text-neutral line-clamp-2 mb-6">{{ image.description }}</p>
+            {% endif %}
+
+            <div class="flex gap-3">
+                <button onclick="editImage({{ image.id }})" 
+                        class="flex-1 py-3 text-sm font-medium  bg-blue-100 hover:bg-blue-200 text-blue-700 transition">
+                    Edit
+                </button>
+                <button onclick="deleteImage({{ image.id }})" 
+                        class="flex-1 py-3 text-sm font-medium  bg-red-100 hover:bg-red-200 text-red-700 transition">
+                    Delete
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="service-card text-center py-20">
+        <div class="mx-auto w-24 h-24 flex items-center justify-center mb-8">
+            <i class="fa-solid fa-camera text-5xl text-gray-400"></i>
+        </div>
+        <h3 class="text-3xl font-light mb-4">No images in gallery yet</h3>
+        <p class="text-neutral max-w-md mx-auto mb-10">Upload photos to beautifully showcase this unit.</p>
+        <button onclick="openUploadModal()" class="btn-primary text-lg px-12 py-4">
+            <span>Add First Image</span>
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<!-- ==================== MODAL (Scrollable & User-Friendly) ==================== -->
+<div id="imageModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-6">
+    <div class="bg-white max-w-3xl w-full max-h-96 overflow-y-auto">
+        
+        <!-- Header -->
+        <div class="px-8 py-6 border-b flex items-center justify-between bg-white sticky top-0 z-10">
+            <h2 id="modalTitle" class="serif text-3xl font-light">Add New Image</h2>
+            <button onclick="closeModal()" class="text-4xl text-gray-400 hover:text-gray-600 transition">&times;</button>
+        </div>
+
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-y-auto p-8">
+            <form id="imageForm" class="space-y-8">
+                <!-- Image Upload -->
                 <div>
-                    <label for="image_url" class="block text-sm font-semibold mb-2">Image URL</label>
-                    <input type="url" id="image_url" name="image_url" required class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]" placeholder="https://example.com/image.jpg">
-                    <p class="text-xs text-neutral mt-2">Paste the URL of the image or upload via your file server</p>
-                </div>
-                
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="label" class="block text-sm font-semibold mb-2">Label</label>
-                        <input type="text" id="label" name="label" class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]" placeholder="e.g., Living Room, Master Bedroom">
+                    <label class="block text-sm font-semibold mb-3">Upload Image</label>
+                    <div id="dropZone" 
+                         class="border-2 border-dashed border-gray-300 p-12 text-center hover:border-[#E96C40] transition-all cursor-pointer">
+                        <i class="fa-solid fa-cloud-arrow-up text-5xl text-gray-400 mb-4 block"></i>
+                        <p class="font-medium">Click to upload or drag & drop</p>
+                        <p class="text-xs text-neutral mt-2">PNG, JPG • Max 5MB</p>
+                        <p id="selectedFileName" class="mt-6 text-sm font-medium text-[#632A89] hidden"></p>
                     </div>
-                    <div>
-                        <label for="is_featured" class="block text-sm font-semibold mb-2">
-                            <input type="checkbox" id="is_featured" name="is_featured" class="mr-2">
-                            Featured Image
-                        </label>
-                        <p class="text-xs text-neutral">Show on unit listing</p>
-                    </div>
+                    <input type="file" id="imageFile" accept="image/*" class="hidden">
                 </div>
-                
-                <div>
-                    <label for="description" class="block text-sm font-semibold mb-2">Description</label>
-                    <textarea id="description" name="description" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#E96C40]" placeholder="Describe what's in this image..."></textarea>
-                </div>
-                
-                <!-- Image Preview -->
-                <div id="imagePreview" class="hidden">
-                    <p class="text-sm font-semibold mb-2">Preview</p>
-                    <div class="relative h-48 overflow-hidden rounded">
+
+                <!-- Live Preview -->
+                <div id="previewArea" class="hidden">
+                    <p class="text-sm font-semibold mb-3">Preview</p>
+                    <div class="border border-gray-200 overflow-hidden h-72 bg-gray-50">
                         <img id="previewImg" src="" alt="Preview" class="w-full h-full object-cover">
                     </div>
                 </div>
-                
-                <div class="flex gap-4 pt-4 border-t">
-                    <button type="submit" class="btn-primary flex-1">Save Image</button>
-                    <button type="button" onclick="closeModal()" class="btn-outline flex-1">Cancel</button>
+
+                <!-- Label -->
+                <div>
+                    <label class="block text-sm font-semibold mb-3">Image Label</label>
+                    <input type="text" id="label" name="label"
+                           class="w-full px-5 py-4 border border-gray-300  focus:outline-none focus:border-[#E96C40]"
+                           placeholder="e.g., Living Room, Master Bedroom">
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label class="block text-sm font-semibold mb-3">Description (Optional)</label>
+                    <textarea id="description" name="description" rows="3"
+                              class="w-full px-5 py-4 border border-gray-300  focus:outline-none focus:border-[#E96C40]"
+                              placeholder="Brief description of this image..."></textarea>
+                </div>
+
+                <!-- Featured -->
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" id="is_featured" name="is_featured" class="w-5 h-5 accent-[#94CA3E]">
+                    <label for="is_featured" class="text-sm font-medium cursor-pointer">
+                        Mark as Featured Image (shown on unit listing)
+                    </label>
                 </div>
             </form>
         </div>
-    </div>
 
-    <script>
-        let currentImageId = null;
-        const unitId = {{ unit.id }};
-        
-        // Update image preview as user types URL
-        document.getElementById('image_url').addEventListener('change', function() {
-            const url = this.value;
-            if (url) {
-                document.getElementById('previewImg').src = url;
-                document.getElementById('imagePreview').classList.remove('hidden');
+        <!-- Footer Buttons -->
+        <div class="border-t p-8 flex gap-4">
+            <button type="button" onclick="submitImageForm()" 
+                    id="saveBtn"
+                    class="btn-primary flex-1 py-4 text-lg font-semibold">
+                <span>Save Image</span>
+            </button>
+            <button type="button" onclick="closeModal()" 
+                    class="btn-outline flex-1 py-4 text-lg font-semibold">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentImageId = null;
+    let selectedFile = null;
+    const unitId = {{ unit.id }};
+
+    // ====================== MODAL CONTROL ======================
+    function openUploadModal() {
+        currentImageId = null;
+        selectedFile = null;
+        document.getElementById('modalTitle').textContent = 'Add New Image';
+        document.getElementById('imageForm').reset();
+        document.getElementById('previewArea').classList.add('hidden');
+        document.getElementById('selectedFileName').classList.add('hidden');
+        document.getElementById('imageModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+        document.getElementById('imageModal').classList.add('hidden');
+        selectedFile = null;
+    }
+
+    // ====================== FILE UPLOAD HANDLING ======================
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('imageFile');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleFile(e.target.files[0]);
+        }
+    });
+
+    // Drag & Drop
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#E96C40';
+    });
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.style.borderColor = '#d1d5db';
+    });
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#d1d5db';
+        if (e.dataTransfer.files.length) {
+            handleFile(e.dataTransfer.files[0]);
+        }
+    });
+
+    function handleFile(file) {
+        if (!file.type.startsWith('image/')) {
+            alert("Please upload an image file");
+            return;
+        }
+        selectedFile = file;
+        document.getElementById('selectedFileName').textContent = file.name;
+        document.getElementById('selectedFileName').classList.remove('hidden');
+
+        // Show preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('previewImg').src = e.target.result;
+            document.getElementById('previewArea').classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // ====================== SUBMIT FORM (Add or Update) ======================
+    async function submitImageForm() {
+        if (!selectedFile && !currentImageId) {
+            alert("Please select an image");
+            return;
+        }
+
+        const formData = new FormData();
+        if (selectedFile) formData.append('file', selectedFile);
+        formData.append('label', document.getElementById('label').value.trim());
+        formData.append('description', document.getElementById('description').value.trim());
+        formData.append('is_featured', document.getElementById('is_featured').checked);
+
+        const url = currentImageId 
+            ? `/admin/gallery/${currentImageId}/edit`
+            : `/admin/units/${unitId}/gallery/add`;
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                location.reload();
+            } else {
+                alert(result.message || "Failed to save image");
             }
-        });
-        
-        function openUploadModal() {
-            currentImageId = null;
-            document.getElementById('modalTitle').textContent = 'Add Image';
-            document.getElementById('imageForm').reset();
-            document.getElementById('imagePreview').classList.add('hidden');
-            document.getElementById('imageModal').classList.remove('hidden');
+        } catch (err) {
+            console.error(err);
+            alert("An error occurred");
         }
-        
-        function closeModal() {
-            document.getElementById('imageModal').classList.add('hidden');
-        }
-        
-        async function editImage(imageId) {
-            currentImageId = imageId;
-            document.getElementById('modalTitle').textContent = 'Edit Image';
-            document.getElementById('imageModal').classList.remove('hidden');
-            
-            // In a production app, you'd fetch the image data and populate the form
-        }
-        
-        async function deleteImage(imageId) {
-            if (!confirm('Delete this image?')) return;
-            
-            try {
-                const response = await fetch(`/admin/gallery/${imageId}/delete`, {
-                    method: 'POST'
-                });
-                
-                const data = await response.json();
-                if (data.success) {
-                    // Remove from DOM
-                    document.querySelector(`[data-image-id="${imageId}"]`).remove();
-                    
-                    // Show empty state if no more images
-                    if (document.querySelectorAll('.gallery-item').length === 0) {
-                        location.reload();
-                    }
-                }
-            } catch (error) {
-                console.error('Error:', error);
+    }
+
+    // ====================== EDIT IMAGE ======================
+    async function editImage(imageId) {
+        currentImageId = imageId;
+        document.getElementById('modalTitle').textContent = 'Edit Image';
+
+        try {
+            const res = await fetch(`/admin/gallery/${imageId}`);
+            if (!res.ok) throw new Error();
+
+            const image = await res.json();
+
+            // Reset file input (we'll keep old image unless new one is uploaded)
+            selectedFile = null;
+            document.getElementById('selectedFileName').classList.add('hidden');
+
+            document.getElementById('label').value = image.label || '';
+            document.getElementById('description').value = image.description || '';
+            document.getElementById('is_featured').checked = image.is_featured || false;
+
+            // Show current image as preview
+            if (image.image_url) {
+                document.getElementById('previewImg').src = image.image_url;
+                document.getElementById('previewArea').classList.remove('hidden');
             }
+
+            document.getElementById('imageModal').classList.remove('hidden');
+
+        } catch (e) {
+            alert("Could not load image data");
         }
-        
-        document.getElementById('imageForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const formData = new FormData(e.target);
-            const data = {
-                image_url: formData.get('image_url'),
-                label: formData.get('label'),
-                description: formData.get('description'),
-                is_featured: formData.get('is_featured') === 'on'
-            };
-            
-            const url = currentImageId 
-                ? `/admin/gallery/${currentImageId}/edit`
-                : `/admin/units/${unitId}/gallery/add`;
-            
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                
-                const result = await response.json();
-                if (result.success) {
+    }
+
+    // ====================== DELETE IMAGE ======================
+    async function deleteImage(imageId) {
+        if (!confirm("Delete this image permanently?")) return;
+
+        try {
+            const res = await fetch(`/admin/gallery/${imageId}/delete`, { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token() }}' } });
+            const data = await res.json();
+
+            if (data.success) {
+                document.querySelector(`[data-image-id="${imageId}"]`).remove();
+                if (document.querySelectorAll('.gallery-item').length === 0) {
                     location.reload();
                 }
-            } catch (error) {
-                console.error('Error:', error);
             }
-        });
-    </script>
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    // Close with Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === "Escape") {
+            const modal = document.getElementById('imageModal');
+            if (!modal.classList.contains('hidden')) closeModal();
+        }
+    });
+</script>
 {% endblock %}

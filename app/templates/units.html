@@ -25,7 +25,7 @@
                     </a>
                     {% for apt_type in apartment_types %}
                     <a href="/units?type={{ apt_type.id }}" class="px-4 py-2 rounded-full border-2 border-gray-300 text-gray-600 hover:border-[#E96C40] transition text-sm md:text-base">
-                        {{ apt_type.bedrooms }}BR - N{{ "{:,}".format(apt_type.base_price * 30) }}/mo
+                        {{ apt_type.bedrooms }}BR - ₦{{ "{:,.2f}".format(apt_type.base_price * 30) }}/mo
                     </a>
                     {% endfor %}
                     </div>
@@ -79,7 +79,7 @@
                         </li>
                         <li class="flex items-center gap-2">
                             <span class="text-[#E96C40]">●</span> 
-                            <span class="font-semibold">N{{ "{:,}".format(unit.apartment_type.base_price * 30) }}/month</span>
+                            <span class="font-semibold">₦{{ "{:,.2f}".format(unit.apartment_type.base_price * 30) }}/month</span>
                         </li>
                     </ul>
                     

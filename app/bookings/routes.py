@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for, flash, jsonify
+from flask import app, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user, login_user
 from app.bookings import bookings_bp
 from app import db
@@ -30,23 +30,30 @@ def send_booking_created_email(booking):
             unit_number=booking.unit.unit_number,
             check_in_date=booking.check_in_date.strftime('%d %b %Y'),
             check_out_date=booking.check_out_date.strftime('%d %b %Y'),
-            total_price=booking.total_price,
+            total_price=f"₦{booking.total_price:,.2f}",
             payment_url=url_for('bookings.booking_confirmation',
                                booking_reference=booking.booking_reference,
                                _external=True)
         )
+        
+        # current_app.logger.info(f"Unit: {booking.unit}")
 
         msg = Message(
             subject=subject,
             recipients=[booking.email],
+            body="Your booking has been received.",
             html=html_body,
-            sender=current_app.config.get('MAIL_DEFAULT_SENDER')
+            sender=current_app.config['MAIL_DEFAULT_SENDER']
         )
 
+        print(html_body)
+        # current_app.logger.info(f"Email sent successfully to {booking.email}")
+        
         mail.send(msg)
-        current_app.logger.info(f"Booking created email sent successfully to {booking.email}")
+        # current_app.logger.info(f"Booking created email sent successfully to {booking.email}")
     except Exception as e:
         current_app.logger.error(f"Failed to send booking created email to {booking.email}: {str(e)}", exc_info=True)
+        raise
 
 
 def send_booking_confirmed_email(booking):
@@ -63,7 +70,8 @@ def send_booking_confirmed_email(booking):
             check_out_date=booking.check_out_date.strftime('%d %b %Y'),
             details_url=url_for('bookings.booking_details',
                                booking_reference=booking.booking_reference,
-                               _external=True)
+                               _external=True),
+            current_year=datetime.utcnow().year
         )
 
         msg = Message(
@@ -72,11 +80,40 @@ def send_booking_confirmed_email(booking):
             html=html_body,
             sender=current_app.config.get('MAIL_DEFAULT_SENDER')
         )
-
+    
         mail.send(msg)
-        current_app.logger.info(f"Booking confirmed email sent successfully to {booking.email}")
+        # current_app.logger.info(f"Booking confirmed email sent successfully to {booking.email}")
     except Exception as e:
         current_app.logger.error(f"Failed to send booking confirmed email to {booking.email}: {str(e)}", exc_info=True)
+
+
+# @bookings_bp.route('/send-booking-email', methods=['GET'])
+# def send_booking_email_route():
+#     booking_reference = request.args.get('booking_reference')
+
+#     if not booking_reference:
+#         return jsonify({"error": "booking_reference is required"}), 400
+
+#     booking = Booking.query.filter_by(
+#         booking_reference=booking_reference
+#     ).first()
+
+#     if not booking:
+#         return jsonify({"error": "Booking not found"}), 404
+
+#     try:
+#         send_booking_created_email(booking)
+#         return jsonify({
+#             "message": f"Email sent successfully to {booking.email}"
+#         }), 200
+#     except Exception as e:
+#         return jsonify({
+#             "error": "Failed to send email",
+#             "details": str(e)
+#         }), 500
+
+
+
 
 @bookings_bp.route('/availability')
 def availability():

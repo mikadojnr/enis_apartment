@@ -9,8 +9,18 @@ from dotenv import load_dotenv
 # ────────────────────────────────────────────────
 load_dotenv()
 
+
+basedir = os.path.abspath(os.path.dirname(__file__))
+
 class Config:
     """Base configuration — shared by all environments"""
+    
+    IDANALYZER_API_KEY = os.environ.get('IDANALYZER_API_KEY')
+    IDANALYZER_REGION = 'US'
+    
+    UPLOAD_FOLDER = os.path.join(basedir, 'uploads')
+    MAX_CONTENT_LENGTH = 5 * 1024 * 1024
+    
     # Flask basics
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'fallback-secret-key-do-not-use-in-prod'
 
@@ -30,13 +40,13 @@ class Config:
     WTF_CSRF_TIME_LIMIT = None
 
     # Flask-Mail defaults (overridden by env vars)
-    MAIL_SERVER = 'smtp.gmail.com'
-    MAIL_PORT = 587
-    MAIL_USE_TLS = True
-    MAIL_USE_SSL = False
-    MAIL_USERNAME = None
-    MAIL_PASSWORD = None
-    MAIL_DEFAULT_SENDER = 'Eni\'s Apartments <enisapartment@gmail.com>'
+    MAIL_SERVER = os.getenv('MAIL_SERVER')
+    MAIL_PORT = int(os.getenv('MAIL_PORT'))
+    MAIL_USE_TLS = os.getenv('MAIL_USE_TLS', 'False').lower() == 'true'
+    MAIL_USE_SSL = os.getenv('MAIL_USE_SSL', 'True').lower() == 'true'
+    MAIL_USERNAME = os.getenv('MAIL_USERNAME')
+    MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
+    MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER')
     MAIL_DEBUG = 1  # Show SMTP conversation in console (dev only)
 
     # Paystack (loaded from .env or fallback to empty)
@@ -50,12 +60,6 @@ class DevelopmentConfig(Config):
     TESTING = False
     SQLALCHEMY_ECHO = True  # Show SQL queries in console
 
-    # Force mail credentials from env (no fallback here)
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER') or Config.MAIL_DEFAULT_SENDER
-
-
 class ProductionConfig(Config):
     """Production settings — secure, no debug output"""
     DEBUG = False
@@ -65,12 +69,6 @@ class ProductionConfig(Config):
     # Enforce secure settings
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_SAMESITE = 'Strict'    # More secure in prod
-
-    # Mail should use real credentials — no fallback
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER')
-
 
 class TestingConfig(Config):
     """Testing / CI settings — fast, in-memory DB"""

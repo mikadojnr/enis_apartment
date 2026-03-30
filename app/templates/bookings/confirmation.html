@@ -46,7 +46,7 @@
         </p>
 
         <div class="text-2xl font-bold mb-8">
-            Amount Due: ₦{{ "%.2f"|format(booking.total_price * 1.05) }}
+            Amount Due: ₦{{ "{:,.2f}".format(booking.total_price * 1.05) }}
         </div>
 
         <!-- Countdown -->

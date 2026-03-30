@@ -73,7 +73,7 @@
                     
                     <div class="mt-6 pt-6 border-t border-gray-200">
                         <div class="flex items-center justify-between">
-                            <span class="text-lg font-semibold text-[#E96C40]">N{{ "%.0f"|format(service.price) }}</span>
+                            <span class="text-lg font-semibold text-[#E96C40]">₦{{ "{:,.2f}".format(service.price) }}</span>
                             {% if current_user.is_authenticated %}
                             <button onclick="addServiceToCart('{{ service.id }}', '{{ service.name }}')" 
                                     class="text-sm font-semibold text-[#632A89] hover:text-[#E96C40]">

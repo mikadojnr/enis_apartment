@@ -181,24 +181,8 @@ def create_booking():
     today = date.today().isoformat()
     return render_template('admin/create-booking.html', today=today)
 
-@admin_bp.route('/units')
-@login_required
-@admin_required
-def manage_units():
-    """Manage units"""
-    units = Unit.query.all()
-    return render_template('admin/units.html', units=units)
 
-@admin_bp.route('/units/<int:unit_id>/toggle', methods=['POST'])
-@login_required
-@admin_required
-def toggle_unit_availability(unit_id):
-    """Toggle unit availability"""
-    unit = Unit.query.get_or_404(unit_id)
-    unit.is_available = not unit.is_available
-    db.session.commit()
-    
-    return jsonify({'success': True, 'is_available': unit.is_available})
+
 
 @admin_bp.route('/bookings')
 @login_required
@@ -267,6 +251,8 @@ def update_service_request_status(request_id):
         return jsonify({'success': True, 'status': service_request.status})
     
     return jsonify({'success': False, 'message': 'Invalid status'}), 400
+
+
 
 # ==================== APARTMENT MANAGEMENT ====================
 
@@ -369,71 +355,92 @@ def delete_apartment(apartment_id):
     
     return jsonify({'success': True})
 
+
 # ==================== UNIT MANAGEMENT ====================
+
+@admin_bp.route('/units')
+@login_required
+@admin_required
+def manage_units():
+    units = Unit.query.all()
+    return render_template('admin/units.html', units=units)
+
 
 @admin_bp.route('/units/new', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def create_unit():
-    """Create new unit"""
+    apartment_types = ApartmentType.query.all()
+
     if request.method == 'POST':
         data = request.get_json()
-        
+
         unit = Unit(
             unit_number=data.get('unit_number'),
             apartment_type_id=int(data.get('apartment_type_id')),
             floor=int(data.get('floor')),
             view=data.get('view'),
-            image_url=data.get('image_url'),
-            is_available=True
+            image_url=data.get('image_url'),           # Google Drive URL
+            is_available=data.get('is_available', True)
         )
-        
+
         db.session.add(unit)
         db.session.commit()
-        
+
         return jsonify({'success': True, 'unit_id': unit.id})
-    
-    apartment_types = ApartmentType.query.all()
+
     return render_template('admin/unit-form.html', unit=None, apartment_types=apartment_types)
+
 
 @admin_bp.route('/units/<int:unit_id>/edit', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def edit_unit(unit_id):
-    """Edit unit details"""
     unit = Unit.query.get_or_404(unit_id)
-    
+    apartment_types = ApartmentType.query.all()
+
     if request.method == 'POST':
         data = request.get_json()
-        
+
         unit.unit_number = data.get('unit_number', unit.unit_number)
         unit.apartment_type_id = int(data.get('apartment_type_id', unit.apartment_type_id))
         unit.floor = int(data.get('floor', unit.floor))
         unit.view = data.get('view', unit.view)
         unit.image_url = data.get('image_url', unit.image_url)
-        
+        unit.is_available = data.get('is_available', unit.is_available)
+
         db.session.commit()
-        
         return jsonify({'success': True})
-    
-    apartment_types = ApartmentType.query.all()
+
     return render_template('admin/unit-form.html', unit=unit, apartment_types=apartment_types)
+
 
 @admin_bp.route('/units/<int:unit_id>/delete', methods=['POST'])
 @login_required
 @admin_required
 def delete_unit(unit_id):
-    """Delete unit"""
     unit = Unit.query.get_or_404(unit_id)
-    
-    # Check if unit has bookings
+
     if unit.bookings.count() > 0:
         return jsonify({'success': False, 'message': 'Cannot delete unit with existing bookings'}), 400
-    
+
     db.session.delete(unit)
     db.session.commit()
-    
     return jsonify({'success': True})
+
+
+@admin_bp.route('/units/<int:unit_id>/toggle', methods=['POST'])
+@login_required
+@admin_required
+def toggle_unit_availability(unit_id):
+    """Toggle unit availability"""
+    unit = Unit.query.get_or_404(unit_id)
+    unit.is_available = not unit.is_available
+    db.session.commit()
+    
+    return jsonify({'success': True, 'is_available': unit.is_available})
+
+
 
 # ==================== GALLERY MANAGEMENT ====================
 
@@ -441,77 +448,128 @@ def delete_unit(unit_id):
 @login_required
 @admin_required
 def manage_gallery(unit_id):
-    """Manage gallery for a unit"""
     unit = Unit.query.get_or_404(unit_id)
     images = UnitImage.query.filter_by(unit_id=unit_id).order_by(UnitImage.display_order).all()
-    
     return render_template('admin/gallery.html', unit=unit, images=images)
+
+
+@admin_bp.route('/gallery/<int:image_id>', methods=['GET'])
+@login_required
+@admin_required
+def get_gallery_image(image_id):
+    """Get single gallery image for editing"""
+    image = UnitImage.query.get_or_404(image_id)
+    
+    return jsonify({
+        'id': image.id,
+        'image_url': image.image_url,
+        'label': image.label or '',
+        'description': image.description or '',
+        'is_featured': image.is_featured
+    })
+
 
 @admin_bp.route('/units/<int:unit_id>/gallery/add', methods=['POST'])
 @login_required
 @admin_required
-def add_gallery_image(unit_id):
-    """Add image to unit gallery"""
+def add_gallery_images(unit_id):
     unit = Unit.query.get_or_404(unit_id)
-    data = request.get_json()
-    
+
+    if 'file' not in request.files:
+        return jsonify({"success": False, "message": "No file uploaded"}), 400
+
+    file = request.files['file']
+    if not file or file.filename == '':
+        return jsonify({"success": False, "message": "No file selected"}), 400
+
+    # Save file
+    filename = secure_filename(file.filename)
+    upload_path = os.path.join('uploads', 'units', str(unit_id), filename)
+    os.makedirs(os.path.dirname(upload_path), exist_ok=True)
+    file.save(upload_path)
+
+    image_url = f"/uploads/units/{unit_id}/{filename}"
+
     image = UnitImage(
         unit_id=unit_id,
-        image_url=data.get('image_url'),
-        label=data.get('label'),
-        description=data.get('description'),
-        is_featured=data.get('is_featured', False),
+        image_url=image_url,
+        label=request.form.get('label', ''),
+        description=request.form.get('description', ''),
+        is_featured=request.form.get('is_featured') == 'on',
         display_order=UnitImage.query.filter_by(unit_id=unit_id).count()
     )
-    
+
     db.session.add(image)
     db.session.commit()
-    
+
     return jsonify({'success': True, 'image_id': image.id})
+
 
 @admin_bp.route('/gallery/<int:image_id>/edit', methods=['POST'])
 @login_required
 @admin_required
 def edit_gallery_image(image_id):
-    """Edit gallery image"""
     image = UnitImage.query.get_or_404(image_id)
-    data = request.get_json()
-    
-    image.label = data.get('label', image.label)
-    image.description = data.get('description', image.description)
-    image.is_featured = data.get('is_featured', image.is_featured)
-    image.display_order = int(data.get('display_order', image.display_order))
-    
+
+    # If new file is uploaded
+    if 'file' in request.files and request.files['file'].filename:
+        file = request.files['file']
+        # Delete old file if exists
+        if image.image_url and image.image_url.startswith('/uploads/'):
+            old_path = image.image_url.lstrip('/')
+            if os.path.exists(old_path):
+                try:
+                    os.remove(old_path)
+                except:
+                    pass
+
+        # Save new file
+        filename = secure_filename(file.filename)
+        upload_path = os.path.join('uploads', 'units', str(image.unit_id), filename)
+        os.makedirs(os.path.dirname(upload_path), exist_ok=True)
+        file.save(upload_path)
+
+        image.image_url = f"/uploads/units/{image.unit_id}/{filename}"
+
+    image.label = request.form.get('label', image.label)
+    image.description = request.form.get('description', image.description)
+    image.is_featured = request.form.get('is_featured') == 'on'
+
     db.session.commit()
-    
     return jsonify({'success': True})
+
 
 @admin_bp.route('/gallery/<int:image_id>/delete', methods=['POST'])
 @login_required
 @admin_required
 def delete_gallery_image(image_id):
-    """Delete gallery image"""
     image = UnitImage.query.get_or_404(image_id)
-    unit_id = image.unit_id
-    
+
+    # Delete physical file
+    if image.image_url and image.image_url.startswith('/uploads/'):
+        file_path = image.image_url.lstrip('/')
+        if os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+            except:
+                pass
+
     db.session.delete(image)
     db.session.commit()
-    
     return jsonify({'success': True})
+
 
 @admin_bp.route('/units/<int:unit_id>/gallery/reorder', methods=['POST'])
 @login_required
 @admin_required
 def reorder_gallery(unit_id):
-    """Reorder gallery images"""
     unit = Unit.query.get_or_404(unit_id)
     data = request.get_json()
-    
+
     for order, image_id in enumerate(data.get('image_order', [])):
         image = UnitImage.query.get(image_id)
         if image and image.unit_id == unit_id:
             image.display_order = order
-    
+
     db.session.commit()
-    
     return jsonify({'success': True})

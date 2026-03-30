@@ -14,6 +14,7 @@
         
         <div class="p-6 border-b border-gray-100">
             <a href="/" class=" serif text-3xl font-semibold tracking-tight">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Eni's Apartments Logo" class="inline-block mr-2 h-8 sm:h-10 md:h-12"><br>
                 Eni's <span class="text-[#E96C40]">Apartments</span>
             </a>
             <p class="text-sm text-gray-500 mt-1">Manage your stay</p>
@@ -83,7 +84,7 @@
                 <div class="bg-white p-6 shadow-sm border border-gray-100">
                     <p class="text-sm text-gray-500">Total Spent</p>
                     <p class="text-3xl font-bold text-[#E96C40]">
-                        ₦{{ "{:,.0f}".format(total_spent) }}
+                        ₦{{ "{:,.2f}".format(total_spent) }}
                     </p>
                 </div>
             </div>

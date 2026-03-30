@@ -1,6 +1,10 @@
+import os
+
 from flask_login import current_user
+import idanalyzer
 import requests
 from flask import current_app, jsonify, request
+from werkzeug.utils import secure_filename
 from app.verification import verification_bp
 from app import db
 
@@ -8,68 +12,90 @@ from app.models import VerifiedID
 
 @verification_bp.route('', methods=['POST'])
 def verify_id():
-    """Reusable ID Verification using IDAnalyzer / DocuPass"""
-    if not request.is_json:
-        return jsonify({"success": False, "message": "JSON required"}), 400
+    if 'file' not in request.files:
+        return jsonify({"success": False, "message": "No file uploaded"}), 400
 
-    data = request.get_json()
-    id_type = data.get('id_type')
-    document_url = data.get('document_url')      # uploaded file URL
-    selfie_url = data.get('selfie_url')          # optional for face match
+    file = request.files['file']
+    id_type = request.form.get('id_type', 'nin')
+    email = request.form.get('email', '').strip().lower()
 
-    if not document_url:
-        return jsonify({"success": False, "message": "Document is required"}), 400
+    if not file or file.filename == '':
+        return jsonify({"success": False, "message": "No file selected"}), 400
 
     try:
-        # === IDAnalyzer API Call (replace with your actual key) ===
-        api_key = current_app.config.get('IDANALYZER_API_KEY')
-        if not api_key:
-            return jsonify({"success": False, "message": "Verification service not configured"}), 500
-
-        payload = {
-            "document": document_url,
-            "selfie": selfie_url,
-            "id_type": id_type.upper(),   # NIN, PASSPORT, DRIVERS_LICENSE
-            "country": "NG",
-            "face_match": True if selfie_url else False
-        }
-
-        response = requests.post(
-            "https://api.idanalyzer.com/v2/verify",
-            json=payload,
-            headers={"Authorization": f"Bearer {api_key}"}
+        # Initialize SDK with Server API Key
+        coreapi = idanalyzer.CoreAPI(
+            current_app.config.get('IDANALYZER_API_KEY'),
+            current_app.config.get('IDANALYZER_REGION', 'US')
         )
+        coreapi.throw_api_exception(True)
+        coreapi.enable_authentication(True, 'quick')
 
-        result = response.json()
+        # Save file temporarily
+        filename = secure_filename(file.filename)
+        temp_dir = os.path.join(current_app.config['UPLOAD_FOLDER'], 'temp')
+        os.makedirs(temp_dir, exist_ok=True)
+        temp_path = os.path.join(temp_dir, filename)
+        file.save(temp_path)
 
-        if result.get("success") and result.get("verified") is True:
-            # Store verification
-            verified_id = VerifiedID(
+        # === IMPORTANT: Pass local file path directly (SDK supports this) ===
+        response = coreapi.scan(document_primary=temp_path)
+
+        # Optional cleanup
+        # os.remove(temp_path)
+
+        if response.get('result'):
+            data = response['result']
+
+            verified = VerifiedID(
                 user_id=current_user.id if current_user.is_authenticated else None,
-                email=data.get('email'),
+                email=email or None,
                 id_type=id_type,
-                id_number=result.get('document_number'),
-                full_name=result.get('full_name'),
-                date_of_birth=result.get('dob'),
-                verification_id=result.get('transaction_id'),
-                document_url=document_url,
-                selfie_url=selfie_url
+                id_number=data.get('documentNumber') or data.get('idNumber'),
+                full_name=f"{data.get('firstName','')} {data.get('lastName','')}".strip(),
+                verification_id=response.get('transactionId'),
+                document_url=f"/uploads/ids/{filename}",   # you can move file later
+                is_verified=True
             )
-            db.session.add(verified_id)
+            db.session.add(verified)
             db.session.commit()
 
             return jsonify({
                 "success": True,
-                "message": "ID verified successfully",
-                "verified_id_id": verified_id.id,
-                "full_name": result.get('full_name')
+                "verified_id_id": verified.id,
+                "full_name": verified.full_name,
+                "message": "ID verified successfully"
             })
-        else:
-            return jsonify({
-                "success": False,
-                "message": result.get("message", "ID verification failed")
-            }), 400
+
+        return jsonify({"success": False, "message": "Could not read the document"}), 400
+
+    except idanalyzer.APIError as e:
+        details = e.args[0]
+        return jsonify({
+            "success": False,
+            "message": details.get("message", "API Error")
+        }), 400
 
     except Exception as e:
-        current_app.logger.error(f"ID Verification error: {e}")
-        return jsonify({"success": False, "message": "Verification service error"}), 500
+        current_app.logger.error(f"Verification error: {str(e)}", exc_info=True)
+        return jsonify({"success": False, "message": "Internal verification error"}), 500
+    
+
+@verification_bp.route('/check-verified-email', methods=['GET'])
+def check_verified_email():
+    """Check if a guest email has a previously verified ID"""
+    email = request.args.get('email', '').strip().lower()
+    if not email:
+        return jsonify({"verified": False}), 200
+
+    verified = VerifiedID.query.filter_by(email=email, is_verified=True).first()
+
+    if verified:
+        return jsonify({
+            "verified": True,
+            "verified_id_id": verified.id,
+            "id_type": verified.id_type,
+            "full_name": verified.full_name
+        })
+    else:
+        return jsonify({"verified": False})

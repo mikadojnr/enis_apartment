@@ -1,71 +1,43 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Booking Confirmed - Eni's Apartments</title>
-    <style>
-        /* Reuse same styles as above */
-        body { font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background: #f4f4f4; }
-        .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .header { background: #94CA3E; color: white; padding: 30px 20px; text-align: center; }
-        .header h1 { margin: 0; font-size: 28px; }
-        .content { padding: 30px 20px; }
-        .button { display: inline-block; background: #632A89; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }
-        .footer { background: #f8f8f8; padding: 20px; text-align: center; font-size: 13px; color: #666; }
-        table { width: 100%; margin: 20px 0; border-collapse: collapse; }
-        td { padding: 10px 0; border-bottom: 1px solid #eee; }
-        .highlight { color: #E96C40; font-weight: bold; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>Booking Confirmed!</h1>
-        </div>
-        
-        <div class="content">
-            <p>Dear {{ first_name }},</p>
-            
-            <p>Great news! Your payment has been successfully received.</p>
-            
-            <p>Your booking is now officially <strong>confirmed</strong>.</p>
-            
-            <table>
-                <tr>
-                    <td><strong>Booking Reference:</strong></td>
-                    <td class="highlight">{{ booking_reference }}</td>
-                </tr>
-                <tr>
-                    <td><strong>Unit:</strong></td>
-                    <td>{{ unit_number }}</td>
-                </tr>
-                <tr>
-                    <td><strong>Check-in:</strong></td>
-                    <td>{{ check_in_date }} at 3:00 PM</td>
-                </tr>
-                <tr>
-                    <td><strong>Check-out:</strong></td>
-                    <td>{{ check_out_date }} at 11:00 AM</td>
-                </tr>
-            </table>
+{% extends "emails/base.html" %}
 
-            <p style="text-align: center;">
-                <a href="{{ details_url }}" class="button">View Booking Details</a>
-            </p>
+{% block title %}Booking Confirmed{% endblock %}
 
-            <p>You can manage your booking, view important information, or contact us anytime using the link above.</p>
+{% block header %}
+Booking Confirmed!
+{% endblock %}
 
-            <p>We look forward to welcoming you!</p>
+{% block content %}
 
-            <p>Best regards,<br>
-            The Eni's Apartments Team</p>
-        </div>
+<p>Dear {{ first_name }},</p>
 
-        <div class="footer">
-            <p>Eni's Apartments • Luxury Serviced Apartments in Victoria Island, Lagos</p>
-            <p>&copy; {{ 'now'|strftime('%Y') }} Eni's Apartments. All rights reserved.</p>
-        </div>
-    </div>
-</body>
-</html>
+<p>Your payment has been successfully received.</p>
+<p>Your booking is now officially <strong>confirmed</strong>.</p>
+
+<table>
+    <tr>
+        <td><strong>Booking Reference:</strong></td>
+        <td class="highlight">{{ booking_reference }}</td>
+    </tr>
+    <tr>
+        <td><strong>Unit:</strong></td>
+        <td>{{ unit_number }}</td>
+    </tr>
+    <tr>
+        <td><strong>Check-in:</strong></td>
+        <td>{{ check_in_date }}</td>
+    </tr>
+    <tr>
+        <td><strong>Check-out:</strong></td>
+        <td>{{ check_out_date }}</td>
+    </tr>
+</table>
+
+<p style="text-align: center;">
+    <a href="{{ details_url }}" class="button" style="color: white;">View Booking Details</a>
+</p>
+
+<p>We look forward to welcoming you!</p>
+
+<p>Best regards,<br>The Eni's Apartments Team</p>
+
+{% endblock %}

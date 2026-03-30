@@ -109,17 +109,21 @@
                                 <input type="text" id="lastName" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
                             </div>
                         </div>
-                        <div class="mt-6">
-                            <label class="block text-sm font-semibold mb-2 text-[#632A89]">Email Address *</label>
-                            <input type="email" id="email" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
-                        </div>
+
                         <div class="mt-6">
                             <label class="block text-sm font-semibold mb-2 text-[#632A89]">Phone Number *</label>
                             <input type="tel" id="phone" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
                         </div>
+
+                        <div class="mt-6">
+                            <label class="block text-sm font-semibold mb-2 text-[#632A89]">Email Address *</label>
+                            <input type="email" id="email" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
+                        </div>
+                        
                         <div class="mt-6">
                             <label class="block text-sm font-semibold mb-2 text-[#632A89]">ID Type</label>
                             <select id="idType" class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
+                                <option value="" selected>Select ID Type</option>
                                 <option value="passport">International Passport</option>
                                 <option value="nin">National Identification Number</option>
                                 <option value="drivers_license">Driver's License</option>
@@ -134,7 +138,7 @@
                             ID VERIFICATION
                         </h2>
 
-                        <div id="idStatus" class="hidden mb-6 p-5 bg-green-50 border border-green-200 rounded-2xl">
+                        <div id="idStatus" class="hidden mb-6 p-5 bg-green-50 border border-green-200">
                             <div class="flex items-center gap-3">
                                 <i class="fa-solid fa-circle-check text-3xl text-green-600"></i>
                                 <div>
@@ -147,7 +151,7 @@
                         <div id="idUploadArea">
                             <label class="block text-sm font-semibold mb-3 text-[#632A89]">Upload ID Document (NIN, Passport, Driver's License) *</label>
                             
-                            <div id="dropZone" class="border-2 border-dashed border-gray-300 rounded-2xl p-10 text-center hover:border-[#E96C40] transition-all cursor-pointer">
+                            <div id="dropZone" class="border-2 border-dashed border-gray-300 p-10 text-center hover:border-[#E96C40] transition-all cursor-pointer">
                                 <i class="fa-solid fa-cloud-arrow-up text-4xl text-gray-400 mb-4 block"></i>
                                 <p class="font-medium text-gray-700">Click or drag & drop your ID</p>
                                 <p class="text-xs text-neutral mt-2">PNG, JPG, PDF • Max 5MB</p>
@@ -156,8 +160,9 @@
 
                             <input type="file" id="idDocument" accept="image/*,.pdf" class="hidden">
                         </div>
+                        <div id="verificationMessage" class="hidden p-4 text-sm mt-8"></div>
 
-                        <div id="idVerificationResult" class="hidden mt-6 p-6 bg-green-50 border border-green-200 rounded-2xl">
+                        <div id="idVerificationResult" class="hidden mt-6 p-6 bg-green-50 border border-green-200 ">
                             <div class="flex items-center gap-3">
                                 <i class="fa-solid fa-circle-check text-3xl text-green-600"></i>
                                 <div>
@@ -171,7 +176,7 @@
                                 onclick="verifyID()"
                                 class="btn-primary w-full mt-8 py-4 text-lg font-semibold disabled:opacity-50"
                                 disabled>
-                            Verify ID Document
+                            <span>Verify ID Document</span>
                         </button>
                     </div>
 
@@ -253,8 +258,8 @@
 
                         <!-- Logged-in user – shown only after payment success (hidden for now) -->
                         <div id="paymentSuccessSection" class="hidden mt-10">
-                            <div class="inline-block bg-green-50 border border-green-200 rounded-2xl p-8 mb-8">
-                                <div class="text-6xl mb-4">🎉</div>
+                            <div class="inline-block bg-green-50 border border-green-200 p-8 mb-8">
+                                <div class="text-6xl mb-4"><i class="fa-solid fa-party-horn"></i></div>
                                 <h3 class="text-2xl font-semibold text-green-700 mb-3">Payment Successful!</h3>
                                 <p class="text-green-700">Your booking is now confirmed.</p>
                             </div>
@@ -297,7 +302,7 @@
                             <span>24/7 Concierge</span><span class="font-medium">Free</span>
                         </div>
                         <div class="flex justify-between pt-4 border-t border-gray-200">
-                            <span class="text-neutral">Service fee (5%)</span>
+                            <span class="text-neutral line-through">Service fee (5%)</span>
                             <span id="serviceFee" class="font-semibold bg-gray-300 w-32 h-6 rounded animate-pulse">---</span>
                         </div>
                         <div class="flex justify-between md:text-xl lg:text-3xl font-light pt-6 border-t">
@@ -345,8 +350,8 @@
                 }
             }
 
-            // Require ID verification
-            if (!verifiedIdId) {
+            // ID Verification Requirement
+            if (!hasVerifiedId && !verifiedIdId) {
                 return false;
             }
 
@@ -634,14 +639,19 @@
             }
         });
 
-        function showMessage(text, type = 'error') {
-            const msgEl = document.getElementById('formMessage');
+        function showMessage(text, type = 'error', target = 'form') {
+            const targetId = target === 'verification' ? 'verificationMessage' : 'formMessage';
+            const msgEl = document.getElementById(targetId);
+
+            if (!msgEl) return;
+
             msgEl.textContent = text;
             msgEl.className = `p-4 rounded-2xl text-sm border mt-6 ${
                 type === 'success'
                     ? 'bg-[#94CA3E]/15 text-[#2f6a1f] border-[#94CA3E]/40'
                     : 'bg-red-50 text-red-700 border-red-200'
             }`;
+
             msgEl.classList.remove('hidden');
         }
 
@@ -734,16 +744,20 @@
 
         // Main Verify Function
         async function verifyID() {
-            if (!selectedFile) return alert("Please select an ID document");
+            if (!selectedFile) {
+                showMessage("Please select an ID document", "error", "verification");
+                return;
+            }
 
             const formData = new FormData();
             formData.append('file', selectedFile);
-            formData.append('id_type', document.getElementById('idType').value || 'passport');
+            formData.append('id_type', document.getElementById('idType').value || 'nin');
             formData.append('email', document.getElementById('email').value.trim());
 
+            const originalText = verifyBtn.innerHTML;
             
             verifyBtn.disabled = true;
-            verifyBtn.innerHTML = 'Verifying...';
+            verifyBtn.innerHTML = '<span>Verifying ID...</span>';
 
             try {
                 const res = await fetch('/verify-id', { 
@@ -760,15 +774,15 @@
                     idVerificationResult.classList.remove('hidden');
                     document.getElementById('verifiedNameDisplay').textContent = `Verified as: ${result.full_name || 'Valid Holder'}`;
                     updateButtonState();
-                    showMessage('ID verified successfully!', 'success');
+                    showMessage('ID verified successfully!', 'success', 'verification');
                 } else {
-                    showMessage(result.message || 'Verification failed', 'error');
+                    showMessage(result.message || 'Verification failed', 'error', 'verification');
                 }
             } catch (err) {
-                showMessage('Verification service error', 'error');
+                showMessage('Verification service error', 'error', 'verification');
             } finally {
                 verifyBtn.disabled = false;
-                verifyBtn.innerHTML = 'Verify ID Document';
+                verifyBtn.innerHTML = originalText;
             }
         }
 
@@ -802,6 +816,40 @@
                 }
             } catch (e) {
                 console.warn("Could not prefill user data");
+            }
+        }
+
+
+        // Check if non-logged-in user has previously verified ID with this email
+        async function checkPreviousVerificationByEmail() {
+            const email = document.getElementById('email').value.trim().toLowerCase();
+            if (!email || hasVerifiedId) return;   // already handled for logged-in
+
+            try {
+                const res = await fetch(`/verify-id/check-verified-email?email=${encodeURIComponent(email)}`);
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.verified) {
+                        hasVerifiedId = true;
+                        verifiedIdId = data.verified_id_id;
+                        document.getElementById('idType').value = data.id_type;
+
+                        // Show "Already Verified" status
+                        document.getElementById('idStatus').classList.remove('hidden');
+                        document.getElementById('verifiedUserName').textContent = 
+                            `Previously verified with this email as ${data.full_name}`;
+
+                        // Hide upload area
+                        document.getElementById('idUploadArea').style.display = 'none';
+                        document.getElementById('verifyIdBtn').style.display = 'none';
+
+                        updateButtonState();
+                        showMessage('ID already verified with this email. You can proceed.', 'success', 'verification');
+                    }
+                }
+            } catch (e) {
+                console.warn("Could not check previous verification");
             }
         }
 
@@ -846,12 +894,22 @@
             }
 
             await checkUserAndPrefill();     // ← Prefill + skip logic
+            if (!hasVerifiedId) {
+                checkPreviousVerificationByEmail();   // check for returning guests
+            }
             updateButtonState();
 
             // Add listeners
             ['checkIn', 'checkOut', 'guests', 'children', 'firstName', 'lastName', 'email', 'phone', 'termsCheck'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.addEventListener('input', () => { updatePricingDisplay(); updateButtonState(); });
+            });
+
+            // Call check when user types email (for guests)
+            document.getElementById('email').addEventListener('blur', () => {
+                if (!hasVerifiedId) {   // only for guests
+                    checkPreviousVerificationByEmail();
+                }
             });
         });
     </script>

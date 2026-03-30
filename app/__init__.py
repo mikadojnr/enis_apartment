@@ -25,6 +25,10 @@ def create_app(config_name='development'):
 
     # 1. Load configuration FIRST
     app.config.from_object(config[config_name])
+    
+    # Ensure upload folder exists
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True) 
+    
 
     # 2. Override/ensure mail settings from environment (after .env is loaded in config.py)
     # These are already pulled in DevelopmentConfig, but we reinforce here
@@ -48,6 +52,8 @@ def create_app(config_name='development'):
     print(f"  MAIL_USE_TLS:        {app.config.get('MAIL_USE_TLS')}")
     print(f"  MAIL_USERNAME:       {app.config.get('MAIL_USERNAME')}")
     print(f"  MAIL_DEFAULT_SENDER: {app.config.get('MAIL_DEFAULT_SENDER')}")
+    print(f"  IDANALYZER_API_KEY:  {app.config.get('IDANALYZER_API_KEY')}")
+
 
     # 3. Initialize ALL extensions AFTER config is loaded
     db.init_app(app)
