@@ -13,7 +13,7 @@
             <!-- Search Section -->
             <div class="md:col-span-1">
                 <div class="service-card sticky top-32">
-                    <h2 class="serif text-2xl font-light mb-6">Your Details</h2>
+                    <h2 class="serif text-2xl font-light mb-6">Availability check</h2>
                     
                     <form id="searchForm">
                         <div class="mb-6">
@@ -192,24 +192,48 @@
     });
     
     function proceedToBooking(unitId, checkIn, checkOut, guests) {
-        // Redirect to booking page with unit and dates
-        window.location.href = `/bookings/new?unit_id=${unitId}&check_in=${checkIn}&check_out=${checkOut}&guests=${guests}`;
+        // Save form data in sessionStorage
+        const bookingData = { unit_id: unitId, check_in: checkIn, check_out: checkOut, num_guests: guests };
+        sessionStorage.setItem('bookingData', JSON.stringify(bookingData));
+
+        // Redirect to the booking page (GET request)
+        window.location.href = '/bookings/new';
     }
 
     // Init on page load
     window.addEventListener('load', () => {
-        const avaialabilityData = sessionStorage.getItem('avaialabilityData');
-        if (avaialabilityData) {
+        const storedData = sessionStorage.getItem('availabilityData');
+
+        if (storedData) {
             try {
-                const { unit_id, check_in, check_out, num_guests } = JSON.parse(avaialabilityData);
-        
-                if (check_in) document.getElementById('checkIn').value = check_in;
-                if (check_out) document.getElementById('checkOut').value = check_out;
-                if (num_guests) document.getElementById('guests').value = num_guests;
+                const { check_in, check_out, num_guests } = JSON.parse(storedData);
+
+                if (check_in) {
+                    checkInInput.value = check_in;
+
+                    // Set min checkout based on check-in
+                    const checkInDate = new Date(check_in);
+                    const minCheckOut = new Date(checkInDate);
+                    minCheckOut.setDate(minCheckOut.getDate() + 1);
+                    checkOutInput.min = minCheckOut.toISOString().split('T')[0];
+                }
+
+                if (check_out) checkOutInput.value = check_out;
+                if (num_guests) guestsInput.value = num_guests;
+
+                // Update pricing after prefilling
+                updatePricing();
+
+                // 🔥 Remove immediately after use
+                sessionStorage.removeItem('availabilityData');
+
                 
+
             } catch (e) {
-                console.warn('Invalid avaialabilityData in sessionStorage', e);
+                console.warn('Invalid availabilityData in sessionStorage', e);
+                sessionStorage.removeItem('availabilityData');
             }
+            searchForm.dispatchEvent(new Event('submit'));
         }
     });
 

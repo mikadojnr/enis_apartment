@@ -1,8 +1,12 @@
 from flask import current_app, render_template, request, jsonify, send_from_directory
 from flask_login import current_user
 from app.main import main_bp
-from app import db
+from app import db, mail
 from app.models import Unit, Service, Booking, ApartmentType
+from flask_mail import Message
+from flask_limiter import Limiter
+from app import limiter
+from datetime import datetime
 
 @main_bp.route('/')
 def index():
@@ -55,11 +59,71 @@ def about():
     return render_template('about.html')
 
 @main_bp.route('/contact', methods=['GET', 'POST'])
+@limiter.limit("5 per minute")
 def contact():
-    """Contact page"""
     if request.method == 'POST':
-        data = request.get_json()
-        # TODO: Handle contact form submission
-        return jsonify({'success': True, 'message': 'Message sent successfully'})
-    
+        try:
+            data = request.get_json()
+
+            name = data.get('name', '').strip()
+            email = data.get('email', '').strip()
+            phone = data.get('phone', '').strip()
+            subject = data.get('subject', 'General Inquiry')
+            message_body = data.get('message', '').strip()
+
+            if not all([name, email, message_body]):
+                return jsonify({'success': False, 'message': 'Name, email and message are required'}), 400
+
+            # === Email to Admin ===
+            admin_msg = Message(
+                subject=f"New Contact: {subject} - {name}",
+                sender=current_app.config['MAIL_DEFAULT_SENDER'],
+                recipients=["stay@enisapartment.com"],
+                reply_to=email
+            )
+
+            admin_msg.html = render_template(
+                'emails/contact_admin.html',
+                name=name,
+                email=email,
+                phone=phone or 'Not provided',
+                subject=subject,
+                message=message_body
+            )
+
+            mail.send(admin_msg)
+
+            # === Auto-reply to User ===
+            user_msg = Message(
+                subject="Thank you for contacting Eni's Apartments",
+                sender=current_app.config['MAIL_DEFAULT_SENDER'],
+                recipients=[email]
+            )
+
+            user_msg.html = render_template(
+                'emails/contact_user_reply.html',
+                name=name
+            )
+
+            mail.send(user_msg)
+
+            return jsonify({
+                'success': True,
+                'message': 'Thank you! Your message has been sent successfully.'
+            })
+
+        except Exception as e:
+            # ← This is the most important part for debugging
+            import traceback
+            error_detail = traceback.format_exc()
+            current_app.logger.error(f"Contact form failed:\n{error_detail}")
+            print("=== CONTACT FORM ERROR ===")
+            print(error_detail)
+            print("=========================")
+
+            return jsonify({
+                'success': False,
+                'message': 'Sorry, we could not send your message right now. Please try again later.'
+            }), 500
+
     return render_template('contact.html')

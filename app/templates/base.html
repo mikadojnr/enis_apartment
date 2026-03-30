@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='image/favicon.ico') }}" type="image/x-icon">
     
     {% block extra_css %}{% endblock %}
 </head>
@@ -196,20 +197,20 @@
                 <!-- Social Media -->
                 <div class="flex items-center space-x-4 pt-2">
                     <a href="https://www.tiktok.com/@eniapartments" target="_blank" class="hover:text-black">
-                    <i class="fa-brands fa-tiktok text-lg"></i>
+                    <i class="fa-brands fa-tiktok text-lg md:text-2xl"></i>
                     </a>
                     <a href="https://www.instagram.com/eniapartments" target="_blank" class="hover:text-pink-500">
-                    <i class="fa-brands fa-instagram text-lg"></i>
+                    <i class="fa-brands fa-instagram text-lg md:text-2xl"></i>
                     </a>
                     <a href="https://www.facebook.com/eniapartments" target="_blank" class="hover:text-blue-600">
-                    <i class="fa-brands fa-facebook text-lg"></i>
+                    <i class="fa-brands fa-facebook text-lg md:text-2xl"></i>
                     </a>
                 </div>
                 </div>
         </div>
         
         <div class="border-t border-white/20 pt-8 text-center text-sm">
-            <p>&copy;{{ current_year }} <br>Eni's Apartment Limited</p>
+            <p>&copy; {{ current_year }} Eni's Apartments Limited</p>
         </div>
     </footer>
 

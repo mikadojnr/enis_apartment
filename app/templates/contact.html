@@ -90,6 +90,7 @@
                                 <option value="maintenance">Maintenance Issue</option>
                                 <option value="general">General Inquiry</option>
                                 <option value="feedback">Feedback</option>
+                                <option value="other">Other</option>
                             </select>
                         </div>
                         
@@ -185,37 +186,67 @@
 
 {% block extra_js %}
 <script>
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `fixed bottom-6 right-6 px-6 py-4 rounded-2xl shadow-2xl text-white flex items-center gap-3 z-[9999] transition-all duration-300 ${
+            type === 'success' ? 'bg-[#94CA3E]' : 'bg-red-600'
+        }`;
+        toast.innerHTML = `
+            <i class="fa-solid ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i>
+            <span>${message}</span>
+        `;
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }, 4500);
+    }
+
     function submitContactForm(e) {
         e.preventDefault();
-        
+
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<span class="animate-pulse">Sending...</span>`;
+
         const formData = {
-            name: document.getElementById('name').value,
-            email: document.getElementById('email').value,
-            phone: document.getElementById('phone').value,
+            name: document.getElementById('name').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            phone: document.getElementById('phone').value.trim(),
             subject: document.getElementById('subject').value,
-            message: document.getElementById('message').value
+            message: document.getElementById('message').value.trim()
         };
-        
+
         fetch('/contact', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
             },
             body: JSON.stringify(formData)
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Thank you for your message. We\'ll get back to you soon!');
+                showToast(data.message || "Message sent successfully! We'll reply soon.", 'success');
                 document.getElementById('contactForm').reset();
             } else {
-                alert('There was an error sending your message. Please try again.');
+                showToast(data.message || "Failed to send message. Please try again.", 'error');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('An error occurred. Please try again later.');
+            showToast("Network error. Please check your connection and try again.", 'error');
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
         });
     }
+
+    // Attach to form
+    document.getElementById('contactForm').addEventListener('submit', submitContactForm);
 </script>
 {% endblock %}

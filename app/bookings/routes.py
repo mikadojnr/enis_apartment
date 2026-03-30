@@ -136,6 +136,7 @@ def availability():
                          check_out=check_out)
 
 @bookings_bp.route('/new', methods=['GET', 'POST'])
+@login_required
 def new_booking():
     if request.method == 'GET':
         return render_template('bookings/new.html')
@@ -251,6 +252,7 @@ def new_booking():
 
 
 @bookings_bp.route('/<string:booking_reference>/payment-success', methods=['POST'])
+@login_required
 def payment_success(booking_reference):
     """
     Endpoint called after successful payment (via Paystack callback or webhook)
@@ -302,6 +304,7 @@ def payment_success(booking_reference):
 # Confirmation page with countdown
 # ────────────────────────────────────────────────────────────────
 @bookings_bp.route('/<string:booking_reference>')
+@login_required
 def booking_confirmation(booking_reference):
     booking = Booking.query.filter_by(booking_reference=booking_reference).first_or_404()
 
@@ -328,20 +331,28 @@ def booking_confirmation(booking_reference):
 # Details page (after payment / for logged-in users)
 # ────────────────────────────────────────────────────────────────
 @bookings_bp.route('/details/<string:booking_reference>')
+@login_required
 def booking_details(booking_reference):
     booking = Booking.query.filter_by(booking_reference=booking_reference).first_or_404()
 
-    if current_user.is_authenticated:
-        if booking.user_id != current_user.id and not current_user.is_admin:
-            flash("Unauthorized", "danger")
-            return redirect(url_for('main.index'))
-    else:
-        # Guest access – optionally require guest_code or just reference
-        pass
+    if booking.user_id != current_user.id and not current_user.is_admin:
+        flash("Unauthorized", "danger")
+        return redirect(url_for('main.index'))
 
-    return render_template('bookings/details.html', booking=booking)
+    # ✅ Decide base template here
+    if current_user.is_admin:
+        base_template = "admin/base.html"
+    else:
+        base_template = "bookings/base.html"
+
+    return render_template(
+        'bookings/details.html',
+        booking=booking,
+        base_template=base_template
+    )
 
 @bookings_bp.route('/guest/<guest_code>')
+@login_required
 def guest_booking_access(guest_code):
     """Allow guests to access booking via code"""
     booking = Booking.query.filter_by(guest_code=guest_code).first_or_404()
@@ -374,6 +385,7 @@ def dashboard():
     )
 
 @bookings_bp.route('/<int:booking_id>/cancel', methods=['POST'])
+@login_required
 def cancel_booking(booking_id):
     """Cancel booking"""
     booking = Booking.query.get_or_404(booking_id)
@@ -397,6 +409,7 @@ def cancel_booking(booking_id):
         return jsonify({'success': True})
 
 @bookings_bp.route('/<string:booking_reference>/status')
+@login_required
 def booking_status(booking_reference):
     booking = Booking.query.filter_by(booking_reference=booking_reference).first_or_404()
     return jsonify({
@@ -406,25 +419,25 @@ def booking_status(booking_reference):
         "message": "Booking status retrieved"
     })
 
-@bookings_bp.route('/access')
-def guest_access():
-    ref = request.args.get('ref')
-    if not ref:
-        flash("Booking reference required", "warning")
-        return redirect(url_for('main.index'))
+# @bookings_bp.route('/access')
+# def guest_access():
+#     ref = request.args.get('ref')
+#     if not ref:
+#         flash("Booking reference required", "warning")
+#         return redirect(url_for('main.index'))
 
-    booking = Booking.query.filter_by(booking_reference=ref).first_or_404()
+#     booking = Booking.query.filter_by(booking_reference=ref).first_or_404()
 
-    # For guest: only show this one booking
-    total_spent = booking.total_price if booking.paid else 0
+#     # For guest: only show this one booking
+#     total_spent = booking.total_price if booking.paid else 0
 
-    return render_template(
-        'bookings/dashboard.html',
-        bookings=[booking],
-        service_requests=booking.service_requests.all(),
-        active_bookings_count=1 if booking.status == 'confirmed' else 0,
-        pending_services_count=len([r for r in booking.service_requests.all() if r.status == 'pending']),
-        total_spent=total_spent,
-        upcoming_booking=booking if booking.check_in_date > datetime.utcnow() else None,
-        is_guest=True
-    )
+#     return render_template(
+#         'bookings/dashboard.html',
+#         bookings=[booking],
+#         service_requests=booking.service_requests.all(),
+#         active_bookings_count=1 if booking.status == 'confirmed' else 0,
+#         pending_services_count=len([r for r in booking.service_requests.all() if r.status == 'pending']),
+#         total_spent=total_spent,
+#         upcoming_booking=booking if booking.check_in_date > datetime.utcnow() else None,
+#         is_guest=True
+#     )

@@ -43,7 +43,7 @@
 
         <!-- Logout -->
         <div class="absolute bottom-6 left-6 right-6">
-            <a href="/auth/logout" class="flex items-center justify-center px-4 py-3 bg-red-50 text-red-700 hover:bg-red-100 transition">
+            <a href="{{ url_for('auth.logout') }}" class="flex items-center justify-center px-4 py-3 bg-red-50 text-red-700 hover:bg-red-100 transition">
                 <i class="fa-solid fa-right-from-bracket mr-2"></i> Sign Out
             </a>
         </div>
@@ -138,7 +138,7 @@
                             Confirmed
                         </span>
                         <div class="mt-4">
-                            <a href="#" class="text-[#E96C40] hover:underline font-medium">
+                            <a href="{{ url_for('bookings.booking_details', booking_reference=upcoming_booking.booking_reference) }}" class="text-[#E96C40] hover:underline font-medium">
                                 View Details →
                             </a>
                         </div>

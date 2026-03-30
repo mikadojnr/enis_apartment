@@ -1,5 +1,8 @@
+from urllib.parse import urlparse
+
 from flask import render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_user, logout_user, current_user, login_required
+from requests.compat import urljoin
 from app.auth import auth_bp
 from app import db
 from app.models import User
@@ -19,13 +22,20 @@ def get_user_dashboard_url():
             return url_for('bookings.dashboard')
     return url_for('main.index')  # fallback
 
+def is_safe_url(target):
+    """Prevent open redirect attacks"""
+    ref_url = urlparse(request.host_url)
+    test_url = urlparse(urljoin(request.host_url, target))
+    return test_url.scheme in ('http', 'https') and ref_url.netloc == test_url.netloc
+
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    """User login"""
+    """User login with 'next' parameter support"""
     if current_user.is_authenticated:
         return redirect(get_user_dashboard_url())
 
     form = LoginForm()
+
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
 
@@ -36,20 +46,26 @@ def login():
         # Log the user in
         login_user(user, remember=form.remember_me.data)
 
-        # Redirect based on role
         flash('Login successful!', 'success')
-        return redirect(get_user_dashboard_url())
+
+        # Redirect to the page the user originally wanted, or dashboard
+        next_page = request.args.get('next')
+        if not next_page or not is_safe_url(next_page):
+            next_page = get_user_dashboard_url()
+
+        return redirect(next_page)
 
     return render_template('auth/login.html', form=form)
 
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
-    """User registration + auto-login after success"""
+    """User registration + auto-login with 'next' parameter support"""
     if current_user.is_authenticated:
         return redirect(get_user_dashboard_url())
 
     form = RegisterForm()
+
     if form.validate_on_submit():
         if User.query.filter_by(email=form.email.data).first():
             flash('Email already registered', 'danger')
@@ -70,9 +86,16 @@ def register():
         login_user(user)
 
         flash('Registration successful! Welcome to Eni\'s Apartments.', 'success')
-        return redirect(get_user_dashboard_url())
+
+        # Redirect to the originally requested page or dashboard
+        next_page = request.args.get('next')
+        if not next_page or not is_safe_url(next_page):
+            next_page = get_user_dashboard_url()
+
+        return redirect(next_page)
 
     return render_template('auth/register.html', form=form)
+
 
 @auth_bp.route('/logout')
 @login_required

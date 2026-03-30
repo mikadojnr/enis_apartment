@@ -1,0 +1,43 @@
+{% extends "emails/base.html" %}
+
+{% block header %}New Contact Form Submission{% endblock %}
+
+{% block content %}
+    <p>Dear Admin,</p>
+    
+    <p>You have received a new message from the contact form:</p>
+    
+    <table>
+        <tr>
+            <td><strong>Name:</strong></td>
+            <td>{{ name }}</td>
+        </tr>
+        <tr>
+            <td><strong>Email:</strong></td>
+            <td><a href="mailto:{{ email }}">{{ email }}</a></td>
+        </tr>
+        {% if phone %}
+        <tr>
+            <td><strong>Phone:</strong></td>
+            <td>{{ phone }}</td>
+        </tr>
+        {% endif %}
+        <tr>
+            <td><strong>Subject:</strong></td>
+            <td>{{ subject }}</td>
+        </tr>
+    </table>
+
+    <h3 style="margin: 25px 0 10px 0; color: #E96C40;">Message:</h3>
+    <div style="background: #f9f9f9; padding: 20px; border-left: 4px solid #E96C40; font-style: italic;">
+        {{ message|replace("\n", "<br>")|safe }}
+    </div>
+
+    <p style="margin-top: 30px;">
+        <a href="mailto:{{ email }}" class="button">Reply to {{ name }}</a>
+    </p>
+
+    <p style="color: #666; font-size: 0.9em;">
+        This message was sent via the Eni's Apartments website contact form.
+    </p>
+{% endblock %}

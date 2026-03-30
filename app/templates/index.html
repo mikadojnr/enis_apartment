@@ -19,36 +19,37 @@
             </p>
 
             <!-- Availability Form -->
-            <div class="mx-auto mt-8 p-8 bg-white/95 backdrop-blur-md shadow-xl max-w-4xl text-[#632A89] fade-in-up delay-3">
-                <h2 class="text-2xl font-semibold text-center mb-8">Check Availability</h2>
+            <div class="mx-auto mt-8 p-8 bg-white/75 backdrop-blur-md shadow-xl max-w-4xl text-[#632A89] fade-in-up delay-3">
+                <!-- <h2 class="text-2xl font-semibold text-center mb-8">Check Availability</h2> -->
                 
                 <form id="availabilityForm" class="space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-">
                         <!-- Check-in -->
                         <div>
-                            <label for="checkin" class="block text-sm font-medium mb-2">Check-in Date</label>
+                            <label for="checkin" class="block text-sm font-medium mb-2 text-white">Check-in Date</label>
                             <input type="date" id="checkin" name="checkin" required
                                    class="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:border-[#E96C40] transition">
                         </div>
 
                         <!-- Check-out -->
                         <div>
-                            <label for="checkout" class="block text-sm font-medium mb-2">Check-out Date</label>
+                            <label for="checkout" class="block text-sm font-medium mb-2 text-white">Check-out Date</label>
                             <input type="date" id="checkout" name="checkout" required
                                    class="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:border-[#E96C40] transition">
                         </div>
 
-                        <!-- Guests -->
-                        <div>
-                            <label for="guests" class="block text-sm font-medium mb-2">Guests</label>
-                            <select id="guests" name="guests" 
-                                    class="w-full px-5 py-2 border border-gray-300 focus:outline-none focus:border-[#E96C40] transition bg-white">
-                                <option value="1">1 Guest</option>
-                                <option value="2" selected>2 Guests</option>
-                                <option value="3">3 Guests</option>
-                                <option value="4">4 Guests</option>
-                            </select>
-                        </div>
+                        
+                    </div>
+                    <!-- Guests -->
+                    <div>
+                        <label for="guests" class="block text-sm font-medium mb-2 text-white">Guests</label>
+                        <select id="guests" name="guests" 
+                                class="w-full px-5 py-2 border border-gray-300 focus:outline-none focus:border-[#E96C40] transition bg-white">
+                            <option value="1">1 Guest</option>
+                            <option value="2" selected>2 Guests</option>
+                            <option value="3">3 Guests</option>
+                            <option value="4">4 Guests</option>
+                        </select>
                     </div>
 
                     <button type="submit" 
@@ -73,7 +74,7 @@
             <div class="text-center mb-16">
                 <h2 class="serif text-5xl md:text-6xl font-light mb-4">Our Residences</h2>
                 <div class="accent-line"></div>
-                <p class="text-lg text-neutral max-w-2xl mx-auto mt-6">
+                <p class="text-lg text max-w-2xl mx-auto mt-6">
                     Meticulously crafted units, each featuring two spacious bedrooms designed for modern urban living in Abuja
                 </p>
             </div>

@@ -10,8 +10,16 @@ from config import config
 from flask_mail import Mail, Message
 from flask_wtf.csrf import CSRFProtect
 
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
 from datetime import datetime
 
+
+limiter = Limiter(
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"]
+)
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -59,9 +67,10 @@ def create_app(config_name='development'):
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
-    mail.init_app(app)          # MUST come after config — binds to app.extensions['mail']
+    mail.init_app(app)         
     cors.init_app(app, resources={r"/api/*": {"origins": "*"}})
     csrf.init_app(app)          # Enable CSRF protection globally
+    limiter.init_app(app)       # Initialize rate limiter
 
     # Login manager settings
     login_manager.login_view = 'auth.login'
