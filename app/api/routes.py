@@ -7,7 +7,7 @@ from app import db
 
 @api_bp.route('/users')
 def get_users():
-    users = User.query.all()
+    users = User.query.filter_by(is_admin=False).all()
     return jsonify([{
         'id': u.id,
         'first_name': u.first_name,

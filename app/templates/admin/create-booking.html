@@ -70,7 +70,7 @@
                             <select id="guestType" name="guest_type" required class="w-full px-5 py-4 border border-gray-300 focus:border-[#E96C40] focus:outline-none transition-colors">
                                 <option value="">Select guest type</option>
                                 <option value="registered">Registered User</option>
-                                <option value="new">New Guest</option>
+                                <!-- <option value="new">New Guest</option> -->
                             </select>
                         </div>
 
@@ -193,7 +193,10 @@
             </div>
 
             <!-- Summary -->
-            <div class="lg:col-span-1">
+            <div class="lg:col-span-1 ">
+                <div class="hidden md:hidden lg:block">
+                    asfrehtjtykjrtegwed
+                </div>
                 <div class="bg-white p-8 shadow-sm border border-gray-200 lg:sticky lg:top-32">
                     <h3 class="text-2xl font-light text-[#632A89] mb-8">Booking Summary</h3>
 
@@ -221,7 +224,7 @@
     </div>
 
     <!-- Mobile Total Bar -->
-    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-5 lg:hidden z-40 shadow-2xl">
+    <!-- <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-5 lg:hidden z-40 shadow-2xl">
         <div class="flex items-center justify-between max-w-7xl mx-auto">
             <div>
                 <p class="text-sm text-gray-600">Total</p>
@@ -231,7 +234,7 @@
                 <span><i class="fa-solid fa-check"></i> Create Booking</span>
             </button>
         </div>
-    </div>
+    </div> -->
 </div>
 
 <script>
@@ -292,7 +295,7 @@
         if (isValid) {
             submitBtn.style.opacity = '1';
         } else {
-            submitBtn.style.opacity = '0.75';
+            submitBtn.style.opacity = '0.65';
         }
     }
 

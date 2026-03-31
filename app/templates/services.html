@@ -26,14 +26,14 @@
                 {% for service in essential %}
                 <div class="service-card text-center h-full">
                     <div class="text-6xl mb-4">
-                        {% if "Security" in service.name %}🛡️
-                        {% elif "Electricity" in service.name %}⚡
-                        {% elif "Water" in service.name %}💧
-                        {% elif "Housekeeping" in service.name %}✨
-                        {% elif "Furnished" in service.name %}🛋️
-                        {% elif "Maintenance" in service.name %}🔧
-                        {% elif "Parking" in service.name %}🚗
-                        {% else %}📶{% endif %}
+                        {% if "Security" in service.name %}<i class="fa-solid fa-shield"></i>
+                        {% elif "Electricity" in service.name %}<i class="fa-solid fa-bolt"></i>
+                        {% elif "Water" in service.name %}<i class="fa-solid fa-droplet"></i>
+                        {% elif "Housekeeping" in service.name %}<i class="fa-solid fa-spray-can-sparkles"></i>
+                        {% elif "Furnished" in service.name %}<i class="fa-solid fa-couch"></i>
+                        {% elif "Maintenance" in service.name %}<i class="fa-solid fa-wrench"></i>
+                        {% elif "Parking" in service.name %}<i class="fa-solid fa-car"></i>
+                        {% else %}<i class="fa-solid fa-wifi"></i>{% endif %}
                     </div>
                     <h3 class="serif text-2xl font-semibold mb-3">{{ service.name }}</h3>
                     <p class="text-neutral leading-relaxed">{{ service.description }}</p>
@@ -61,12 +61,12 @@
                 {% for service in optional %}
                 <div class="service-card h-full flex flex-col">
                     <div class="text-6xl mb-4 text-center">
-                        {% if "Laundry" in service.name %}👔
-                        {% elif "Gym" in service.name %}💪
-                        {% elif "Concierge" in service.name %}🎩
-                        {% elif "Airport" in service.name %}✈️
-                        {% elif "Pet" in service.name %}🐾
-                        {% else %}⭐{% endif %}
+                        {% if "Laundry" in service.name %}<i class="fa-solid fa-shirt"></i>
+                        {% elif "Gym" in service.name %}<i class="fa-solid fa-dumbbell"></i>
+                        {% elif "Concierge" in service.name %}<i class="fa-solid fa-hat-cowboy"></i>
+                        {% elif "Airport" in service.name %}<i class="fa-solid fa-plane"></i>
+                        {% elif "Pet" in service.name %}<i class="fa-solid fa-paw"></i>
+                        {% else %}<i class="fa-solid fa-star"></i>{% endif %}
                     </div>
                     <h3 class="serif text-2xl font-semibold mb-3 text-center">{{ service.name }}</h3>
                     <p class="text-neutral leading-relaxed flex-grow">{{ service.description }}</p>
