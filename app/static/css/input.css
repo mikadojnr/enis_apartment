@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-    --primary: #632A89;
-    --accent: #E96C40;
+    --accent: #632A89;
+    --primary: #E96C40;
     --secondary: #94CA3E;
     --light: #f8f6f3;
     --neutral: #6b6b6b;
@@ -19,7 +19,7 @@
 body {
     font-family: 'Montserrat', sans-serif;
     background: var(--light);
-    color: var(--primary);
+    color: var(--accent);
     overflow-x: hidden;
 }
 
@@ -103,6 +103,9 @@ html {
 
 .btn-primary:hover::before {
     left: 0;
+}
+.btn-primary:active, .btn-outline:active {
+    color: var(--accent);
 }
 
 .btn-primary span {

@@ -418,10 +418,10 @@ This project is proprietary software. All rights reserved.
 
 ## Contact
 
-- **Phone**: +234-800-3642287
-- **Email**: info@eniapartments.com
+- **Phone**: +234-911-8818881
+- **Email**: stay@enisapartment.com
 - **Location**: Abuja, Federal Capital Territory, Nigeria
 
 ---
 
-**Built with ❤️ for Eni's Apartments**
+**Eni's Apartments Limited**

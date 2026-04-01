@@ -7,15 +7,15 @@
         <div class="max-w-md w-full">
             <div class="text-center mb-12">
                 <h1 class="serif text-5xl font-light mb-2">Welcome Back</h1>
-                <p class="text-neutral">Sign in to your account</p>
+                <p class="text-neutral text-[#5e5e5e] ">Sign in to your account</p>
             </div>
 
-            <div class="service-card">
+            <div class="service-card text-[#5e5e5e] ">
                 <form method="POST" novalidate>
                     {{ form.hidden_tag() }}
                     
-                    <div class="mb-6">
-                        <label for="email" class="block text-sm font-semibold mb-2 text-[#632A89]">Email Address</label>
+                    <div class="mb-6 ">
+                        <label for="email" class="block text-sm font-semibold mb-2">Email Address</label>
                         {% if form.email.errors %}
                             {{ form.email(class="w-full px-4 py-2 border-2 border-red-500  focus:outline-none") }}
                             <ul class="text-red-500 text-sm mt-2">
@@ -29,7 +29,7 @@
                     </div>
 
                     <div class="mb-6">
-                        <label for="password" class="block text-sm font-semibold mb-2 text-[#632A89]">Password</label>
+                        <label for="password" class="block text-sm font-semibold mb-2">Password</label>
                         {% if form.password.errors %}
                             {{ form.password(class="w-full px-4 py-2 border-2 border-red-500  focus:outline-none") }}
                             <ul class="text-red-500 text-sm mt-2">

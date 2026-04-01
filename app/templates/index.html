@@ -19,7 +19,7 @@
             </p>
 
             <!-- Availability Form -->
-            <div class="mx-auto mt-8 p-8 bg-white/75 backdrop-blur-md shadow-xl max-w-4xl text-[#632A89] fade-in-up delay-3">
+            <div class="mx-auto mt-8 p-8 bg-black/5 backdrop-blur-md shadow-xl max-w-4xl text-[#632A89] fade-in-up delay-3">
                 <!-- <h2 class="text-2xl font-semibold text-center mb-8">Check Availability</h2> -->
                 
                 <form id="availabilityForm" class="space-y-6">
@@ -69,19 +69,19 @@
     </section>
 
     <!-- Apartments Overview -->
-    <section id="apartments" class="py-24 px-6 bg-white">
+    <section id="apartments" class=" py-24 px-6 bg-white">
         <div class="max-w-7xl mx-auto">
             <div class="text-center mb-16">
                 <h2 class="serif text-5xl md:text-6xl font-light mb-4">Our Residences</h2>
                 <div class="accent-line"></div>
-                <p class="text-lg text max-w-2xl mx-auto mt-6">
+                <p class="text-lg text-[#5e5e5e] max-w-2xl mx-auto mt-6">
                     Meticulously crafted units, each featuring two spacious bedrooms designed for modern urban living in Abuja
                 </p>
             </div>
             
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {% for unit in units %}
-                <div class="service-card img-hover-scale">
+                <div class="service-card img-hover-scale text-[#5e5e5e]">
                     <div class="relative h-64 mb-6 overflow-hidden">
                         <img src="{{ unit.image_url }}" 
                              alt="{{ unit.unit_number }}" 
@@ -90,7 +90,7 @@
                             {{ unit.unit_number }}
                         </div>
                     </div>
-                    <h3 class="serif text-2xl font-semibold mb-3">Unit {{ unit.floor }}</h3>
+                    <h3 class="serif text-2xl font-semibold mb-3 text-[#632A89]">Unit {{ unit.floor }}</h3>
                     <p class="text-neutral mb-4 leading-relaxed text-sm">
                         {{ unit.view }} with premium finishes and modern amenities
                     </p>
@@ -129,15 +129,15 @@
             <div class="text-center mb-16">
                 <h2 class="serif text-5xl md:text-6xl font-light mb-4">Essential Services</h2>
                 <div class="accent-line"></div>
-                <p class="text-lg text-neutral max-w-2xl mx-auto mt-6">
+                <p class="text-lg text-neutral max-w-2xl mx-auto mt-6 text-[#5e5e5e]">
                     Every comfort and convenience at your fingertips, ensuring a seamless living experience
                 </p>
             </div>
             
             <div class="grid md:grid-cols-4 gap-6">
                 {% for service in essential_services %}
-                <div class="service-card text-center">
-                    <div class="text-[#E96C40] text-5xl mb-4">
+                <div class="service-card text-center text-[#5e5e5e]">
+                    <div class="text-[#632A89] text-5xl mb-4">
                         {% if "Security" in service.name %}<i class="fa-solid fa-shield"></i>
                         {% elif "Electricity" in service.name %}<i class="fa-solid fa-bolt"></i>
                         {% elif "Water" in service.name %}<i class="fa-solid fa-droplet"></i>
@@ -161,15 +161,15 @@
             <div class="text-center mb-16">
                 <h2 class="serif text-5xl md:text-6xl font-light mb-4">Premium Services</h2>
                 <div class="accent-line"></div>
-                <p class="text-lg text-neutral max-w-2xl mx-auto mt-6">
+                <p class="text-lg text-neutral max-w-2xl mx-auto mt-6 text-[#5e5e5e]">
                     Enhance your experience with our optional premium services
                 </p>
             </div>
             
             <div class="grid md:grid-cols-3 gap-6">
                 {% for service in optional_services %}
-                <div class="service-card text-center">
-                    <div class="text-[#E96C40] text-5xl mb-4">
+                <div class="service-card text-center text-[#5e5e5e]">
+                    <div class="text-[#632A89] text-5xl mb-4">
                         {% if "Laundry" in service.name %}<i class="fa-solid fa-shirt"></i>
                         {% elif "Gym" in service.name %}<i class="fa-solid fa-dumbbell"></i>
                         {% elif "Concierge" in service.name %}<i class="fa-solid fa-hat-cowboy"></i>
@@ -180,7 +180,7 @@
                     <h3 class="font-semibold text-lg mb-2">{{ service.name }}</h3>
                     <p class="text-sm text-neutral mb-4">{{ service.description }}</p>
                     {% if service.price > 0 %}
-                    <p class="text-sm font-semibold text-[#E96C40]">N{{ "%.0f"|format(service.price) }}/service</p>
+                    <!-- <p class="text-sm font-semibold text-[#E96C40]">N{{ "%.0f"|format(service.price) }}/service</p> -->
                     {% endif %}
                 </div>
                 {% endfor %}
@@ -214,7 +214,7 @@
     <section class="py-24 px-6 bg-[#f8f6f3]">
         <div class="max-w-2xl mx-auto text-center">
             <h2 class="serif text-5xl font-light mb-6">Ready to Experience Luxury?</h2>
-            <p class="text-lg text-neutral mb-10">
+            <p class="text-lg text-neutral mb-10 text-[#5e5e5e]">
                 Reserve your perfect apartment today and discover the elevated living experience you deserve
             </p>
             <a href="/bookings/availability" class="btn-primary inline-block">

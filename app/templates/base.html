@@ -23,16 +23,16 @@
                 <!-- <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Eni's Apartments Logo" class=" inline-block mr-2" style="height: 50px;"> -->
                 <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Eni's Apartments Logo" class="inline-block mr-2 h-8 sm:h-10 md:h-12">
                  
-                Eni's <span class="text-[#E96C40]">Apartments</span>
+                <span class="text-[#E96C40]">Eni's</span> <span class="text-[#632A89]">Apartments</span>
             </a>
             
             <!-- Desktop Menu -->
             <div class="hidden md:flex items-center gap-10">
-                <a href="/" class="text-sm font-medium hover:text-[#E96C40] transition-colors">Home</a>
-                <a href="/units" class="text-sm font-medium hover:text-[#E96C40] transition-colors">Apartments</a>
-                <a href="/services" class="text-sm font-medium hover:text-[#E96C40] transition-colors">Services</a>
-                <a href="/about" class="text-sm font-medium hover:text-[#E96C40] transition-colors">About</a>
-                <a href="/contact" class="text-sm font-medium hover:text-[#E96C40] transition-colors">Contact</a>
+                <a href="/" class="text-sm font-medium hover:text-[#E96C40] transition-colors active:scale-95 transition">Home</a>
+                <a href="/units" class="text-sm font-medium hover:text-[#E96C40] transition-colors active:scale-95 transition">Apartments</a>
+                <a href="/services" class="text-sm font-medium hover:text-[#E96C40] transition-colors active:scale-95 transition">Services</a>
+                <a href="/about" class="text-sm font-medium hover:text-[#E96C40] transition-colors active:scale-95 transition">About</a>
+                <a href="/contact" class="text-sm font-medium hover:text-[#E96C40] transition-colors active:scale-95 transition">Contact</a>
             </div>
             
             <!-- Desktop Auth Links (RBAC) -->
@@ -40,14 +40,14 @@
                 {% if current_user.is_authenticated %}
                     <!-- Regular user dashboard -->
                     {% if not current_user.is_admin %}
-                        <a href="/bookings/dashboard" class="text-sm font-medium hover:text-[#E96C40] transition-colors">
+                        <a href="/bookings/dashboard" class="text-sm font-medium hover:text-[#E96C40] transition-colors active:scale-95 transition">
                             Dashboard
                         </a>
                     {% endif %}
                     
                     <!-- Admin-only link -->
                     {% if current_user.is_admin %}
-                        <a href="/admin/dashboard" class="text-sm font-medium text-[#E96C40] hover:text-[#632A89] transition-colors font-semibold">
+                        <a href="/admin/dashboard" class="text-sm font-medium text-[#632A89] hover:text-[#E96C40] transition-colors font-semibold active:scale-95 transition">
                             Admin Panel
                         </a>
                     {% endif %}
@@ -80,25 +80,25 @@
             </button>
             
             <div class="flex flex-col gap-6 p-8 mt-16 bg-white h-full">
-                <a href="/" onclick="toggleMobileMenu()" class="text-lg font-medium hover:text-[#E96C40]">Home</a>
-                <a href="/units" onclick="toggleMobileMenu()" class="text-lg font-medium hover:text-[#E96C40]">Apartments</a>
-                <a href="/services" onclick="toggleMobileMenu()" class="text-lg font-medium hover:text-[#E96C40]">Services</a>
-                <a href="/about" onclick="toggleMobileMenu()" class="text-lg font-medium hover:text-[#E96C40]">About</a>
-                <a href="/contact" onclick="toggleMobileMenu()" class="text-lg font-medium hover:text-[#E96C40]">Contact</a>
+                <a href="/" onclick="toggleMobileMenu()" class="text-lg font-medium hover:text-[#E96C40] active:scale-95 transition">Home</a>
+                <a href="/units" onclick="toggleMobileMenu()" class="text-lg font-medium hover:text-[#E96C40] active:scale-95 transition">Apartments</a>
+                <a href="/services" onclick="toggleMobileMenu()" class="text-lg font-medium hover:text-[#E96C40] active:scale-95 transition">Services</a>
+                <a href="/about" onclick="toggleMobileMenu()" class="text-lg font-medium hover:text-[#E96C40] active:scale-95 transition">About</a>
+                <a href="/contact" onclick="toggleMobileMenu()" class="text-lg font-medium hover:text-[#E96C40] active:scale-95 transition">Contact</a>
                 
                 <div class="pt-6 border-t border-gray-200">
                     {% if current_user.is_authenticated %}
-                        <a href="/bookings/dashboard" onclick="toggleMobileMenu()" class="block text-lg font-medium hover:text-[#E96C40] mb-4">
+                        <a href="/bookings/dashboard" onclick="toggleMobileMenu()" class="block text-lg font-medium hover:text-[#632A89] mb-4 active:scale-95 transition">
                             Dashboard
                         </a>
                         
                         {% if current_user.is_admin %}
-                            <a href="/admin/dashboard" onclick="toggleMobileMenu()" class="block text-lg font-medium text-[#E96C40] hover:text-[#632A89] mb-4">
+                            <a href="/admin/dashboard" onclick="toggleMobileMenu()" class="block text-lg font-medium text-[#632A89] hover:text-[#E96C40] mb-4 active:scale-95 transition">
                                 Admin Panel
                             </a>
                         {% endif %}
                         
-                        <a href="/auth/logout" onclick="return confirm('Logout?')" class="btn-primary block text-center py-3">
+                        <a href="/auth/logout" onclick="return confirm('Logout?')" class="btn-primary block text-center py-3 active:scale-95 transition">
                             <span>Logout</span>
                         </a>
                     {% else %}
@@ -118,7 +118,7 @@
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
-                <div class="fixed top-20 right-6 max-w-sm bg-white border-l-4 border-[#E96C40] p-4 shadow-lg rounded z-40" id="flash-{{ loop.index }}">
+                <div class="fixed top-20 right-6 max-w-sm bg-white border-l-4 border-[#632A89] p-4 shadow-lg rounded z-40" id="flash-{{ loop.index }}">
                     <p class="text-sm font-medium">{{ message }}</p>
                     <script>
                         setTimeout(() => {

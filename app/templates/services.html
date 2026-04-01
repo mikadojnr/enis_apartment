@@ -7,7 +7,7 @@
     <section class="py-16 px-6 bg-gradient-to-r from-[#632A89] to-[#E96C40] text-white">
         <div class="max-w-7xl mx-auto">
             <h1 class="serif text-5xl font-light mb-4">Our Services</h1>
-            <p class="text-lg max-w-2xl">Comprehensive services designed to enhance your living experience</p>
+            <p class="text-lg max-w-2xl ">Comprehensive services designed to enhance your living experience</p>
         </div>
     </section>
 
@@ -17,7 +17,7 @@
             <div class="text-center mb-16">
                 <h2 class="serif text-5xl font-light mb-4">Essential Services</h2>
                 <div class="accent-line"></div>
-                <p class="text-lg text-neutral max-w-2xl mx-auto mt-6">
+                <p class="text-lg text-neutral max-w-2xl mx-auto mt-6 text-[#5e5e5e]">
                     Included with every stay to ensure your comfort and convenience
                 </p>
             </div>
@@ -36,7 +36,7 @@
                         {% else %}<i class="fa-solid fa-wifi"></i>{% endif %}
                     </div>
                     <h3 class="serif text-2xl font-semibold mb-3">{{ service.name }}</h3>
-                    <p class="text-neutral leading-relaxed">{{ service.description }}</p>
+                    <p class="text-neutral leading-relaxed text-[#5e5e5e]">{{ service.description }}</p>
                     <div class="mt-4 pt-4 border-t border-gray-200">
                         <span class="inline-block bg-[#94CA3E] text-white text-sm font-semibold px-4 py-2 rounded-full">Included</span>
                     </div>
@@ -52,14 +52,14 @@
             <div class="text-center mb-16">
                 <h2 class="serif text-5xl font-light mb-4">Premium Services</h2>
                 <div class="accent-line"></div>
-                <p class="text-lg text-neutral max-w-2xl mx-auto mt-6">
+                <p class="text-lg text-neutral max-w-2xl mx-auto mt-6 text-[#5e5e5e]">
                     Optional services available for an additional fee
                 </p>
             </div>
             
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {% for service in optional %}
-                <div class="service-card h-full flex flex-col">
+                <div class="service-card h-full flex flex-col text-center">
                     <div class="text-6xl mb-4 text-center">
                         {% if "Laundry" in service.name %}<i class="fa-solid fa-shirt"></i>
                         {% elif "Gym" in service.name %}<i class="fa-solid fa-dumbbell"></i>
@@ -69,12 +69,15 @@
                         {% else %}<i class="fa-solid fa-star"></i>{% endif %}
                     </div>
                     <h3 class="serif text-2xl font-semibold mb-3 text-center">{{ service.name }}</h3>
-                    <p class="text-neutral leading-relaxed flex-grow">{{ service.description }}</p>
+                    <p class="text-neutral leading-relaxed flex-grow text-[#5e5e5e]">{{ service.description }}</p>
                     
                     <div class="mt-6 pt-6 border-t border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <span class="text-lg font-semibold text-[#E96C40]">₦{{ "{:,.2f}".format(service.price) }}</span>
-                            {% if current_user.is_authenticated %}
+                        <div class="flex items-center justify-end">
+                            <!-- <span class="text-lg font-semibold text-[#E96C40]">₦{{ "{:,.2f}".format(service.price) }}</span> -->
+                            <span class="text-sm font-semibold text-[#632A89] hover:text-[#E96C40]">
+                                On Demand
+                            </span>
+                            <!-- {% if current_user.is_authenticated %}
                             <button onclick="addServiceToCart('{{ service.id }}', '{{ service.name }}')" 
                                     class="text-sm font-semibold text-[#632A89] hover:text-[#E96C40]">
                                 Add
@@ -83,7 +86,7 @@
                             <a href="/auth/login" class="text-sm font-semibold text-[#632A89] hover:text-[#E96C40]">
                                 Login
                             </a>
-                            {% endif %}
+                            {% endif %} -->
                         </div>
                     </div>
                 </div>
@@ -100,7 +103,7 @@
                 <div class="accent-line"></div>
             </div>
             
-            <div class="grid md:grid-cols-3 gap-8">
+            <div class="grid md:grid-cols-3 gap-8 text-[#5e5e5e]">
                 <div class="text-center">
                     <div class="w-16 h-16 bg-[#E96C40] text-white rounded-full flex items-center justify-center mx-auto mb-4 serif text-2xl font-semibold">
                         1
@@ -135,7 +138,7 @@
             <p class="text-lg mb-10">
                 Choose your apartment and select the perfect services for your stay
             </p>
-            <a href="/bookings/availability" class="inline-block bg-white text-[#632A89] font-semibold px-8 py-3 rounded hover:bg-gray-100 transition">
+            <a href="/bookings/availability" class="inline-block bg-white text-[#632A89] font-semibold px-8 py-3 hover:bg-gray-100 transition">
                 Book Your Stay
             </a>
         </div>
