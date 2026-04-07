@@ -223,18 +223,22 @@ def manage_services():
     services = Service.query.all()
     return render_template('admin/services.html', services=services)
 
+# ====================== SERVICE REQUESTS (ADMIN) ======================
+
 @admin_bp.route('/service-requests')
 @login_required
 @admin_required
 def service_requests():
     """Manage service requests"""
     status = request.args.get('status', 'pending')
-    
-    requests = ServiceRequest.query.filter_by(status=status).order_by(
-        ServiceRequest.created_at.desc()
-    ).all()
-    
-    return render_template('admin/service-requests.html', requests=requests, current_status=status)
+   
+    requests = ServiceRequest.query.filter_by(status=status)\
+        .order_by(ServiceRequest.created_at.desc()).all()
+   
+    return render_template('admin/service-requests.html', 
+                         requests=requests, 
+                         current_status=status)
+
 
 @admin_bp.route('/service-requests/<int:request_id>/status', methods=['POST'])
 @login_required
@@ -244,14 +248,39 @@ def update_service_request_status(request_id):
     service_request = ServiceRequest.query.get_or_404(request_id)
     data = request.get_json()
     new_status = data.get('status')
-    
+   
     if new_status in ['pending', 'in_progress', 'completed']:
+        old_status = service_request.status
         service_request.status = new_status
         db.session.commit()
+
+        # Optional: Send email to guest when status changes to completed
+        if new_status == 'completed' and old_status != 'completed':
+            send_service_request_completed_email(service_request)
+
         return jsonify({'success': True, 'status': service_request.status})
-    
+   
     return jsonify({'success': False, 'message': 'Invalid status'}), 400
 
+
+def send_service_request_completed_email(service_request):
+    """Notify guest when service is completed"""
+    try:
+        subject = f"Your Service Request is Completed - {service_request.service.name}"
+        html_body = render_template(
+            'emails/guest_service_request_completed.html',
+            request=service_request,
+            guest=service_request.requester
+        )
+        msg = Message(
+            subject=subject,
+            recipients=[service_request.requester.email],
+            html=html_body,
+            sender=current_app.config['MAIL_DEFAULT_SENDER']
+        )
+        mail.send(msg)
+    except Exception as e:
+        current_app.logger.error(f"Failed to send service completed email: {str(e)}")
 
 
 # ==================== APARTMENT MANAGEMENT ====================

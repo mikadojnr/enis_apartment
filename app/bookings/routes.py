@@ -2,7 +2,7 @@ from flask import app, render_template, request, redirect, url_for, flash, jsoni
 from flask_login import login_required, current_user, login_user
 from app.bookings import bookings_bp
 from app import db
-from app.models import Booking, Payment, Service, Unit, ApartmentType, User, VerifiedID
+from app.models import Booking, Payment, Service, ServiceRequest, Unit, ApartmentType, User, VerifiedID
 from datetime import datetime, time, timedelta
 import uuid
 import string
@@ -55,7 +55,6 @@ def send_booking_created_email(booking):
         current_app.logger.error(f"Failed to send booking created email to {booking.email}: {str(e)}", exc_info=True)
         raise
 
-
 def send_booking_confirmed_email(booking):
     """Send HTML email after successful payment confirmation"""
     try:
@@ -85,6 +84,7 @@ def send_booking_confirmed_email(booking):
         # current_app.logger.info(f"Booking confirmed email sent successfully to {booking.email}")
     except Exception as e:
         current_app.logger.error(f"Failed to send booking confirmed email to {booking.email}: {str(e)}", exc_info=True)
+
 
 
 # @bookings_bp.route('/send-booking-email', methods=['GET'])
@@ -441,3 +441,106 @@ def booking_status(booking_reference):
 #         upcoming_booking=booking if booking.check_in_date > datetime.utcnow() else None,
 #         is_guest=True
 #     )
+
+# ====================== SERVICE REQUESTS ======================
+@bookings_bp.route('/service-request', methods=['POST'])
+@login_required
+def create_service_request():
+    """Create a new service request from guest dashboard"""
+    data = request.get_json()
+
+    booking_id = data.get('booking_id')
+    service_id = data.get('service_id')
+    notes = data.get('notes', '').strip()
+
+    if not booking_id or not service_id:
+        return jsonify({"success": False, "message": "Booking and Service are required"}), 400
+
+    booking = Booking.query.get_or_404(booking_id)
+
+    if booking.user_id != current_user.id and not current_user.is_admin:
+        return jsonify({"success": False, "message": "Unauthorized"}), 403
+
+    service = Service.query.get_or_404(service_id)
+
+    service_request = ServiceRequest(
+        service_id=service.id,
+        booking_id=booking.id,
+        user_id=current_user.id,
+        unit_id=booking.unit_id,
+        status='pending',
+        notes=notes
+    )
+
+    db.session.add(service_request)
+    db.session.commit()
+
+    # Send emails
+    send_new_service_request_email(service_request)        # To Admin
+    send_service_request_confirmation_email(service_request)  # To Guest
+
+    return jsonify({
+        "success": True,
+        "message": f"Request for '{service.name}' has been submitted successfully.",
+        "request_id": service_request.id
+    }), 201
+
+
+def send_new_service_request_email(service_request):
+    """Notify Admin when a new service request is made"""
+    try:
+        subject = f"New Service Request - {service_request.service.name}"
+        html_body = render_template(
+            'emails/admin_new_service_request.html',
+            request=service_request,
+            guest=service_request.requester,
+            booking=service_request.booking,
+            unit=service_request.booking.unit
+        )
+        msg = Message(
+            subject=subject,
+            recipients=[current_app.config['MAIL_DEFAULT_SENDER']],  # Admin email
+            html=html_body,
+            sender=current_app.config['MAIL_DEFAULT_SENDER']
+        )
+        mail.send(msg)
+    except Exception as e:
+        current_app.logger.error(f"Failed to send admin service request notification: {str(e)}")
+
+
+def send_service_request_confirmation_email(service_request):
+    """Send confirmation to guest"""
+    try:
+        subject = f"Service Request Received - {service_request.service.name}"
+        html_body = render_template(
+            'emails/guest_service_request_confirmation.html',
+            request=service_request,
+            guest=service_request.requester,
+            booking=service_request.booking
+        )
+        msg = Message(
+            subject=subject,
+            recipients=[service_request.requester.email],
+            html=html_body,
+            sender=current_app.config['MAIL_DEFAULT_SENDER']
+        )
+        mail.send(msg)
+    except Exception as e:
+        current_app.logger.error(f"Failed to send guest service request confirmation: {str(e)}")
+
+@bookings_bp.route('/service-requests')
+@login_required
+def get_service_requests():
+    """Get all service requests for current user"""
+    requests = ServiceRequest.query.filter_by(user_id=current_user.id)\
+        .order_by(ServiceRequest.created_at.desc()).all()
+
+    return jsonify([{
+        'id': r.id,
+        'service_name': r.service.name,
+        'status': r.status,
+        'notes': r.notes,
+        'unit_number': r.unit.unit_number,
+        'created_at': r.created_at.strftime('%d %b %Y, %I:%M %p'),
+        'booking_reference': r.booking.booking_reference
+    } for r in requests])

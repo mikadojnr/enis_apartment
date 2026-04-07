@@ -1,0 +1,10 @@
+{% extends "emails/base.html" %}
+{% block header %}Service Request Completed{% endblock %}
+
+{% block content %}
+<p>Dear {{ guest.first_name }},</p>
+<p>Your service request for <strong>{{ request.service.name }}</strong> has been marked as <strong>Completed</strong>.</p>
+
+<p>Thank you for staying with us!</p>
+<p>Best regards,<br>Eni's Apartments Team</p>
+{% endblock %}

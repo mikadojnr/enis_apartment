@@ -198,9 +198,22 @@
 
         <!-- Service Requests Section -->
         <section id="services" class="p-6 lg:p-10">
-            <h2 class="text-3xl font-light text-[#632A89] mb-8">Service Requests</h2>
-            <div class="bg-white p-10 text-center text-gray-500">
-                No service requests yet.
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-light text-[#632A89]">Service Requests</h2>
+                <button onclick="showNewServiceModal()" 
+                        class="bg-[#94CA3E] hover:bg-[#7eb52f] text-white px-6 py-3 flex items-center gap-2 font-medium">
+                    <i class="fa-solid fa-plus"></i> New Request
+                </button>
+            </div>
+
+            <div id="serviceRequestsList" class="space-y-4">
+                <!-- Populated by JavaScript -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="noServices" class="hidden bg-white p-12 text-center  border border-gray-100">
+                <i class="fa-solid fa-bell-concierge text-5xl text-gray-300 mb-4"></i>
+                <p class="text-gray-500">No service requests yet</p>
             </div>
         </section>
 
@@ -214,8 +227,59 @@
     </main>
 </div>
 
-<!-- Mobile Sidebar Toggle Script -->
+
+<!-- New Service Request Modal -->
+<div id="serviceModal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50">
+    <div class="bg-white max-w-md w-full mx-4 overflow-hidden">
+        <div class="p-8">
+            <h3 class="text-2xl font-light text-[#632A89] mb-6">Request a Service</h3>
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-semibold mb-2 text-[#632A89]">Select Booking</label>
+                    <select id="modalBookingSelect" class="w-full px-5 py-4 border border-gray-300  focus:border-[#E96C40]">
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold mb-2 text-[#632A89]">Service *</label>
+                    <select id="modalServiceSelect" class="w-full px-5 py-4 border border-gray-300  focus:border-[#E96C40]">
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold mb-2 text-[#632A89]">Additional Notes</label>
+                    <textarea id="modalNotes" rows="4" 
+                        class="w-full px-5 py-4 border border-gray-300  focus:border-[#E96C40]" 
+                        placeholder="E.g., Please come between 10am-12pm..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="border-t p-6 flex gap-4">
+            <button onclick="hideServiceModal()" 
+                    class="flex-1 py-4 border border-gray-300  font-medium">
+                Cancel
+            </button>
+            <button onclick="submitServiceRequest()" 
+                    class="flex-1 py-4 bg-[#94CA3E] text-white  font-medium">
+                Submit Request
+            </button>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
 <script>
+    
+    
+    <!-- Mobile Sidebar Toggle Script -->
+
     const sidebar = document.getElementById('sidebar');
     const toggleBtn = document.getElementById('sidebarToggle');
     const toggleIcon = document.getElementById('sidebarToggleIcon');
@@ -244,8 +308,138 @@
             }
         });
     });
-</script>
 
+
+
+    let currentBookings = [];
+    let currentServices = [];
+
+    // Load data when Services tab is active
+    async function loadServiceData() {
+        try {
+            const [bookingsRes, servicesRes, requestsRes] = await Promise.all([
+                fetch('/bookings/api/my-bookings'), // we'll create this soon
+                fetch('/api/services'),
+                fetch('/bookings/service-requests')
+            ]);
+
+            currentBookings = await bookingsRes.json();
+            currentServices = await servicesRes.json();
+            const requests = await requestsRes.json();
+
+            renderServiceRequests(requests);
+            populateModalBookings();
+            populateModalServices();
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function renderServiceRequests(requests) {
+        const container = document.getElementById('serviceRequestsList');
+        const noServices = document.getElementById('noServices');
+
+        if (requests.length === 0) {
+            container.innerHTML = '';
+            noServices.classList.remove('hidden');
+            return;
+        }
+
+        noServices.classList.add('hidden');
+
+        container.innerHTML = requests.map(req => `
+            <div class="bg-white p-6  border border-gray-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="font-semibold text-lg">${req.service_name}</p>
+                        <p class="text-sm text-gray-500 mt-1">${req.unit_number} • ${req.booking_reference}</p>
+                    </div>
+                    <span class="px-4 py-1 text-xs font-medium rounded-full
+                        ${req.status === 'completed' ? 'bg-green-100 text-green-700' : 
+                        req.status === 'in_progress' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}">
+                        ${req.status.replace('_', ' ').toUpperCase()}
+                    </span>
+                </div>
+                ${req.notes ? `<p class="mt-4 text-sm text-gray-600">${req.notes}</p>` : ''}
+                <p class="text-xs text-gray-400 mt-4">${req.created_at}</p>
+            </div>
+        `).join('');
+    }
+
+    function populateModalBookings() {
+        const select = document.getElementById('modalBookingSelect');
+        select.innerHTML = '<option value="">Select a booking...</option>';
+        
+        currentBookings.filter(b => b.status === 'confirmed').forEach(booking => {
+            const opt = document.createElement('option');
+            opt.value = booking.id;
+            opt.textContent = `${booking.unit_number} (${booking.check_in_date} - ${booking.check_out_date})`;
+            select.appendChild(opt);
+        });
+    }
+
+    function populateModalServices() {
+        const select = document.getElementById('modalServiceSelect');
+        select.innerHTML = '<option value="">Select service...</option>';
+        
+        currentServices.filter(s => s.category === 'optional' || s.category === 'essential').forEach(service => {
+            const opt = document.createElement('option');
+            opt.value = service.id;
+            opt.textContent = `${service.name} - ₦${service.price}`;
+            select.appendChild(opt);
+        });
+    }
+
+    async function submitServiceRequest() {
+        const bookingId = document.getElementById('modalBookingSelect').value;
+        const serviceId = document.getElementById('modalServiceSelect').value;
+        const notes = document.getElementById('modalNotes').value;
+
+        if (!bookingId || !serviceId) {
+            alert("Please select both booking and service");
+            return;
+        }
+
+        try {
+            const res = await fetch('/bookings/service-request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ booking_id: bookingId, service_id: serviceId, notes })
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                hideServiceModal();
+                loadServiceData(); // refresh list
+                alert(data.message);
+            } else {
+                alert(data.message);
+            }
+        } catch (e) {
+            alert("Failed to submit request");
+        }
+    }
+
+    function showNewServiceModal() {
+        document.getElementById('serviceModal').classList.remove('hidden');
+        document.getElementById('serviceModal').classList.add('flex');
+    }
+
+    function hideServiceModal() {
+        const modal = document.getElementById('serviceModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+
+    // Load services when dashboard loads
+    document.addEventListener('DOMContentLoaded', () => {
+        loadServiceData();
+    });
+</script>
+{% endblock %}
+
+
+{% block extra_css %}
 <style>
     .nav-item {
         transition: all 0.2s ease;

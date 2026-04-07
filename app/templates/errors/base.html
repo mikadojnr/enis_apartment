@@ -5,7 +5,7 @@
     <div class="max-w-2xl w-full text-center">
         
         <!-- Icon -->
-        <div class="mx-auto w-28 h-28 flex items-center justify-center bg-white rounded-3xl shadow-md mb-10 text-6xl">
+        <div class="mx-auto flex items-center justify-center mb-10 text-8xl">
             {{ icon|safe }}
         </div>
 
@@ -23,7 +23,7 @@
             <a href="/" 
                class="btn-primary px-10 py-4 text-lg inline-flex items-center gap-2 justify-center">
                 <i class="fa-solid fa-house"></i>
-                Back to Home
+                <span>Back to Home</span>
             </a>
             <a href="/contact" 
                class="btn-outline px-10 py-4 text-lg inline-flex items-center gap-2 justify-center">
@@ -32,9 +32,7 @@
             </a>
         </div>
 
-        <p class="text-sm text-gray-500 mt-16">
-            © {{ current_year }} Eni's Apartments • All Rights Reserved
-        </p>
+       
     </div>
 </div>
 {% endblock %}
