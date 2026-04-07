@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from datetime import timedelta
-from flask import Flask
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
@@ -130,5 +130,19 @@ def create_app(config_name='development'):
     #         print("Email send error:\n", error_detail)
     #         return f"<pre>Email failed:\n{str(e)}\n\nFull traceback:\n{error_detail}</pre>", 500
 
-    
+        # ====================== ERROR HANDLERS ======================
+    def error_handler(error_code, template, title, icon):
+        def handler(e):
+            return render_template(f'errors/{template}.html',
+                                   error_code=error_code,
+                                   title=title,
+                                   message=e.description if hasattr(e, 'description') else "An error occurred.",
+                                   icon=icon), error_code
+        return handler
+
+    # Register error handlers
+    app.register_error_handler(404, error_handler(404, "404", "Page Not Found", '<i class="fa-solid fa-face-frown text-[#E96C40]"></i>'))
+    app.register_error_handler(500, error_handler(500, "500", "Server Error", '<i class="fa-solid fa-tools text-red-500"></i>'))
+    app.register_error_handler(403, error_handler(403, "403", "Access Denied", '<i class="fa-solid fa-lock text-amber-500"></i>'))
+    app.register_error_handler(400, error_handler(400, "400", "Bad Request", '<i class="fa-solid fa-circle-exclamation text-red-500"></i>'))
     return app

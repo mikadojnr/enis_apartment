@@ -53,169 +53,171 @@
         <div class="grid grid-cols-1 md:grid-cols-5 gap-8">
             <!-- LEFT: Form + Confirmation -->
             <div class="md:col-span-3 order-2 md:order-1" id="formArea">
-                <form id="bookingForm" class="space-y-12">
+                <form id="bookingForm" class="">
                     <input type="hidden" id="unitId" name="unit_id">
 
-                    <!-- STAY DETAILS -->
-                    <div class="service-card">
-                        <h2 class="serif text-2xl font-light mb-8 flex items-center gap-3">
-                            <span class="text-3xl"><i class="fa-solid fa-calendar"></i></span> STAY DETAILS
-                        </h2>
-                        <div class="grid grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-semibold mb-2 text-[#632A89]">Check In Date *</label>
-                                <input type="date" id="checkIn" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold mb-2 text-[#632A89]">Check Out Date *</label>
-                                <input type="date" id="checkOut" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-6 mt-8">
-                            <div>
-                                <label class="block text-sm font-semibold mb-2 text-[#632A89]">Adults *</label>
-                                <select id="guests" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
-                                    <option value="" disabled selected>Select adults</option>
-                                    <option value="1">1 Adult</option>
-                                    <option value="2">2 Adults</option>
-                                    <option value="3">3 Adults</option>
-                                    <option value="4">4 Adults</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold mb-2 text-[#632A89]">Children</label>
-                                <select id="children" class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
-                                    <option value="0" selected>0 Children</option>
-                                    <option value="1">1 Child</option>
-                                    <option value="2">2 Children</option>
-                                    <option value="3">3 Children</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- GUEST INFORMATION -->
-                    <div class="service-card">
-                        <h2 class="serif text-2xl font-light mb-8 flex items-center gap-3">
-                            <span class="text-3xl"><i class="fa-solid fa-user"></i></span> GUEST INFORMATION
-                        </h2>
-                        <div class="grid md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-semibold mb-2 text-[#632A89]">First Name *</label>
-                                <input type="text" id="firstName" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold mb-2 text-[#632A89]">Last Name *</label>
-                                <input type="text" id="lastName" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
-                            </div>
-                        </div>
-
-                        <div class="mt-6">
-                            <label class="block text-sm font-semibold mb-2 text-[#632A89]">Phone Number *</label>
-                            <input type="tel" id="phone" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
-                        </div>
-
-                        <div class="mt-6">
-                            <label class="block text-sm font-semibold mb-2 text-[#632A89]">Email Address *</label>
-                            <input type="email" id="email" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
-                        </div>
-                        
-                        <div class="mt-6">
-                            <label class="block text-sm font-semibold mb-2 text-[#632A89]">ID Type</label>
-                            <select id="idType" class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
-                                <option value="" selected>Select ID Type</option>
-                                <option value="passport">International Passport</option>
-                                <option value="nin">National Identification Number</option>
-                                <option value="drivers_license">Driver's License</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- ID VERIFICATION SECTION -->
-                    <div class="service-card" id="idVerificationSection">
-                        <h2 class="serif text-2xl font-light mb-8 flex items-center gap-3">
-                            <span class="text-3xl"><i class="fa-solid fa-id-card"></i></span> 
-                            ID VERIFICATION
-                        </h2>
-
-                        <div id="idStatus" class="hidden mb-6 p-5 bg-green-50 border border-green-200">
-                            <div class="flex items-center gap-3">
-                                <i class="fa-solid fa-circle-check text-3xl text-green-600"></i>
+                    <div class="space-y-8">
+                        <!-- STAY DETAILS -->
+                        <div class="service-card">
+                            <h2 class="serif text-2xl font-light mb-8 flex items-center gap-3">
+                                <span class="text-3xl"><i class="fa-solid fa-calendar"></i></span> STAY DETAILS
+                            </h2>
+                            <div class="grid grid-cols-2 gap-6">
                                 <div>
-                                    <p class="font-semibold text-green-700">ID Already Verified</p>
-                                    <p id="verifiedUserName" class="text-sm text-green-600"></p>
+                                    <label class="block text-sm font-semibold mb-2 text-[#632A89]">Check In Date *</label>
+                                    <input type="date" id="checkIn" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold mb-2 text-[#632A89]">Check Out Date *</label>
+                                    <input type="date" id="checkOut" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-6 mt-8">
+                                <div>
+                                    <label class="block text-sm font-semibold mb-2 text-[#632A89]">Adults *</label>
+                                    <select id="guests" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
+                                        <option value="" disabled selected>Select adults</option>
+                                        <option value="1">1 Adult</option>
+                                        <option value="2">2 Adults</option>
+                                        <option value="3">3 Adults</option>
+                                        <option value="4">4 Adults</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold mb-2 text-[#632A89]">Children</label>
+                                    <select id="children" class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
+                                        <option value="0" selected>0 Children</option>
+                                        <option value="1">1 Child</option>
+                                        <option value="2">2 Children</option>
+                                        <option value="3">3 Children</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
 
-                        <div id="idUploadArea">
-                            <label class="block text-sm font-semibold mb-3 text-[#632A89]">Upload ID Document (NIN, Passport, Driver's License) *</label>
+                        <!-- GUEST INFORMATION -->
+                        <div class="service-card">
+                            <h2 class="serif text-2xl font-light mb-8 flex items-center gap-3">
+                                <span class="text-3xl"><i class="fa-solid fa-user"></i></span> GUEST INFORMATION
+                            </h2>
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-semibold mb-2 text-[#632A89]">First Name *</label>
+                                    <input type="text" id="firstName" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold mb-2 text-[#632A89]">Last Name *</label>
+                                    <input type="text" id="lastName" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
+                                </div>
+                            </div>
+
+                            <div class="mt-6">
+                                <label class="block text-sm font-semibold mb-2 text-[#632A89]">Phone Number *</label>
+                                <input type="tel" id="phone" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
+                            </div>
+
+                            <div class="mt-6">
+                                <label class="block text-sm font-semibold mb-2 text-[#632A89]">Email Address *</label>
+                                <input type="email" id="email" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
+                            </div>
                             
-                            <div id="dropZone" class="border-2 border-dashed border-gray-300 p-10 text-center hover:border-[#E96C40] transition-all cursor-pointer">
-                                <i class="fa-solid fa-cloud-arrow-up text-4xl text-gray-400 mb-4 block"></i>
-                                <p class="font-medium text-gray-700">Click or drag & drop your ID</p>
-                                <p class="text-xs text-neutral mt-2">PNG, JPG, PDF • Max 5MB</p>
-                                <p id="selectedFileName" class="mt-4 text-sm font-medium text-[#632A89] hidden"></p>
+                            <div class="mt-6">
+                                <label class="block text-sm font-semibold mb-2 text-[#632A89]">ID Type</label>
+                                <select id="idType" class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]">
+                                    <option value="" selected>Select ID Type</option>
+                                    <option value="passport">International Passport</option>
+                                    <option value="nin">National Identification Number</option>
+                                    <option value="drivers_license">Driver's License</option>
+                                </select>
                             </div>
-
-                            <input type="file" id="idDocument" accept="image/*,.pdf" class="hidden">
                         </div>
-                        <div id="verificationMessage" class="hidden p-4 text-sm mt-8"></div>
 
-                        <div id="idVerificationResult" class="hidden mt-6 p-6 bg-green-50 border border-green-200 ">
-                            <div class="flex items-center gap-3">
-                                <i class="fa-solid fa-circle-check text-3xl text-green-600"></i>
-                                <div>
-                                    <p class="text-green-700 font-semibold">ID Verified Successfully</p>
-                                    <p id="verifiedNameDisplay" class="text-sm text-green-600"></p>
+                        <!-- ID VERIFICATION SECTION -->
+                        <div class="service-card" id="idVerificationSection">
+                            <h2 class="serif text-2xl font-light mb-8 flex items-center gap-3">
+                                <span class="text-3xl"><i class="fa-solid fa-id-card"></i></span> 
+                                ID VERIFICATION
+                            </h2>
+
+                            <div id="idStatus" class="hidden mb-6 p-5 bg-green-50 border border-green-200">
+                                <div class="flex items-center gap-3">
+                                    <i class="fa-solid fa-circle-check text-3xl text-green-600"></i>
+                                    <div>
+                                        <p class="font-semibold text-green-700">ID Already Verified</p>
+                                        <p id="verifiedUserName" class="text-sm text-green-600"></p>
+                                    </div>
                                 </div>
                             </div>
+
+                            <div id="idUploadArea">
+                                <label class="block text-sm font-semibold mb-3 text-[#632A89]">Upload ID Document (NIN, Passport, Driver's License) *</label>
+                                
+                                <div id="dropZone" class="border-2 border-dashed border-gray-300 p-10 text-center hover:border-[#E96C40] transition-all cursor-pointer">
+                                    <i class="fa-solid fa-cloud-arrow-up text-4xl text-gray-400 mb-4 block"></i>
+                                    <p class="font-medium text-gray-700">Click or drag & drop your ID</p>
+                                    <p class="text-xs text-neutral mt-2">PNG, JPG, PDF • Max 5MB</p>
+                                    <p id="selectedFileName" class="mt-4 text-sm font-medium text-[#632A89] hidden"></p>
+                                </div>
+
+                                <input type="file" id="idDocument" accept="image/*,.pdf" class="hidden">
+                            </div>
+                            <div id="verificationMessage" class="hidden p-4 text-sm mt-8"></div>
+
+                            <div id="idVerificationResult" class="hidden mt-6 p-6 bg-green-50 border border-green-200 ">
+                                <div class="flex items-center gap-3">
+                                    <i class="fa-solid fa-circle-check text-3xl text-green-600"></i>
+                                    <div>
+                                        <p class="text-green-700 font-semibold">ID Verified Successfully</p>
+                                        <p id="verifiedNameDisplay" class="text-sm text-green-600"></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button id="verifyIdBtn" 
+                                    onclick="verifyID()"
+                                    class="btn-primary w-full mt-8 py-4 text-lg font-semibold disabled:opacity-50"
+                                    disabled>
+                                <span>Verify ID Document</span>
+                            </button>
                         </div>
 
-                        <button id="verifyIdBtn" 
-                                onclick="verifyID()"
-                                class="btn-primary w-full mt-8 py-4 text-lg font-semibold disabled:opacity-50"
-                                disabled>
-                            <span>Verify ID Document</span>
-                        </button>
-                    </div>
+                        <!-- ADD-ON SERVICES -->
+                        <div class="service-card">
+                            <h2 class="serif text-2xl font-light mb-8 flex items-center gap-3">
+                                <span class="text-3xl"><i class="fa-solid fa-wand-magic-sparkles"></i></span> ADD-ON SERVICES
+                            </h2>
+                            <div id="addonsContainer" class="space-y-5"></div>
+                        </div>
 
-                    <!-- ADD-ON SERVICES -->
-                    <div class="service-card">
-                        <h2 class="serif text-2xl font-light mb-8 flex items-center gap-3">
-                            <span class="text-3xl"><i class="fa-solid fa-wand-magic-sparkles"></i></span> ADD-ON SERVICES
-                        </h2>
-                        <div id="addonsContainer" class="space-y-5"></div>
-                    </div>
+                        <!-- SPECIAL REQUESTS -->
+                        <div class="service-card">
+                            <h2 class="serif text-2xl font-light mb-6 flex items-center gap-3">
+                                <span class="text-3xl"><i class="fa-solid fa-file-lines"></i></span> SPECIAL REQUESTS
+                            </h2>
+                            <textarea id="specialRequests" rows="4" class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]"
+                                    placeholder="Any special requirements, preferences, or occasions we should know about?"></textarea>
+                        </div>
 
-                    <!-- SPECIAL REQUESTS -->
-                    <div class="service-card">
-                        <h2 class="serif text-2xl font-light mb-6 flex items-center gap-3">
-                            <span class="text-3xl"><i class="fa-solid fa-file-lines"></i></span> SPECIAL REQUESTS
-                        </h2>
-                        <textarea id="specialRequests" rows="4" class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#E96C40]"
-                                  placeholder="Any special requirements, preferences, or occasions we should know about?"></textarea>
-                    </div>
+                        <!-- Terms & Submit -->
+                        <div class="pt-6">
+                            <label class="flex items-start gap-3 cursor-pointer">
+                                <input type="checkbox" id="termsCheck" required class="w-5 h-5 mt-0.5 accent-[#94CA3E]">
+                                <span class="text-sm text-neutral leading-tight">
+                                    I agree to the <a href="#" class="text-[#E96C40] hover:underline">Terms of Service</a> and
+                                    <a href="#" class="text-[#E96C40] hover:underline">Cancellation Policy</a>.
+                                    Free cancellation up to 48 hours before check-in.
+                                </span>
+                            </label>
 
-                    <!-- Terms & Submit -->
-                    <div class="pt-6">
-                        <label class="flex items-start gap-3 cursor-pointer">
-                            <input type="checkbox" id="termsCheck" required class="w-5 h-5 mt-0.5 accent-[#94CA3E]">
-                            <span class="text-sm text-neutral leading-tight">
-                                I agree to the <a href="#" class="text-[#E96C40] hover:underline">Terms of Service</a> and
-                                <a href="#" class="text-[#E96C40] hover:underline">Cancellation Policy</a>.
-                                Free cancellation up to 48 hours before check-in.
-                            </span>
-                        </label>
+                            <div id="formMessage" class="hidden p-4 rounded-2xl text-sm mt-8"></div>
 
-                        <div id="formMessage" class="hidden p-4 rounded-2xl text-sm mt-8"></div>
-
-                        <button type="submit" id="submitBtn"
-                                class="btn-primary w-full mt-10 py-5 text-sm md:text-md lg:text-xl font-semibold flex items-center justify-center gap-3 bg-[#94CA3E] hover:bg-[#7eb52f] disabled:opacity-50 disabled:cursor-not-allowed"
-                                disabled>
-                            <span>Confirm Booking & Pay</span>
-                            <span id="payAmount" class="font-semibold">₦0</span>
-                        </button>
+                            <button type="submit" id="submitBtn"
+                                    class="btn-primary w-full mt-10 py-5 text-sm md:text-md lg:text-xl font-semibold flex items-center justify-center gap-3 bg-[#94CA3E] hover:bg-[#7eb52f] disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled>
+                                <span>Confirm Booking & Pay</span>
+                                <span id="payAmount" class="font-semibold">₦0</span>
+                            </button>
+                        </div>
                     </div>
                 </form>
 
@@ -275,24 +277,24 @@
 
             <!-- RIGHT: Summary Sidebar -->
             <div class="md:col-span-2 order-1 md:order-2">
-                <div id="propertyImagePlaceholder" class="w-full h-64 bg-gray-300 mb-5 animate-pulse"></div>
-                <img id="unitImage" src="" alt="Apartment" class="w-full object-cover mb-5 hidden">
+                <div id="propertyImagePlaceholder" class="w-full h-64 bg-gray-300 animate-pulse z-10"></div>
+                <img id="unitImage" src="" alt="Apartment" class="w-full object-cover z-20 hidden">
 
                 <div id="serviceCard" class="service-card sticky top-12 animate-pulse">
                     <div class="flex items-baseline justify-between">
-                        <h3 id="unitTitle" class="serif text-3xl font-light bg-gray-300 w-3/4 h-8 rounded"></h3>
+                        <h3 id="unitTitle" class="serif text-3xl font-light bg-gray-300 w-3/4 h-8 "></h3>
                         <div class="flex items-center gap-1 text-amber-400 text-2xl">
-                            ★ <span id="unitRating" class="text-lg font-semibold text-neutral bg-gray-300 w-12 h-6 rounded"></span>
+                            ★ <span id="unitRating" class="text-lg font-semibold text-neutral bg-gray-300 w-12 h-6 "></span>
                         </div>
                     </div>
-                    <p id="locationPlaceholder" class="mt-2 text-neutral bg-gray-300 w-3/5 h-6 rounded animate-pulse"></p>
+                    <p id="locationPlaceholder" class="mt-2 text-neutral bg-gray-300 w-3/5 h-6  animate-pulse"></p>
 
                     <div id="amenitiesTags" class="flex flex-wrap gap-3 mt-7"></div>
 
                     <div class="mt-10 space-y-6" id="pricingSection">
                         <div class="flex justify-between text-lg">
-                            <span id="unitPricing" class="text-neutral bg-gray-300 w-48 h-6 rounded animate-pulse"></span>
-                            <span id="unitTotal" class="font-semibold bg-gray-300 w-32 h-6 rounded animate-pulse"></span>
+                            <span id="unitPricing" class="text-neutral bg-gray-300 w-48 h-6  animate-pulse"></span>
+                            <span id="unitTotal" class="font-semibold bg-gray-300 w-32 h-6  animate-pulse"></span>
                         </div>
                         <div id="addonsBreakdown" class="space-y-3 text-sm"></div>
                         <div class="flex justify-between text-emerald-600">
@@ -303,11 +305,11 @@
                         </div>
                         <div class="flex justify-between pt-4 border-t border-gray-200">
                             <span class="text-neutral line-through">Service fee (5%)</span>
-                            <span id="serviceFee" class="font-semibold bg-gray-300 w-32 h-6 rounded animate-pulse">---</span>
+                            <span id="serviceFee" class="font-semibold bg-gray-300 w-32 h-6  animate-pulse">---</span>
                         </div>
                         <div class="flex justify-between md:text-xl lg:text-3xl font-light pt-6 border-t">
                             <span>Total</span>
-                            <span id="grandTotal" class="text-[#E96C40] bg-gray-300 w-48 h-8 rounded animate-pulse"></span>
+                            <span id="grandTotal" class="text-[#E96C40] bg-gray-300 w-48 h-8  animate-pulse"></span>
                         </div>
                     </div>
 

@@ -6,7 +6,7 @@
     <!-- Header -->
     <section class="py-16 px-6 bg-gradient-to-r from-[#632A89] to-[#E96C40] text-white">
         <div class="max-w-7xl mx-auto">
-            <h1 class="serif text-5xl font-light mb-4">Our Services</h1>
+            <h1 class="serif text-5xl font-light mb-4 text-white">Our Services</h1>
             <p class="text-lg max-w-2xl ">Comprehensive services designed to enhance your living experience</p>
         </div>
     </section>
@@ -25,7 +25,7 @@
             <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
                 {% for service in essential %}
                 <div class="service-card text-center h-full">
-                    <div class="text-6xl mb-4">
+                    <div class="text-[#632A89] text-6xl mb-4">
                         {% if "Security" in service.name %}<i class="fa-solid fa-shield"></i>
                         {% elif "Electricity" in service.name %}<i class="fa-solid fa-bolt"></i>
                         {% elif "Water" in service.name %}<i class="fa-solid fa-droplet"></i>
@@ -60,7 +60,7 @@
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {% for service in optional %}
                 <div class="service-card h-full flex flex-col text-center">
-                    <div class="text-6xl mb-4 text-center">
+                    <div class="text-[#632A89] text-6xl mb-4 text-center">
                         {% if "Laundry" in service.name %}<i class="fa-solid fa-shirt"></i>
                         {% elif "Gym" in service.name %}<i class="fa-solid fa-dumbbell"></i>
                         {% elif "Concierge" in service.name %}<i class="fa-solid fa-hat-cowboy"></i>
@@ -74,8 +74,8 @@
                     <div class="mt-6 pt-6 border-t border-gray-200">
                         <div class="flex items-center justify-end">
                             <!-- <span class="text-lg font-semibold text-[#E96C40]">₦{{ "{:,.2f}".format(service.price) }}</span> -->
-                            <span class="text-sm font-semibold text-[#632A89] hover:text-[#E96C40]">
-                                On Demand
+                            <span class="text-sm font-semibold text-[#632A89]">
+                                On Request
                             </span>
                             <!-- {% if current_user.is_authenticated %}
                             <button onclick="addServiceToCart('{{ service.id }}', '{{ service.name }}')" 
@@ -134,7 +134,7 @@
     <!-- CTA Section -->
     <section class="py-24 px-6 bg-gradient-to-r from-[#632A89] to-[#E96C40] text-white">
         <div class="max-w-2xl mx-auto text-center">
-            <h2 class="serif text-5xl font-light mb-6">Ready to Book?</h2>
+            <h2 class="serif text-5xl font-light mb-6 text-white">Ready to Book?</h2>
             <p class="text-lg mb-10">
                 Choose your apartment and select the perfect services for your stay
             </p>

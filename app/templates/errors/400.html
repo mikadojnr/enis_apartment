@@ -1,0 +1,8 @@
+{% extends "errors/base.html" %}
+
+{% block title %}Bad Request - Eni's Apartments{% endblock %}
+
+{% set icon = '<i class="fa-solid fa-circle-exclamation text-red-500"></i>' %}
+{% set title = "Bad Request" %}
+{% set message = "The server could not understand your request. Please check your input and try again." %}
+{% set error_code = "400" %}
