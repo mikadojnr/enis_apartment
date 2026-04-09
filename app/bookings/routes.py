@@ -86,35 +86,6 @@ def send_booking_confirmed_email(booking):
         current_app.logger.error(f"Failed to send booking confirmed email to {booking.email}: {str(e)}", exc_info=True)
 
 
-
-# @bookings_bp.route('/send-booking-email', methods=['GET'])
-# def send_booking_email_route():
-#     booking_reference = request.args.get('booking_reference')
-
-#     if not booking_reference:
-#         return jsonify({"error": "booking_reference is required"}), 400
-
-#     booking = Booking.query.filter_by(
-#         booking_reference=booking_reference
-#     ).first()
-
-#     if not booking:
-#         return jsonify({"error": "Booking not found"}), 404
-
-#     try:
-#         send_booking_created_email(booking)
-#         return jsonify({
-#             "message": f"Email sent successfully to {booking.email}"
-#         }), 200
-#     except Exception as e:
-#         return jsonify({
-#             "error": "Failed to send email",
-#             "details": str(e)
-#         }), 500
-
-
-
-
 @bookings_bp.route('/availability')
 def availability():
     """Check availability - for searching across all units"""
@@ -335,22 +306,22 @@ def booking_confirmation(booking_reference):
 def booking_details(booking_reference):
     booking = Booking.query.filter_by(booking_reference=booking_reference).first_or_404()
 
+    # Authorization check
     if booking.user_id != current_user.id and not current_user.is_admin:
-        flash("Unauthorized", "danger")
+        flash("Unauthorized access", "danger")
         return redirect(url_for('main.index'))
 
-    # ✅ Decide base template here
+    # Decide which base template to use
     if current_user.is_admin:
-        base_template = "admin/base.html"
+        base_template = 'base.html'           # Full site base with navigation + footer
     else:
-        base_template = "bookings/base.html"
+        base_template = 'bookings/base.html'  # Minimal base (no nav/footer for booking pages)
 
     return render_template(
         'bookings/details.html',
         booking=booking,
-        base_template=base_template
+        base_template=base_template          # Pass this to the template
     )
-
 @bookings_bp.route('/guest/<guest_code>')
 @login_required
 def guest_booking_access(guest_code):
@@ -419,28 +390,6 @@ def booking_status(booking_reference):
         "message": "Booking status retrieved"
     })
 
-# @bookings_bp.route('/access')
-# def guest_access():
-#     ref = request.args.get('ref')
-#     if not ref:
-#         flash("Booking reference required", "warning")
-#         return redirect(url_for('main.index'))
-
-#     booking = Booking.query.filter_by(booking_reference=ref).first_or_404()
-
-#     # For guest: only show this one booking
-#     total_spent = booking.total_price if booking.paid else 0
-
-#     return render_template(
-#         'bookings/dashboard.html',
-#         bookings=[booking],
-#         service_requests=booking.service_requests.all(),
-#         active_bookings_count=1 if booking.status == 'confirmed' else 0,
-#         pending_services_count=len([r for r in booking.service_requests.all() if r.status == 'pending']),
-#         total_spent=total_spent,
-#         upcoming_booking=booking if booking.check_in_date > datetime.utcnow() else None,
-#         is_guest=True
-#     )
 
 # ====================== SERVICE REQUESTS ======================
 @bookings_bp.route('/service-request', methods=['POST'])

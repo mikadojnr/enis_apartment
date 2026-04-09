@@ -215,6 +215,8 @@ def update_booking_status(booking_id):
     
     return jsonify({'success': False, 'message': 'Invalid status'}), 400
 
+
+
 # ====================== SERVICES MANAGEMENT (ADMIN) ======================
 
 @admin_bp.route('/services')
@@ -301,7 +303,10 @@ def toggle_service_status(service_id):
     db.session.commit()
     return jsonify({'success': True, 'is_active': service.is_active})
 
+
+
 # ====================== SERVICE REQUESTS (ADMIN) ======================
+
 @admin_bp.route('/service-requests')
 @login_required
 @admin_required
