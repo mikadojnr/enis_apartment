@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if service else 'New' }} Service - Eni's Apartments{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-6 py-12">
+    <h1 class="text-4xl font-light text-[#632A89] mb-10">
+        {{ 'Edit Service' if service else 'Create New Service' }}
+    </h1>
+
+    <form id="serviceForm" class="space-y-8">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div>
+            <label class="block text-sm font-semibold mb-3 text-[#632A89]">Service Name *</label>
+            <input type="text" id="name" name="name" value="{{ service.name if service }}" 
+                   required class="w-full px-5 py-4 border border-gray-300 focus:border-[#E96C40]">
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+            <div>
+                <label class="block text-sm font-semibold mb-3 text-[#632A89]">Category</label>
+                <select id="category" name="category" class="w-full px-5 py-4 border border-gray-300 focus:border-[#E96C40]">
+                    <option value="essential" {{ 'selected' if service and service.category == 'essential' }}>Essential</option>
+                    <option value="optional" {{ 'selected' if not service or service.category == 'optional' }}>Optional (Add-on)</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-3 text-[#632A89]">Price (₦)</label>
+                <input type="number" id="price" name="price" value="{{ service.price if service }}" 
+                       class="w-full px-5 py-4 border border-gray-300 focus:border-[#E96C40]">
+            </div>
+        </div>
+
+        <div>
+            <label class="block text-sm font-semibold mb-3 text-[#632A89]">Icon (Emoji)</label>
+            <input type="text" id="icon" name="icon" value="{{ service.icon if service else '🔧' }}" 
+                   class="w-full px-5 py-4 border border-gray-300 focus:border-[#E96C40]">
+        </div>
+
+        <div>
+            <label class="block text-sm font-semibold mb-3 text-[#632A89]">Description</label>
+            <textarea id="description" name="description" rows="4" 
+                class="w-full px-5 py-4 border border-gray-300 focus:border-[#E96C40]">{{ service.description if service else '' }}</textarea>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <input type="checkbox" id="is_active" name="is_active" 
+                   {{ 'checked' if not service or service.is_active }} class="w-5 h-5">
+            <label for="is_active" class="font-medium">Service is Active</label>
+        </div>
+
+        <div class="flex gap-4 pt-6">
+            <button type="submit" class="btn-primary flex-1 py-4">
+                <span>{{ 'Update Service' if service else 'Create Service' }}</span>
+            </button>
+            <a href="/admin/services" class="btn-outline flex-1 py-4 text-center">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('serviceForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData);
+
+    const url = "{{ '/admin/services/new' if not service else '/admin/services/' + service.id|string + '/edit' }}";
+    
+    const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+
+    const result = await res.json();
+    if (result.success) {
+        alert(result.message);
+        window.location.href = '/admin/services';
+    } else {
+        alert(result.message || 'Error saving service');
+    }
+});
+</script>
+{% endblock %}

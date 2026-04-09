@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Manage Services - Eni's Apartments{% endblock %}
+
+{% block extra_css %}
+<style>
+    .service-row:hover { background-color: #f8fafc; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-12">
+    <div class="flex justify-between items-center mb-10">
+        <div>
+            <h1 class="serif text-5xl font-light text-[#632A89]">Services Management</h1>
+            <p class="text-gray-600 mt-2">Define what guests can request</p>
+        </div>
+        <a href="/admin/services/new" class="btn-primary flex items-center gap-2">
+            <span><i class="fa-solid fa-plus"></i> Add New Service</span>
+        </a>
+    </div>
+
+    <div class="bg-white shadow-sm border border-gray-200 overflow-hidden">
+        <table class="w-full">
+            <thead class="bg-gray-50 border-b">
+                <tr>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500">ICON</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500">SERVICE NAME</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500">CATEGORY</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500">PRICE</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500">STATUS</th>
+                    <th class="px-6 py-4 text-center text-xs font-semibold text-gray-500">ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for service in services %}
+                <tr class="service-row border-b last:border-none">
+                    <td class="px-6 py-5 text-2xl">{{ service.icon }}</td>
+                    <td class="px-6 py-5">
+                        <div class="font-semibold">{{ service.name }}</div>
+                        <div class="text-xs text-gray-500">{{ service.description[:80] }}{% if service.description|length > 80 %}...{% endif %}</div>
+                    </td>
+                    <td class="px-6 py-5">
+                        <span class="px-3 py-1 text-xs rounded-full 
+                            {% if service.category == 'essential' %}bg-blue-100 text-blue-700
+                            {% else %}bg-amber-100 text-amber-700{% endif %}">
+                            {{ service.category|capitalize }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-5 font-semibold">
+                        {% if service.price > 0 %}
+                            ₦{{ service.price|round|int|format }}
+                        {% else %}
+                            <span class="text-gray-400">Free</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-5">
+                        <span onclick="toggleService({{ service.id }})" 
+                              class="cursor-pointer inline-block px-4 py-1 text-xs font-medium rounded-full
+                              {% if service.is_active %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
+                            {{ 'Active' if service.is_active else 'Inactive' }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-5 text-center">
+                        <a href="/admin/services/{{ service.id }}/edit" class="text-[#E96C40] hover:text-orange-600 mr-4">
+                            <i class="fa-solid fa-edit"></i>
+                        </a>
+                        <button onclick="deleteService({{ service.id }}, '{{ service.name }}')" 
+                                class="text-red-600 hover:text-red-700">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                        No services found. Add your first service.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function toggleService(serviceId) {
+    if (!confirm("Toggle service status?")) return;
+    
+    const res = await fetch(`/admin/services/${serviceId}/toggle`, { method: 'POST' });
+    const data = await res.json();
+    if (data.success) window.location.reload();
+}
+
+async function deleteService(serviceId, name) {
+    if (!confirm(`Delete service "${name}"?`)) return;
+    
+    const res = await fetch(`/admin/services/${serviceId}/delete`, { method: 'POST' });
+    const data = await res.json();
+    
+    if (data.success) {
+        alert(data.message);
+        window.location.reload();
+    } else {
+        alert(data.message || "Cannot delete this service");
+    }
+}
+</script>
+{% endblock %}

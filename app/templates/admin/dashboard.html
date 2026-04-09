@@ -80,13 +80,20 @@
             </a>
             
             <a href="/admin/service-requests" class="service-card hover:shadow-lg transition">
-                <div class="text-5xl mb-4"><i class="fas fa-wrench text-[#632A89]"></i></div>
-                <h3 class="font-semibold text-lg mb-2">Services</h3>
+                <div class="text-5xl mb-4"><i class="fa fa-concierge-bell text-[#632A89]"></i></div>
+                <h3 class="font-semibold text-lg mb-2">Service Requests</h3>
                 <p class="text-sm text-neutral mb-4">Handle guest service requests</p>
                 <span class="text-[#E96C40] font-semibold text-sm">{{ pending_requests }} pending →</span>
             </a>
-        </div>
 
+            <a href="{{ url_for('admin.manage_services') }}" class="service-card hover:shadow-lg transition">
+                <div class="text-5xl mb-4"><i class="fas fa-wrench text-[#632A89]"></i></div>
+                <h3 class="font-semibold text-lg mb-2">Services & Add-ons</h3>
+                <p class="text-sm text-neutral mb-4">Manage all available services and add-ons</p>
+                <span class="text-[#E96C40] font-semibold text-sm">Attend to service requees →</span>
+            </a>
+        </div>
+ts
         <!-- Recent Bookings -->
         <div>
             <div class="flex justify-between items-center mb-6">

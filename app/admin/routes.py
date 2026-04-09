@@ -215,16 +215,93 @@ def update_booking_status(booking_id):
     
     return jsonify({'success': False, 'message': 'Invalid status'}), 400
 
+# ====================== SERVICES MANAGEMENT (ADMIN) ======================
+
 @admin_bp.route('/services')
 @login_required
 @admin_required
 def manage_services():
-    """Manage services"""
-    services = Service.query.all()
+    """List all services"""
+    services = Service.query.order_by(Service.category, Service.name).all()
     return render_template('admin/services.html', services=services)
 
-# ====================== SERVICE REQUESTS (ADMIN) ======================
 
+@admin_bp.route('/services/new', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def create_service():
+    """Create new service"""
+    if request.method == 'POST':
+        data = request.get_json() if request.is_json else request.form.to_dict()
+        
+        service = Service(
+            name=data.get('name'),
+            category=data.get('category', 'optional'),
+            description=data.get('description', ''),
+            price=float(data.get('price', 0)),
+            pricing_type=data.get('pricing_type', 'per_stay'),
+            icon=data.get('icon', '🔧'),
+            is_active=data.get('is_active', True)
+        )
+        db.session.add(service)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'service_id': service.id, 'message': 'Service created successfully'})
+    
+    return render_template('admin/service-form.html', service=None)
+
+
+@admin_bp.route('/services/<int:service_id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_service(service_id):
+    """Edit existing service"""
+    service = Service.query.get_or_404(service_id)
+    
+    if request.method == 'POST':
+        data = request.get_json() if request.is_json else request.form.to_dict()
+        
+        service.name = data.get('name', service.name)
+        service.category = data.get('category', service.category)
+        service.description = data.get('description', service.description)
+        service.price = float(data.get('price', service.price))
+        service.pricing_type = data.get('pricing_type', service.pricing_type)
+        service.icon = data.get('icon', service.icon)
+        service.is_active = data.get('is_active', service.is_active) in [True, 'true', 'on', '1']
+        
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Service updated successfully'})
+    
+    return render_template('admin/service-form.html', service=service)
+
+
+@admin_bp.route('/services/<int:service_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_service(service_id):
+    """Delete service"""
+    service = Service.query.get_or_404(service_id)
+    
+    # Prevent deletion if service is used in bookings
+    if service.bookings.count() > 0:
+        return jsonify({'success': False, 'message': 'Cannot delete service that has been used in bookings'}), 400
+    
+    db.session.delete(service)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Service deleted successfully'})
+
+
+@admin_bp.route('/services/<int:service_id>/toggle', methods=['POST'])
+@login_required
+@admin_required
+def toggle_service_status(service_id):
+    """Toggle service active/inactive"""
+    service = Service.query.get_or_404(service_id)
+    service.is_active = not service.is_active
+    db.session.commit()
+    return jsonify({'success': True, 'is_active': service.is_active})
+
+# ====================== SERVICE REQUESTS (ADMIN) ======================
 @admin_bp.route('/service-requests')
 @login_required
 @admin_required
