@@ -322,6 +322,7 @@ def service_requests():
                          current_status=status)
 
 
+
 @admin_bp.route('/service-requests/<int:request_id>/status', methods=['POST'])
 @login_required
 @admin_required

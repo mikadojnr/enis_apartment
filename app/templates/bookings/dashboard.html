@@ -186,16 +186,18 @@
             
             <div class="space-y-6">
                 <div>
-                    <label class="block text-sm font-semibold mb-2 text-[#632A89]">Select Booking</label>
-                    <select id="modalBookingSelect" class="w-full px-5 py-4 border border-gray-300  focus:border-[#E96C40]">
+                    <label class="block text-sm font-semibold mb-2 text-[#632A89]">Select Active Booking *</label>
+                    <select id="modalBookingSelect" class="w-full px-5 py-4 border border-gray-300 focus:border-[#E96C40]">
                         <!-- Populated by JS -->
+                         <option value="">Loading Bookings...</option>
                     </select>
-                </div>
+                </div>  
 
                 <div>
                     <label class="block text-sm font-semibold mb-2 text-[#632A89]">Service *</label>
-                    <select id="modalServiceSelect" class="w-full px-5 py-4 border border-gray-300  focus:border-[#E96C40]">
+                    <select id="modalServiceSelect" class="w-full px-5 py-4 border border-gray-300  focus:border-[#E96C40]" multiple>
                         <!-- Populated by JS -->
+                            <option value="">Loading Services...</option>
                     </select>
                 </div>
 
@@ -233,7 +235,7 @@
     async function loadServiceData() {
         try {
             const [bookingsRes, servicesRes, requestsRes] = await Promise.all([
-                fetch('/bookings/api/my-bookings'), // we'll create this soon
+                fetch('/bookings/api/my-bookings'),   // We'll create this endpoint below
                 fetch('/api/services'),
                 fetch('/bookings/service-requests')
             ]);
@@ -243,12 +245,13 @@
             const requests = await requestsRes.json();
 
             renderServiceRequests(requests);
-            populateModalBookings();
+            populateModalBookings();   // Only active bookings
             populateModalServices();
         } catch (e) {
             console.error(e);
         }
     }
+
 
     function renderServiceRequests(requests) {
         const container = document.getElementById('serviceRequestsList');
@@ -283,12 +286,33 @@
 
     function populateModalBookings() {
         const select = document.getElementById('modalBookingSelect');
-        select.innerHTML = '<option value="">Select a booking...</option>';
-        
-        currentBookings.filter(b => b.status === 'confirmed').forEach(booking => {
+        select.innerHTML = '<option value="">Select an active booking...</option>';
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // Filter only eligible bookings
+        const eligibleBookings = currentBookings.filter(booking => {
+            const checkIn = new Date(booking.check_in_date);
+            const checkOut = new Date(booking.check_out_date);
+            
+            return booking.status === 'confirmed' &&
+                booking.paid === true &&
+                checkOut >= today;   // Not past checkout
+        });
+
+        if (eligibleBookings.length === 0) {
+            const opt = document.createElement('option');
+            opt.value = "";
+            opt.textContent = "No active bookings available for service requests";
+            select.appendChild(opt);
+            return;
+        }
+
+        eligibleBookings.forEach(booking => {
             const opt = document.createElement('option');
             opt.value = booking.id;
-            opt.textContent = `${booking.unit_number} (${booking.check_in_date} - ${booking.check_out_date})`;
+            opt.textContent = `${booking.unit_number} (${booking.check_in_date} — ${booking.check_out_date})`;
             select.appendChild(opt);
         });
     }

@@ -832,10 +832,12 @@
                 
                 if (res.ok) {
                     const data = await res.json();
+                    console.log("Previous verification check result:", data);
                     if (data.verified) {
                         hasVerifiedId = true;
                         verifiedIdId = data.verified_id_id;
                         document.getElementById('idType').value = data.id_type;
+                        console.log("ID Type prefilled based on previous verification:", data.id_type);
 
                         // Show "Already Verified" status
                         document.getElementById('idStatus').classList.remove('hidden');

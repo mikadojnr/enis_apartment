@@ -395,7 +395,7 @@ def booking_status(booking_reference):
 @bookings_bp.route('/service-request', methods=['POST'])
 @login_required
 def create_service_request():
-    """Create a new service request from guest dashboard"""
+    """Create a new service request - Only for active confirmed bookings"""
     data = request.get_json()
 
     booking_id = data.get('booking_id')
@@ -407,8 +407,24 @@ def create_service_request():
 
     booking = Booking.query.get_or_404(booking_id)
 
-    if booking.user_id != current_user.id and not current_user.is_admin:
+    # === STRICT VALIDATION FOR ACTIVE BOOKINGS ===
+    now = datetime.utcnow().date()
+
+    if booking.user_id != current_user.id:
         return jsonify({"success": False, "message": "Unauthorized"}), 403
+
+    if booking.status != 'confirmed':
+        return jsonify({"success": False, "message": "Service requests are only allowed for confirmed bookings"}), 400
+
+    if not booking.paid:
+        return jsonify({"success": False, "message": "Booking must be fully paid"}), 400
+
+    if booking.check_out_date.date() < now:
+        return jsonify({"success": False, "message": "This booking has already ended"}), 400
+
+    # Optional: Allow requests up to 1 day before check-in
+    if booking.check_in_date.date() > now + timedelta(days=1):
+        return jsonify({"success": False, "message": "Service requests are only available for current or imminent stays"}), 400
 
     service = Service.query.get_or_404(service_id)
 
@@ -425,15 +441,14 @@ def create_service_request():
     db.session.commit()
 
     # Send emails
-    send_new_service_request_email(service_request)        # To Admin
-    send_service_request_confirmation_email(service_request)  # To Guest
+    send_new_service_request_email(service_request)
+    send_service_request_confirmation_email(service_request)
 
     return jsonify({
         "success": True,
         "message": f"Request for '{service.name}' has been submitted successfully.",
         "request_id": service_request.id
     }), 201
-
 
 def send_new_service_request_email(service_request):
     """Notify Admin when a new service request is made"""

@@ -1,5 +1,5 @@
 from flask import jsonify, request
-from flask_login import current_user
+from flask_login import current_user, login_required
 from app.api import api_bp
 from app.models import Unit, Service, Booking, User, VerifiedID
 from datetime import datetime
@@ -17,6 +17,7 @@ def get_users():
     } for u in users])
 
 @api_bp.route('/me')
+@login_required
 def api_me():
     if current_user.is_authenticated:
         verified = VerifiedID.query.filter_by(user_id=current_user.id, is_verified=True).first()
@@ -31,6 +32,24 @@ def api_me():
             "full_name": f"{current_user.first_name} {current_user.last_name}"
         })
     return jsonify({"is_authenticated": False})
+
+
+@api_bp.route('/my-bookings')
+@login_required
+def api_my_bookings():
+    """Return current user's bookings for dashboard"""
+    bookings = Booking.query.filter_by(user_id=current_user.id).order_by(Booking.check_in_date.desc()).all()
+
+    return jsonify([{
+        'id': b.id,
+        'booking_reference': b.booking_reference,
+        'unit_number': b.unit.unit_number,
+        'check_in_date': b.check_in_date.strftime('%Y-%m-%d'),
+        'check_out_date': b.check_out_date.strftime('%Y-%m-%d'),
+        'status': b.status,
+        'paid': b.paid,
+        'total_price': float(b.total_price)
+    } for b in bookings])
 
 @api_bp.route('/units')
 def get_units():
