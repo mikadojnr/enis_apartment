@@ -335,7 +335,7 @@
         const notes = document.getElementById('modalNotes').value;
 
         if (!bookingId || !serviceId) {
-            alert("Please select both booking and service");
+            alert("Please select booking and service");
             return;
         }
 
@@ -343,14 +343,25 @@
             const res = await fetch('/bookings/service-request', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ booking_id: bookingId, service_id: serviceId, notes })
+                body: JSON.stringify({ 
+                    booking_id: parseInt(bookingId), 
+                    service_id: parseInt(serviceId), 
+                    notes 
+                })
             });
 
             const data = await res.json();
+
             if (data.success) {
                 hideServiceModal();
-                loadServiceData(); // refresh list
-                alert(data.message);
+                
+                if (data.requires_payment) {
+                    // Trigger Paystack payment
+                    initiateServicePayment(data);
+                } else {
+                    alert(data.message);
+                    loadServiceData(); // refresh list
+                }
             } else {
                 alert(data.message);
             }
@@ -359,6 +370,46 @@
         }
     }
 
+    function initiateServicePayment(data) {
+        const handler = PaystackPop.setup({
+            key: data.paystack_public_key,
+            email: current_user_email,           // Pass from template
+            amount: data.amount * 100,           // Convert to kobo
+            currency: "NGN",
+            ref: data.payment_reference,
+            metadata: {
+                request_id: data.request_id,
+                type: "service_request"
+            },
+            callback: function(response) {
+                verifyServicePayment(response.reference, data.request_id);
+            },
+            onClose: function() {
+                alert("Payment cancelled");
+            }
+        });
+        handler.openIframe();
+    }
+
+    async function verifyServicePayment(reference, requestId) {
+        // You can call your existing verify endpoint or create a dedicated one
+        try {
+            const res = await fetch('/payments/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reference: reference })
+            });
+            const result = await res.json();
+            
+            if (result.success) {
+                alert("Payment successful! Your service request is now active.");
+                loadServiceData();
+            }
+        } catch (e) {
+            alert("Payment verified but please refresh.");
+        }
+    }
+    
     function showNewServiceModal() {
         document.getElementById('serviceModal').classList.remove('hidden');
         document.getElementById('serviceModal').classList.add('flex');

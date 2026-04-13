@@ -392,10 +392,12 @@ def booking_status(booking_reference):
 
 
 # ====================== SERVICE REQUESTS ======================
+# ====================== SERVICE REQUESTS ======================
+
 @bookings_bp.route('/service-request', methods=['POST'])
 @login_required
 def create_service_request():
-    """Create a new service request - Only for active confirmed bookings"""
+    """Create service request - Only for active, confirmed & paid bookings"""
     data = request.get_json()
 
     booking_id = data.get('booking_id')
@@ -406,15 +408,16 @@ def create_service_request():
         return jsonify({"success": False, "message": "Booking and Service are required"}), 400
 
     booking = Booking.query.get_or_404(booking_id)
+    service = Service.query.get_or_404(service_id)
 
-    # === STRICT VALIDATION FOR ACTIVE BOOKINGS ===
-    now = datetime.utcnow().date()
-
+    # === STRICT VALIDATION ===
     if booking.user_id != current_user.id:
         return jsonify({"success": False, "message": "Unauthorized"}), 403
 
+    now = datetime.utcnow().date()
+
     if booking.status != 'confirmed':
-        return jsonify({"success": False, "message": "Service requests are only allowed for confirmed bookings"}), 400
+        return jsonify({"success": False, "message": "Service requests only allowed on confirmed bookings"}), 400
 
     if not booking.paid:
         return jsonify({"success": False, "message": "Booking must be fully paid"}), 400
@@ -422,11 +425,9 @@ def create_service_request():
     if booking.check_out_date.date() < now:
         return jsonify({"success": False, "message": "This booking has already ended"}), 400
 
-    # Optional: Allow requests up to 1 day before check-in
+    # Allow requests from 1 day before check-in
     if booking.check_in_date.date() > now + timedelta(days=1):
-        return jsonify({"success": False, "message": "Service requests are only available for current or imminent stays"}), 400
-
-    service = Service.query.get_or_404(service_id)
+        return jsonify({"success": False, "message": "Service requests available from 1 day before check-in"}), 400
 
     service_request = ServiceRequest(
         service_id=service.id,
@@ -440,57 +441,57 @@ def create_service_request():
     db.session.add(service_request)
     db.session.commit()
 
-    # Send emails
-    send_new_service_request_email(service_request)
-    send_service_request_confirmation_email(service_request)
+    # If service is paid, require payment
+    if service.price > 0:
+        return jsonify({
+            "success": True,
+            "message": f"{service.name} requested. Please complete payment.",
+            "request_id": service_request.id,
+            "requires_payment": True,
+            "amount": float(service.price),
+            "service_name": service.name,
+            "booking_reference": booking.booking_reference
+        }), 201
+    else:
+        # Free service → send emails immediately
+        send_new_service_request_email(service_request)
+        send_service_request_confirmation_email(service_request)
+        return jsonify({
+            "success": True,
+            "message": f"Request for '{service.name}' submitted successfully.",
+            "request_id": service_request.id,
+            "requires_payment": False
+        }), 201
+
+
+@bookings_bp.route('/service-request/<int:request_id>/pay', methods=['POST'])
+@login_required
+def pay_service_request(request_id):
+    """Initialize payment for a paid service request"""
+    service_request = ServiceRequest.query.get_or_404(request_id)
+    
+    if service_request.user_id != current_user.id:
+        return jsonify({"success": False, "message": "Unauthorized"}), 403
+
+    if service_request.status != 'pending':
+        return jsonify({"success": False, "message": "Request is no longer pending"}), 400
+
+    service = service_request.service
+    if service.price <= 0:
+        return jsonify({"success": False, "message": "This service is free"}), 400
+
+    payment_ref = f"SRV-{uuid.uuid4().hex[:8].upper()}"
 
     return jsonify({
         "success": True,
-        "message": f"Request for '{service.name}' has been submitted successfully.",
-        "request_id": service_request.id
-    }), 201
-
-def send_new_service_request_email(service_request):
-    """Notify Admin when a new service request is made"""
-    try:
-        subject = f"New Service Request - {service_request.service.name}"
-        html_body = render_template(
-            'emails/admin_new_service_request.html',
-            request=service_request,
-            guest=service_request.requester,
-            booking=service_request.booking,
-            unit=service_request.booking.unit
-        )
-        msg = Message(
-            subject=subject,
-            recipients=[current_app.config['MAIL_DEFAULT_SENDER']],  # Admin email
-            html=html_body,
-            sender=current_app.config['MAIL_DEFAULT_SENDER']
-        )
-        mail.send(msg)
-    except Exception as e:
-        current_app.logger.error(f"Failed to send admin service request notification: {str(e)}")
-
-
-def send_service_request_confirmation_email(service_request):
-    """Send confirmation to guest"""
-    try:
-        subject = f"Service Request Received - {service_request.service.name}"
-        html_body = render_template(
-            'emails/guest_service_request_confirmation.html',
-            request=service_request,
-            guest=service_request.requester,
-            booking=service_request.booking
-        )
-        msg = Message(
-            subject=subject,
-            recipients=[service_request.requester.email],
-            html=html_body,
-            sender=current_app.config['MAIL_DEFAULT_SENDER']
-        )
-        mail.send(msg)
-    except Exception as e:
-        current_app.logger.error(f"Failed to send guest service request confirmation: {str(e)}")
+        "payment_reference": payment_ref,
+        "amount": float(service.price) * 100,  # Paystack expects kobo
+        "email": current_user.email,
+        "service_name": service.name,
+        "request_id": service_request.id,
+        "booking_reference": service_request.booking.booking_reference,
+        "paystack_public_key": current_app.config.get('PAYSTACK_PUBLIC_KEY')
+    })
 
 @bookings_bp.route('/service-requests')
 @login_required

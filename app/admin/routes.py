@@ -227,29 +227,38 @@ def manage_services():
     services = Service.query.order_by(Service.category, Service.name).all()
     return render_template('admin/services.html', services=services)
 
-
 @admin_bp.route('/services/new', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def create_service():
     """Create new service"""
     if request.method == 'POST':
-        data = request.get_json() if request.is_json else request.form.to_dict()
-        
-        service = Service(
-            name=data.get('name'),
-            category=data.get('category', 'optional'),
-            description=data.get('description', ''),
-            price=float(data.get('price', 0)),
-            pricing_type=data.get('pricing_type', 'per_stay'),
-            icon=data.get('icon', '🔧'),
-            is_active=data.get('is_active', True)
-        )
-        db.session.add(service)
-        db.session.commit()
-        
-        return jsonify({'success': True, 'service_id': service.id, 'message': 'Service created successfully'})
-    
+        # Handle both JSON and form data
+        if request.is_json:
+            data = request.get_json()
+        else:
+            data = request.form.to_dict()
+
+        try:
+            service = Service(
+                name=data.get('name'),
+                category=data.get('category', 'optional'),
+                description=data.get('description', ''),
+                price=float(data.get('price') or 0),
+                pricing_type=data.get('pricing_type', 'per_stay'),
+                icon=data.get('icon', '🔧'),
+                is_active=data.get('is_active') in ('on', 'true', True, '1')
+            )
+            db.session.add(service)
+            db.session.commit()
+
+            flash('Service created successfully!', 'success')
+            return redirect(url_for('admin_bp.services_list'))  # adjust route if needed
+
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error creating service: {str(e)}', 'danger')
+
     return render_template('admin/service-form.html', service=None)
 
 

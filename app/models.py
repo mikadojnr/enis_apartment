@@ -160,8 +160,7 @@ class Booking(db.Model):
     )
     
     def __repr__(self):
-        return f'<Booking {self.booking_reference}>'
-    
+        return f'<Booking {self.booking_reference}>'  
 
 class VerifiedID(db.Model):
     """Stores successfully verified IDs (both logged-in and guest users)"""
@@ -217,13 +216,17 @@ class ServiceRequest(db.Model):
     
     status = db.Column(db.String(50), default='pending')  # pending, in_progress, completed
     notes = db.Column(db.Text)
+
+    payment_reference = db.Column(db.String(100), nullable=True)
+    paid = db.Column(db.Boolean, default=False)
+    paid_at = db.Column(db.DateTime, nullable=True)
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     def __repr__(self):
         return f'<ServiceRequest {self.id}>'
     
-
 class Payment(db.Model):
     """Track payments made for bookings"""
     __tablename__ = 'payments'
