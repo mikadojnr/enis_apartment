@@ -3,18 +3,18 @@
 {% block title %}My Profile - Eni's Apartments{% endblock %}
 
 {% block content %}
-    <div class="max-w-4xl mx-auto px-6 py-12">
-        <nav class="mb-8 text-sm text-neutral">
+    <div class="max-w-7xl mx-auto px-6 py-12">
+        <!-- <nav class="mb-8 text-sm text-neutral">
             <a href="/" class="hover:text-[#E96C40]">Home</a> / 
-            <a href="{{ url_for('booking.dashboard') }}" class="hover:text-[#E96C40]">Dashboard</a> / 
+            <a href="{{ url_for('bookings.dashboard') }}" class="hover:text-[#E96C40]">Dashboard</a> / 
             <span>Profile</span>
-        </nav>
+        </nav> -->
         
         <h1 class="serif text-5xl font-light mb-12">My Profile</h1>
         
-        <div class="grid md:grid-cols-3 gap-8">
+        <div class="grid md:grid-cols-5 gap-8">
             <!-- Profile Form -->
-            <div class="md:col-span-2">
+            <div class="md:col-span-3">
                 <div class="service-card">
                     <h2 class="serif text-2xl font-light mb-6">Personal Information</h2>
                     
@@ -93,7 +93,7 @@
             </div>
             
             <!-- Sidebar -->
-            <div class="md:col-span-1">
+            <div class="md:col-span-2">
                 <!-- Account Info Card -->
                 <div class="service-card mb-8">
                     <h3 class="serif text-2xl font-light mb-6">Account Info</h3>

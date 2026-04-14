@@ -58,7 +58,7 @@
             <p class="mt-2 opacity-90">Payment history & receipts</p>
         </a>
 
-        <a href="#profile" class="bg-gradient-to-br from-gray-700 to-gray-900 text-white p-6 hover:shadow-lg transition">
+        <a href="{{ url_for('auth.profile') }}" class="bg-gradient-to-br from-gray-700 to-gray-900 text-white p-6 hover:shadow-lg transition">
             <i class="fa-solid fa-user-gear text-4xl mb-4"></i>
             <h3 class="text-xl text-white font-semibold">My Profile</h3>
             <p class="mt-2 opacity-90">Update details & preferences</p>
@@ -235,7 +235,7 @@
     async function loadServiceData() {
         try {
             const [bookingsRes, servicesRes, requestsRes] = await Promise.all([
-                fetch('/bookings/api/my-bookings'),   // We'll create this endpoint below
+                fetch('/api/my-bookings'), 
                 fetch('/api/services'),
                 fetch('/bookings/service-requests')
             ]);
@@ -335,14 +335,18 @@
         const notes = document.getElementById('modalNotes').value;
 
         if (!bookingId || !serviceId) {
-            alert("Please select booking and service");
+            showFlash("Please select booking and service", 'warning');
             return;
         }
 
         try {
             const res = await fetch('/bookings/service-request', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'X-CSRFToken': '{{ csrf_token() }}' 
+                },
+
                 body: JSON.stringify({ 
                     booking_id: parseInt(bookingId), 
                     service_id: parseInt(serviceId), 
@@ -350,26 +354,38 @@
                 })
             });
 
-            const data = await res.json();
+            let data;
+
+            try {
+                data = await res.json();
+            } catch {
+                throw new Error("Invalid server response");
+            }
+
+            if (!res.ok) {
+                showFlash(data.message || "Request failed", 'warning');
+                return;
+            }
 
             if (data.success) {
                 hideServiceModal();
                 
                 if (data.requires_payment) {
-                    // Trigger Paystack payment
                     initiateServicePayment(data);
                 } else {
-                    alert(data.message);
-                    loadServiceData(); // refresh list
+                    showFlash(data.message, 'success');
+                    loadServiceData();
                 }
             } else {
-                alert(data.message);
+                showFlash(data.message, 'warning');
             }
+
         } catch (e) {
-            alert("Failed to submit request");
+            console.error(e);
+            showFlash("Failed to submit request", 'danger');
         }
     }
-
+    
     function initiateServicePayment(data) {
         const handler = PaystackPop.setup({
             key: data.paystack_public_key,

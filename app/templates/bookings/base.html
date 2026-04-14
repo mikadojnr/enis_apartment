@@ -35,11 +35,23 @@
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
-                <div class="fixed top-20 right-6 max-w-sm bg-white border-l-4 border-[#E96C40] p-4 shadow-lg rounded z-40" id="flash-{{ loop.index }}">
+                <div class="fixed top-20 right-6 max-w-sm p-4 shadow-lg rounded z-40
+                    {% if category == 'success' %}
+                        bg-green-100 border-l-4 border-green-500 text-green-800
+                    {% elif category == 'error' %}
+                        bg-red-100 border-l-4 border-red-500 text-red-800
+                    {% elif category == 'warning' %}
+                        bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800
+                    {% else %}
+                        bg-white border-l-4 border-[#632A89]
+                    {% endif %}
+                " id="flash-{{ loop.index }}">
                     <p class="text-sm font-medium">{{ message }}</p>
+
                     <script>
                         setTimeout(() => {
-                            document.getElementById('flash-{{ loop.index }}').remove();
+                            const el = document.getElementById('flash-{{ loop.index }}');
+                            if (el) el.remove();
                         }, 5000);
                     </script>
                 </div>
@@ -142,6 +154,29 @@
                 }
             });
         });
+
+        function showFlash(message, category = 'info') {
+            const div = document.createElement('div');
+
+            let classes = "fixed top-20 right-6 max-w-sm p-4 shadow-lg rounded z-40 ";
+
+            if (category === 'success') {
+                classes += "bg-green-100 border-l-4 border-green-500 text-green-800";
+            } else if (category === 'error') {
+                classes += "bg-red-100 border-l-4 border-red-500 text-red-800";
+            } else {
+                classes += "bg-white border-l-4 border-[#632A89]";
+            }
+
+            div.className = classes;
+            div.innerHTML = `<p class="text-sm font-medium">${message}</p>`;
+
+            document.body.appendChild(div);
+
+            setTimeout(() => {
+                div.remove();
+            }, 5000);
+        }
     </script>
 
     {% block extra_js %}{% endblock %}
