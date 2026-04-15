@@ -103,6 +103,7 @@
                 ref: '{{ booking.booking_reference }}',              // unique ref
                 currency: 'NGN',
                 metadata: {
+                    type: "booking",
                     booking_reference: '{{ booking.booking_reference }}',
                     custom_fields: [
                         {display_name: "Booking Ref", variable_name: "booking_ref", value: '{{ booking.booking_reference }}'},

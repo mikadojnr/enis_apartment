@@ -14,6 +14,8 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config:
     """Base configuration — shared by all environments"""
+
+    ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL')
     
     IDANALYZER_API_KEY = os.environ.get('IDANALYZER_API_KEY')
     IDANALYZER_REGION = 'US'

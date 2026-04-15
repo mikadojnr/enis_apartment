@@ -1,0 +1,81 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Service Request Confirmation{% endblock %}
+
+{% block header %}
+Your Service Request Has Been Received
+{% endblock %}
+
+{% block content %}
+
+<p>Hello {{ user.name }},</p>
+
+<p>Your service request has been successfully submitted. Below are the details:</p>
+
+<h3>Booking Information</h3>
+<table>
+    <tr>
+        <td><strong>Booking Reference</strong></td>
+        <td class="highlight">{{ booking.booking_reference }}</td>
+    </tr>
+    <tr>
+        <td><strong>Unit</strong></td>
+        <td>{{ booking.unit.unit_number }}</td>
+    </tr>
+    <tr>
+        <td><strong>Check-in</strong></td>
+        <td>{{ booking.check_in_date }}</td>
+    </tr>
+    <tr>
+        <td><strong>Check-out</strong></td>
+        <td>{{ booking.check_out_date }}</td>
+    </tr>
+</table>
+
+<h3>Requested Services</h3>
+
+<table>
+    <tr>
+        <td><strong>Service</strong></td>
+        <td><strong>Price</strong></td>
+        <td><strong>Status</strong></td>
+    </tr>
+
+    {% set total = 0 %}
+    {% for req in service_requests %}
+        {% set total = total + (req.service.price or 0) %}
+        <tr>
+            <td>{{ req.service.name }}</td>
+            <td>
+                {% if req.service.price > 0 %}
+                    ₦{{ "{:,.2f}".format(req.service.price) }}
+                {% else %}
+                    Free
+                {% endif %}
+            </td>
+            <td>{{ req.status.replace('_', ' ').title() }}</td>
+        </tr>
+    {% endfor %}
+</table>
+
+<h3>Total Cost</h3>
+<p class="highlight">₦{{ "{:,.2f}".format(total) }}</p>
+
+{% if service_requests[0].notes %}
+<h3>Your Notes</h3>
+<p>{{ service_requests[0].notes }}</p>
+{% endif %}
+<!-- 
+{% if total > 0 %}
+<p>
+    Some of your requested services require payment. Please complete payment to activate them.
+</p>
+{% else %}
+<p>
+    Your requested services are being processed and will be attended to shortly.
+</p>
+{% endif %} -->
+
+<p>Thank you for choosing <strong>Eni's Apartments</strong>.</p>
+
+{% endblock %}

@@ -18,7 +18,7 @@ class User(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    bookings = db.relationship('Booking', backref='guest', lazy='dynamic')
+    bookings = db.relationship('Booking', backref='user', lazy='dynamic')
     service_requests = db.relationship('ServiceRequest', backref='requester', lazy='dynamic')
     
     def set_password(self, password):
@@ -151,6 +151,7 @@ class Booking(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     service_requests = db.relationship('ServiceRequest', backref='booking', lazy='dynamic')
+    # user = db.relationship('User', backref=db.backref('bookings', lazy='dynamic'))
 
     addons = db.relationship(
         'Service',

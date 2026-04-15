@@ -474,38 +474,47 @@ def create_service_request():
             "requires_payment": False
         })
     
-def send_new_service_request_email(service_request):
-    """Notify admin that a new service request was created"""
+def send_new_service_request_email(service_requests):
+    """Notify admin that new service request(s) were created"""
 
-    booking = service_request.booking
-    service = service_request.service
-    user = service_request.user
+    if not service_requests:
+        return
+
+    # All requests share same booking & user
+    first_request = service_requests[0]
+
+    booking = first_request.booking
+    user = booking.user
 
     send_email(
         subject="New Service Request Received",
         recipients=[current_app.config.get('ADMIN_EMAIL')],
-        template="email/service_request_admin.html",
-        service_request=service_request,
+        body=f"New service request for booking {booking.booking_reference}",
+        template="emails/service_request_admin.html",
+        service_requests=service_requests,  # ✅ pass full list
         booking=booking,
-        service=service,
-        user=user
+        user=user,
+        sender=current_app.config.get('MAIL_DEFAULT_SENDER')
     )
 
-def send_service_request_confirmation_email(service_request):
-    """Send confirmation to customer"""
+def send_service_request_confirmation_email(service_requests):
+    if not service_requests:
+        return
 
-    booking = service_request.booking
-    service = service_request.service
-    user = service_request.user
+    first_request = service_requests[0]
+
+    booking = first_request.booking
+    user = booking.user
 
     send_email(
         subject="Your Service Request Has Been Received",
         recipients=[user.email],
-        template="email/service_request_user.html",
-        service_request=service_request,
+        body=f"Your service request for booking {booking.booking_reference} has been received.",
+        template="emails/service_request_user.html",
+        service_requests=service_requests,
         booking=booking,
-        service=service,
-        user=user
+        user=user,
+        sender=current_app.config.get('MAIL_DEFAULT_SENDER')
     )
 
 @bookings_bp.route('/service-request/<int:request_id>/pay', methods=['POST'])

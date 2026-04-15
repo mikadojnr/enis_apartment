@@ -3,20 +3,6 @@ from datetime import datetime
 from app import db
 from app.models import Booking
 
-# def cleanup_expired_bookings():
-#     """Mark pending bookings as expired if past expires_at"""
-#     now = datetime.utcnow()
-#     expired = Booking.query.filter(
-#         Booking.status == 'pending',
-#         Booking.expires_at < now
-#     ).all()
-
-#     if expired:
-#         for booking in expired:
-#             booking.status = 'expired'
-#         db.session.commit()
-#         print(f"[Cleanup] Marked {len(expired)} bookings as expired at {now}")
-
 def cleanup_expired_bookings(app):
     """Mark pending bookings as expired if past expires_at"""
     from datetime import datetime
@@ -36,6 +22,8 @@ def cleanup_expired_bookings(app):
             db.session.commit()
 
             print(f"[Cleanup] Marked {len(expired)} bookings as expired at {now}")
+
+
 
 def init_scheduler(app):
     scheduler = BackgroundScheduler()
