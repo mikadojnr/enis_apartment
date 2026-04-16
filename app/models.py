@@ -18,7 +18,7 @@ class User(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    bookings = db.relationship('Booking', backref='user', lazy='dynamic')
+    bookings = db.relationship('Booking', backref='guest', lazy='dynamic')
     service_requests = db.relationship('ServiceRequest', backref='requester', lazy='dynamic')
     
     def set_password(self, password):
@@ -212,6 +212,7 @@ class ServiceRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     service_id = db.Column(db.Integer, db.ForeignKey('services.id'), nullable=False)
     booking_id = db.Column(db.Integer, db.ForeignKey('bookings.id'), nullable=False)
+    payment_id = db.Column(db.Integer, db.ForeignKey('payments.id', ondelete='CASCADE'), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     unit_id = db.Column(db.Integer, db.ForeignKey('units.id'), nullable=False)
     
@@ -224,28 +225,50 @@ class ServiceRequest(db.Model):
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    payment = db.relationship('Payment', backref='service_requests')
     
     def __repr__(self):
         return f'<ServiceRequest {self.id}>'
-    
+
 class Payment(db.Model):
-    """Track payments made for bookings"""
     __tablename__ = 'payments'
 
     id = db.Column(db.Integer, primary_key=True)
-    booking_id = db.Column(db.Integer, db.ForeignKey('bookings.id'), nullable=False)
-    payment_reference = db.Column(db.String(100), unique=True, nullable=False, index=True)  # from Paystack or internal
-    # amount = db.Column(db.Float, nullable=False)
+    booking_id = db.Column(db.Integer, db.ForeignKey('bookings.id', ondelete='CASCADE'), nullable=True)
+    payment_reference = db.Column(db.String(100), unique=True, nullable=False)
     amount = db.Column(db.Numeric(10,2), nullable=False)
     currency = db.Column(db.String(10), default='NGN')
-    status = db.Column(db.String(50), default='pending')  # pending, success, failed, refunded
     payment_method = db.Column(db.String(50))  # card, bank, ussd, etc.
     transaction_date = db.Column(db.DateTime, default=datetime.utcnow)
     gateway_response = db.Column(db.Text)  # raw response from Paystack
+    status = db.Column(db.String(50), default='pending')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    booking = db.relationship('Booking', backref='payments', lazy='select')
+    items = db.relationship(
+        'PaymentItem',
+        backref='payment',
+        cascade='all, delete-orphan'
+    )
 
-    def __repr__(self):
-        return f'<Payment {self.payment_reference} for Booking {self.booking_id}>'
+class PaymentItem(db.Model):
+    __tablename__ = 'payment_items'
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    payment_id = db.Column(
+        db.Integer,
+        db.ForeignKey('payments.id', ondelete='CASCADE'),
+        nullable=False
+    )
+
+    service_request_id = db.Column(
+        db.Integer,
+        db.ForeignKey('service_requests.id', ondelete='CASCADE'),
+        nullable=True
+    )
+
+    amount = db.Column(db.Numeric(10,2), nullable=False)
+
+    service_request = db.relationship('ServiceRequest')

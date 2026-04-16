@@ -41,9 +41,9 @@ Your Service Request Has Been Received
         <td><strong>Status</strong></td>
     </tr>
 
-    {% set total = 0 %}
+    <!-- {% set total = 0 %} -->
     {% for req in service_requests %}
-        {% set total = total + (req.service.price or 0) %}
+        <!-- {% set total = total + (req.service.price or 0) %} -->
         <tr>
             <td>{{ req.service.name }}</td>
             <td>

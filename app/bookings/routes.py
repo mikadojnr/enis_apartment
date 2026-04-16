@@ -484,7 +484,9 @@ def send_new_service_request_email(service_requests):
     first_request = service_requests[0]
 
     booking = first_request.booking
-    user = booking.user
+    user = booking.guest
+
+    total = sum(float(r.service.price) for r in service_requests if r.service.price > 0)
 
     send_email(
         subject="New Service Request Received",
@@ -494,7 +496,8 @@ def send_new_service_request_email(service_requests):
         service_requests=service_requests,  # ✅ pass full list
         booking=booking,
         user=user,
-        sender=current_app.config.get('MAIL_DEFAULT_SENDER')
+        sender=current_app.config.get('MAIL_DEFAULT_SENDER'),
+        total=total
     )
 
 def send_service_request_confirmation_email(service_requests):
@@ -504,7 +507,8 @@ def send_service_request_confirmation_email(service_requests):
     first_request = service_requests[0]
 
     booking = first_request.booking
-    user = booking.user
+    user = booking.guest
+    total = sum(float(r.service.price) for r in service_requests if r.service.price > 0)
 
     send_email(
         subject="Your Service Request Has Been Received",
@@ -514,7 +518,8 @@ def send_service_request_confirmation_email(service_requests):
         service_requests=service_requests,
         booking=booking,
         user=user,
-        sender=current_app.config.get('MAIL_DEFAULT_SENDER')
+        sender=current_app.config.get('MAIL_DEFAULT_SENDER'),
+        total=total
     )
 
 @bookings_bp.route('/service-request/<int:request_id>/pay', methods=['POST'])
