@@ -226,7 +226,7 @@
                 const response = await fetch('/auth/change-password', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token() }}'
                     },
                     body: JSON.stringify({
                         current_password: document.getElementById('currentPassword').value,
@@ -237,7 +237,8 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    showMessage(passwordMessage, 'Password updated successfully', 'success');
+                    // showMessage(passwordMessage, 'Password updated successfully', 'success');
+                    showFlash('Password updated successfully', 'success');
                     passwordForm.reset();
                 } else {
                     showMessage(passwordMessage, data.message || 'Error updating password', 'error');
