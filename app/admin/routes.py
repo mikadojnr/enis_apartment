@@ -216,6 +216,26 @@ def update_booking_status(booking_id):
     return jsonify({'success': False, 'message': 'Invalid status'}), 400
 
 
+# ====================== ADDONS MANAGEMENT (ADMIN) ======================
+
+@admin_bp.route('/apartments/<int:apartment_id>/addons', methods=['POST'])
+@login_required
+@admin_required
+def update_apartment_addons(apartment_id):
+    apartment = ApartmentType.query.get_or_404(apartment_id)
+    service_ids = request.get_json().get('service_ids', [])
+
+    # Clear existing relationships
+    apartment.services = []
+
+    # Add new ones
+    if service_ids:
+        services = Service.query.filter(Service.id.in_(service_ids)).all()
+        apartment.services.extend(services)
+
+    db.session.commit()
+    return jsonify({"success": True, "message": "Addons updated successfully"})
+
 
 # ====================== SERVICES MANAGEMENT (ADMIN) ======================
 

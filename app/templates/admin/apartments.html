@@ -11,8 +11,8 @@
             <!-- Title Section -->
             <div>
                 <div>
-                    <h1 class="serif text-5xl font-light mb-2">Manage Apartments</h1>
-                    <p class="text-lg text-neutral">Create and manage apartment types</p>
+                    <h1 class="serif text-5xl font-light">Apartment Types & Addons</h1>
+                    <p class="text-neutral mt-2">Manage types and their associated services/addons</p>
                 </div>
             </div>
 
@@ -71,6 +71,23 @@
                             <p class="text-sm text-neutral mb-2">Active Units</p>
                             <div class="text-2xl font-semibold text-[#E96C40]">{{ apartment.units.count() }}</div>
                         </div>
+
+                        <!-- Current Addons -->
+                        <div class="mb-6">
+                            <p class="text-sm font-semibold text-gray-600 mb-3">CURRENT ADDONS</p>
+                            {% if apartment.services %}
+                            <div class="flex flex-wrap gap-2">
+                                {% for service in apartment.services %}
+                                <span class="inline-flex items-center gap-1 bg-gray-100 px-4 py-2 text-sm">
+                                    {{ service.name }}
+                                    <span class="text-[#E96C40] font-medium">₦{{ "{:,.0f}".format(service.price) }}</span>
+                                </span>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="text-sm text-gray-400 italic">No addons assigned yet</p>
+                            {% endif %}
+                        </div>
                         
                         <!-- Actions -->
                         <div class="space-y-2">
@@ -81,6 +98,10 @@
                             <a href="{{ url_for('admin.edit_apartment', apartment_id=apartment.id) }}" class="w-full block text-center text-sm font-semibold px-4 py-2  transition bg-blue-100 text-blue-600 hover:bg-blue-200">
                                 Edit
                             </a>
+                            <button onclick="manageAddons({{ apartment.id }}, '{{ apartment.name }}')" 
+                                    class="w-full px-4 py-2 bg-[#94CA3E] hover:bg-[#7eb52f] text-white font-medium">
+                                Manage Addons
+                            </button>
                             <button onclick="deleteApartment({{ apartment.id }})" class="w-full text-sm font-semibold px-4 py-2  transition bg-red-100 text-red-600 hover:bg-red-200">
                                 Delete
                             </button>
@@ -151,8 +172,107 @@
         </div>
     </div>
 
+
+    <!-- Addons Management Modal -->
+    <div id="addonsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-6">
+        <div class="bg-white max-w-2xl w-full h-96 overflow-y-auto">
+            <div class="p-8 border-b flex justify-between items-center">
+                <h2 id="modalTitle" class="text-2xl font-light">Manage Addons</h2>
+                <button onclick="closeAddonsModal()" class="text-3xl text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
+
+            <div class="p-8" id="addonsContent">
+                <!-- Dynamically populated by JS -->
+            </div>
+
+            <div class="p-6 border-t flex gap-4">
+                <button onclick="closeAddonsModal()" class="flex-1 py-4 border font-medium ">Close</button>
+                <button onclick="saveAddons()" class="flex-1 py-4 bg-[#94CA3E] text-white font-medium ">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let currentApartmentId = null;
+        let allServices = [];
+
+
+
+        async function manageAddons(apartmentId, apartmentName) {
+            currentApartmentId = apartmentId;
+            document.getElementById('modalTitle').textContent = `Addons for ${apartmentName}`;
+
+            try {
+                const [servicesRes, aptRes] = await Promise.all([
+                    fetch('/api/services'),
+                    fetch(`/admin/apartments/${apartmentId}`)
+                ]);
+
+                if (!servicesRes.ok) throw new Error('Services request failed');
+                if (!aptRes.ok) throw new Error('Apartment request failed');
+
+                const allServices = await servicesRes.json();
+                const apartment = await aptRes.json();
+
+                const addons = apartment.apartment_type?.addons || [];
+
+                let html = `<p class="text-sm font-semibold mb-4">Available Services</p>
+                            <div class="grid grid-cols-1 gap-3">`;
+
+                allServices.forEach(service => {
+                    const isAssigned = addons.some(a => a.id === service.id);
+
+                    html += `
+                        <label class="flex items-center gap-3 p-4 border hover:bg-gray-50 cursor-pointer">
+                            <input type="checkbox" class="addon-checkbox w-5 h-5 accent-[#94CA3E]" 
+                                value="${service.id}" ${isAssigned ? 'checked' : ''}>
+                            <div class="flex-1">
+                                <div class="font-medium">${service.name}</div>
+                                <div class="text-sm text-neutral">${service.description || ''}</div>
+                            </div>
+                            <div class="text-right">
+                                <span class="font-semibold text-[#E96C40]">₦${parseFloat(service.price).toLocaleString()}</span>
+                            </div>
+                        </label>`;
+                });
+
+                html += `</div>`;
+                document.getElementById('addonsContent').innerHTML = html;
+                document.getElementById('addonsModal').classList.remove('hidden');
+
+            } catch (e) {
+                console.error("Addon error:", e);
+                alert("Failed to load addons");
+            }
+        }
+        
+        function closeAddonsModal() {
+            document.getElementById('addonsModal').classList.add('hidden');
+        }
+
+        async function saveAddons() {
+            const selectedIds = Array.from(document.querySelectorAll('.addon-checkbox:checked'))
+                                    .map(cb => parseInt(cb.value));
+
+            try {
+                const res = await fetch(`/admin/apartments/${currentApartmentId}/addons`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token() }}' },
+                    body: JSON.stringify({ service_ids: selectedIds })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    alert("Addons updated successfully");
+                    closeAddonsModal();
+                    location.reload();
+                } else {
+                    alert(data.message || "Failed to update");
+                }
+            } catch (e) {
+                alert("Error saving addons");
+            }
+        }
         
         function openCreateModal() {
             currentApartmentId = null;
