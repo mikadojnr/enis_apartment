@@ -119,7 +119,13 @@ def profile():
         db.session.commit()
         return jsonify({'success': True, 'message': 'Profile updated successfully'})
     
-    return render_template('auth/profile.html', user=current_user)
+    # Decide which base template to use
+    if current_user.is_admin:
+        base_template = 'base.html'           # Full site base with navigation + footer
+    else:
+        base_template = 'bookings/base.html'  # Minimal base (no nav/footer for booking pages)
+    
+    return render_template('auth/profile.html', user=current_user, base_template=base_template)
 
 @auth_bp.route('/change-password', methods=['POST'])
 @login_required

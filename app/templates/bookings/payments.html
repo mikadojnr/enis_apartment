@@ -1,0 +1,63 @@
+{% extends 'bookings/base.html' %}
+
+{% block title %}My Payments - Eni's Apartments{% endblock %}
+
+{% block content %}
+<section id="dashboard" class="p-6 lg:p-10">
+    <div class="flex flex-col md:flex-row md:justify-between md:items-start mb-8 md:mb-12 gap-6">    
+        <!-- Title Section -->
+        <div>
+            <div>
+                <h2 class="serif text-3xl font-light mb-2">Payments and Invoices</h2>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
+            <a href="{{ url_for('main.units') }}" class="btn-primary w-full sm:w-auto text-center">
+                <span><i class="fa-solid fa-plus"></i> New Booking</span>
+            </a>
+        </div>
+
+    </div>
+
+
+    <div class="bg-white p-10 text-center text-gray-500">
+        No payments recorded yet.
+    </div>
+</section> 
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://js.paystack.co/v1/inline.js"></script>
+
+<script>
+    
+    let currentBookings = [];
+    let currentServices = [];
+
+    async function loadDashboardData() {
+        try {
+            const [bookingsRes, servicesRes, requestsRes] = await Promise.all([
+                fetch('/api/my-bookings'),
+                fetch('/api/services'),
+                fetch('/bookings/service-requests')
+            ]);
+
+            currentBookings = await bookingsRes.json();
+            currentServices = await servicesRes.json();
+            const serviceRequests = await requestsRes.json();
+
+            renderServiceRequests(serviceRequests);
+            populateModal();
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', loadDashboardData);
+</script>
+{% endblock %}
+

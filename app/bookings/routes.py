@@ -223,7 +223,6 @@ def new_booking():
         "message": "Booking created successfully. Please complete payment within 10 minutes."
     }), 201
 
-
 @bookings_bp.route('/<string:booking_reference>/payment-success', methods=['POST'])
 @login_required
 def payment_success(booking_reference):
@@ -324,6 +323,7 @@ def booking_details(booking_reference):
         booking=booking,
         base_template=base_template          # Pass this to the template
     )
+
 @bookings_bp.route('/guest/<guest_code>')
 @login_required
 def guest_booking_access(guest_code):
@@ -356,6 +356,24 @@ def dashboard():
         total_spent=total_spent,
         upcoming_booking=next((b for b in bookings if b.status == 'confirmed' and b.check_in_date > datetime.utcnow()), None)
     )
+
+@bookings_bp.route('/my-bookings')
+@login_required
+def my_bookings():
+    bookings = Booking.query.filter_by(user_id=current_user.id).order_by(Booking.check_in_date.desc()).all()
+    return render_template('bookings/my-bookings.html', bookings=bookings)
+
+@bookings_bp.route('/service-requests')
+@login_required
+def service_requests():
+    requests = ServiceRequest.query.filter_by(user_id=current_user.id).order_by(ServiceRequest.created_at.desc()).all()
+    return render_template('bookings/service-requests.html', requests=requests)
+
+@bookings_bp.route('/payments')
+@login_required
+def payments():
+    payments = Payment.query.filter_by(booking_id=Booking.query.filter_by(user_id=current_user.id).with_entities(Booking.id)).all()
+    return render_template('bookings/payments.html', payments=payments)
 
 @bookings_bp.route('/<int:booking_id>/cancel', methods=['POST'])
 @login_required

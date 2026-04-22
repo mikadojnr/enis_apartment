@@ -40,6 +40,8 @@ def api_my_bookings():
     """Return current user's bookings for dashboard"""
     bookings = Booking.query.filter_by(user_id=current_user.id).order_by(Booking.check_in_date.desc()).all()
 
+    print(f"API: Returning {len(bookings)} bookings for user {current_user.email}")
+    
     return jsonify([{
         'id': b.id,
         'booking_reference': b.booking_reference,
@@ -50,6 +52,7 @@ def api_my_bookings():
         'paid': b.paid,
         'total_price': float(b.total_price)
     } for b in bookings])
+
 
 @api_bp.route('/units')
 def get_units():

@@ -1,0 +1,470 @@
+{% extends "bookings/base.html" %}
+
+{% block title %}My Dashboard - Eni's Apartments{% endblock %}
+
+{% block content %}
+<!-- Dashboard Overview -->
+<section id="dashboard" class="p-6 lg:p-10">
+    <div class="flex flex-col md:flex-row md:justify-between md:items-start mb-8 md:mb-12 gap-6">
+        <h2 class="text-3xl font-light text-[#632A89] mb-8 serif">Dashboard Overview</h2>
+        <a href="/bookings/availability" onclick="toggleMobileMenu()" class="btn-primary block text-center py-3">
+            <span><i class="fa-solid fa-calendar-plus"></i> New Booking</span>
+        </a>
+    </div>
+
+    
+
+    <!-- Welcome & Quick Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-10">
+        <div class="bg-white p-6 shadow-sm border border-gray-100">
+            <p class="text-sm text-gray-500">Upcoming Stay</p>
+            <p class="text-2xl font-semibold mt-2 text-[#632A89]">
+                {% if upcoming_booking %}
+                    {{ upcoming_booking.check_in_date.strftime('%d %b') }}
+                {% else %}
+                    None
+                {% endif %}
+            </p>
+        </div>
+
+        <div class="bg-white p-6 shadow-sm border border-gray-100">
+            <p class="text-sm text-gray-500">Active Bookings</p>
+            <p class="text-3xl font-bold text-[#94CA3E]">{{ active_bookings_count|default(0) }}</p>
+        </div>
+
+        <div class="bg-white p-6 shadow-sm border border-gray-100">
+            <p class="text-sm text-gray-500">Pending Services</p>
+            <p class="text-3xl font-bold text-amber-500">{{ pending_services_count|default(0) }}</p>
+        </div>
+
+        <div class="bg-white p-6 shadow-sm border border-gray-100">
+            <p class="text-sm text-gray-500">Total Spent</p>
+            <p class="text-3xl font-bold text-[#E96C40]">
+                ₦{{ "{:,.2f}".format(total_spent) }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <a href="#services" class="bg-gradient-to-br from-[#632A89] to-[#4a1f6a] text-white p-6 hover:shadow-lg transition">
+            <i class="fa-solid fa-bell-concierge text-4xl mb-4"></i>
+            <h3 class="text-xl text-white font-semibold">Request Service</h3>
+            <p class="mt-2 opacity-90">Laundry • Cleaning • Maintenance</p>
+        </a>
+
+        <a href="#" class="bg-gradient-to-br from-[#E96C40] to-[#d55a2e] text-white p-6 hover:shadow-lg transition">
+            <i class="fa-solid fa-calendar-plus text-4xl mb-4"></i>
+            <h3 class="text-xl text-white font-semibold">Extend Stay</h3>
+            <p class="mt-2 opacity-90">Add more nights to your booking</p>
+        </a>
+
+        <a href="#" class="bg-gradient-to-br from-[#94CA3E] to-[#7eb52f] text-white p-6 hover:shadow-lg transition">
+            <i class="fa-solid fa-file-invoice-dollar text-4xl mb-4"></i>
+            <h3 class="text-xl text-white font-semibold">View Invoices</h3>
+            <p class="mt-2 opacity-90">Payment history & receipts</p>
+        </a>
+
+        <a href="{{ url_for('auth.profile') }}" class="bg-gradient-to-br from-gray-700 to-gray-900 text-white p-6 hover:shadow-lg transition">
+            <i class="fa-solid fa-user-gear text-4xl mb-4"></i>
+            <h3 class="text-xl text-white font-semibold">My Profile</h3>
+            <p class="mt-2 opacity-90">Update details & preferences</p>
+        </a>
+    </div>
+
+    <!-- Upcoming Booking Highlight -->
+    {% if upcoming_booking %}
+    <div class="bg-white p-8 shadow-md border border-[#94CA3E]/30 mb-10">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+                <h3 class="text-2xl font-semibold text-[#632A89] mb-2">
+                    Upcoming Stay • {{ upcoming_booking.unit.unit_number }}
+                </h3>
+                <p class="text-lg text-gray-700">
+                    {{ upcoming_booking.check_in_date.strftime('%d %b %Y') }} — 
+                    {{ upcoming_booking.check_out_date.strftime('%d %b %Y') }}
+                </p>
+                <p class="text-sm text-gray-500 mt-1">
+                    {{ upcoming_booking.number_of_guests }} 
+                    guest{{ 's' if upcoming_booking.number_of_guests != 1 else '' }}
+                </p>
+            </div>
+            <div class="text-right">
+                <span class="inline-block px-4 py-2 bg-[#94CA3E] text-white font-medium">
+                    Confirmed
+                </span>
+                <div class="mt-4">
+                    <a href="{{ url_for('bookings.booking_details', booking_reference=upcoming_booking.booking_reference) }}" class="text-[#E96C40] hover:underline font-medium">
+                        View Details →
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</section>
+
+<!-- Bookings Section -->
+<section id="bookings" class="p-6 lg:p-10 bg-gray-50">
+    <h2 class="text-3xl font-light text-[#632A89] mb-8">My Bookings</h2>
+
+    <div class="flex border-b border-gray-200 mb-6 overflow-x-auto">
+        <button class="tab-btn px-6 py-3 font-medium border-b-2 border-[#632A89] text-[#632A89] whitespace-nowrap">Active</button>
+        <button class="tab-btn px-6 py-3 font-medium text-gray-600 hover:text-[#632A89] whitespace-nowrap">Upcoming</button>
+        <button class="tab-btn px-6 py-3 font-medium text-gray-600 hover:text-[#632A89] whitespace-nowrap">Past</button>
+        <button class="tab-btn px-6 py-3 font-medium text-gray-600 hover:text-[#632A89] whitespace-nowrap">Cancelled</button>
+    </div>
+
+    <div id="bookings-content" class="space-y-6">
+        {% for booking in bookings %}
+        <div class="bg-white p-6 shadow-sm border border-gray-100">
+            <a href="{{ url_for('bookings.booking_details', booking_reference=booking.booking_reference) }}">
+                <div class="flex flex-col md:flex-row justify-between gap-6">
+                    <div>
+                        <p class="text-sm text-gray-500">Reference</p>
+                        <p class="font-mono font-semibold text-[#632A89]">{{ booking.booking_reference }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Unit</p>
+                        <p class="font-semibold">{{ booking.unit.unit_number }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Dates</p>
+                        <p class="font-semibold">
+                            {{ booking.check_in_date.strftime('%d %b %Y') }} — 
+                            {{ booking.check_out_date.strftime('%d %b %Y') }}
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <span class="inline-block px-4 py-1 text-sm font-medium
+                            {% if booking.status == 'confirmed' %}bg-green-100 text-green-800
+                            {% elif booking.status == 'pending' %}bg-amber-100 text-amber-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ booking.status|capitalize }}
+                        </span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% else %}
+        <div class="bg-white p-10 text-center text-gray-500">
+            No bookings found.
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Service Requests Section -->
+<section id="services" class="p-6 lg:p-10">
+    <div class="flex justify-between items-center mb-8">
+        <h2 class="text-3xl font-light text-[#632A89]">Service Requests</h2>
+        <button onclick="showNewServiceModal()" 
+                class="bg-[#94CA3E] hover:bg-[#7eb52f] text-white px-6 py-3 flex items-center gap-2 font-medium">
+            <i class="fa-solid fa-plus"></i> New Request
+        </button>
+    </div>
+
+    <div id="serviceRequestsList" class="space-y-4">
+        <!-- Populated by JavaScript -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="noServices" class="hidden bg-white p-12 text-center  border border-gray-100">
+        <i class="fa-solid fa-bell-concierge text-5xl text-gray-300 mb-4"></i>
+        <p class="text-gray-500">No service requests yet</p>
+    </div>
+</section>
+
+<!-- Payments Section -->
+<section id="payments" class="p-6 lg:p-10 bg-gray-50">
+    <h2 class="text-3xl font-light text-[#632A89] mb-8">Payments & Invoices</h2>
+    <div class="bg-white p-10 text-center text-gray-500">
+        No payments recorded yet.
+    </div>
+</section>
+
+
+
+<!-- New Service Request Modal -->
+<div id="serviceModal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50">
+    <div class="bg-white max-w-md w-full mx-4 overflow-hidden">
+        <div class="p-8 border-b">
+            <h3 class="text-3xl font-light text-[#632A89] serif">Request Services</h3>
+            <p class="text-neutral mt-1">Select services for your active booking</p>
+        </div>
+
+        <div class="p-8 space-y-8 overflow-y-auto" style="max-height: calc(80vh - 180px);">
+            <!-- Booking Selection -->
+            <div>
+                <label class="block text-sm font-semibold mb-3">Select Booking</label>
+                <select id="modalBookingSelect" class="w-full px-5 py-4 border border-gray-300  focus:border-[#E96C40]">
+                    <option value="">Loading bookings...</option>
+                </select>
+            </div>
+
+            <!-- Services Multi-Select -->
+            <div>
+                <label class="block text-sm font-semibold mb-3">Select Services <span class="text-red-500">*</span></label>
+                <select id="modalServiceSelect" multiple size="6"
+                        class="w-full px-5 py-4 border border-gray-300  focus:border-[#E96C40]">
+                </select>
+                <p class="text-xs text-neutral mt-2">Hold <strong>Ctrl/Cmd</strong> to select multiple</p>
+            </div>
+
+            <!-- Total Amount -->
+            <div class="bg-gray-50 p-5 ">
+                <div class="flex justify-between text-lg">
+                    <span class="font-medium">Total Amount</span>
+                    <span id="totalAmountDisplay" class="font-bold text-[#E96C40]">₦0.00</span>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div>
+                <label class="block text-sm font-semibold mb-3">Additional Notes</label>
+                <textarea id="modalNotes" rows="4" 
+                          class="w-full px-5 py-4 border border-gray-300  focus:border-[#E96C40]"
+                          placeholder="Any special instructions..."></textarea>
+            </div>
+        </div>
+
+        <div class="border-t p-6 flex gap-4">
+            <button onclick="hideServiceModal()" class="flex-1 py-4 border font-medium ">
+                Cancel
+            </button>
+            <button onclick="submitServiceRequest()" id="submitServiceBtn"
+                    class="flex-1 py-4 bg-[#94CA3E] text-white font-semibold ">
+                Proceed
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://js.paystack.co/v1/inline.js"></script>
+
+<script>
+    
+    let currentBookings = [];
+    let currentServices = [];
+
+    async function loadDashboardData() {
+        try {
+            const [bookingsRes, servicesRes, requestsRes] = await Promise.all([
+                fetch('/api/my-bookings'),
+                fetch('/api/services'),
+                fetch('/bookings/service-requests')
+            ]);
+
+            currentBookings = await bookingsRes.json();
+            currentServices = await servicesRes.json();
+            const serviceRequests = await requestsRes.json();
+
+            renderServiceRequests(serviceRequests);
+            populateModal();
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function renderServiceRequests(requests) {
+        const container = document.getElementById('serviceRequestsList');
+        const noServices = document.getElementById('noServices');
+
+        if (requests.length === 0) {
+            container.innerHTML = '';
+            noServices.classList.remove('hidden');
+            return;
+        }
+
+        noServices.classList.add('hidden');
+
+        container.innerHTML = requests.map(req => `
+            <div class="bg-white p-6  border border-gray-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="font-semibold text-lg">${req.service_name}</p>
+                        <p class="text-sm text-gray-500 mt-1">${req.unit_number} • ${req.booking_reference}</p>
+                    </div>
+                    <span class="px-4 py-1 text-xs font-medium
+                        ${req.status === 'completed' ? 'bg-green-100 text-green-700' : 
+                        req.status === 'in_progress' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}">
+                        ${req.status.replace('_', ' ').toUpperCase()}
+                    </span>
+                </div>
+                ${req.notes ? `<p class="mt-4 text-sm text-gray-600">${req.notes}</p>` : ''}
+                <p class="text-xs text-gray-400 mt-4">${req.created_at}</p>
+            </div>
+        `).join('');
+    }
+
+    function populateModal() {
+        const bookingSelect = document.getElementById('modalBookingSelect');
+        const serviceSelect = document.getElementById('modalServiceSelect');
+
+        // Reset selects
+        bookingSelect.innerHTML = '<option value="">Select an active booking...</option>';
+        serviceSelect.innerHTML = '<option value="">Select service...</option>';
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // =========================
+        // Populate BOOKINGS
+        // =========================
+        const eligibleBookings = (currentBookings || []).filter(booking => {
+            const checkOut = new Date(booking.check_out_date);
+
+            return booking.status === 'confirmed' &&
+                booking.paid === true &&
+                checkOut >= today;
+        });
+
+        if (eligibleBookings.length === 0) {
+            const opt = document.createElement('option');
+            opt.value = "";
+            opt.textContent = "No active bookings available for service requests";
+            bookingSelect.appendChild(opt);
+        } else {
+            eligibleBookings.forEach(booking => {
+                const opt = document.createElement('option');
+                opt.value = booking.id;
+                opt.textContent = `${booking.unit_number} (${booking.check_in_date} — ${booking.check_out_date})`;
+                bookingSelect.appendChild(opt);
+            });
+        }
+
+        // =========================
+        // Populate SERVICES
+        // =========================
+        (currentServices || [])
+            .filter(s => s.category === 'optional' || s.category === 'essential')
+            .forEach(service => {
+                const opt = document.createElement('option');
+                opt.value = service.id;
+                opt.textContent = `${service.name} - ₦${service.price}`;
+                serviceSelect.appendChild(opt);
+            });
+
+        // =========================
+        // Attach total calculator
+        // =========================
+        serviceSelect.addEventListener('change', calculateTotal);
+    }
+    
+    function calculateTotal() {
+        const selectedOptions = Array.from(document.getElementById('modalServiceSelect').selectedOptions);
+        let total = 0;
+
+        selectedOptions.forEach(opt => {
+            const service = currentServices.find(s => s.id == opt.value);
+            if (service) total += parseFloat(service.price || 0);
+        });
+
+        document.getElementById('totalAmountDisplay').textContent = `₦${total.toLocaleString()}`;
+    }
+
+    async function submitServiceRequest() {
+        const bookingId = document.getElementById('modalBookingSelect').value;
+        const selectedServices = Array.from(document.getElementById('modalServiceSelect').selectedOptions).map(opt => parseInt(opt.value));
+        const notes = document.getElementById('modalNotes').value.trim();
+
+        if (!bookingId || selectedServices.length === 0) {
+            showFlash("Please select a booking and at least one service", "error");
+            return;
+        }
+
+        try {
+            const res = await fetch('/bookings/service-request', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    booking_id: parseInt(bookingId),
+                    service_ids: selectedServices,
+                    notes: notes
+                })
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                hideServiceModal();
+                
+                if (data.requires_payment) {
+                    initiatePaystackPayment(data);
+                } else {
+                    alert(data.message);
+                    loadDashboardData();
+                }
+            } else {
+                alert(data.message || "Failed to submit request");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("An error occurred");
+        }
+    }
+
+    function initiatePaystackPayment(data) {
+        const handler = PaystackPop.setup({
+            key: data.paystack_public_key,
+            email: "{{ current_user.email }}",
+            amount: data.amount * 100,
+            currency: "NGN",
+            ref: data.payment_reference,
+            metadata: {
+                type: "service_request",
+                request_id: data.request_id,
+                type: "service_request"
+            },
+            callback: function(response) {
+                verifyServicePayment(response.reference, data.request_id);
+            },
+            onClose: function() {
+                alert("Payment cancelled");
+            }
+        });
+        handler.openIframe();
+    }
+
+    async function verifyServicePayment(reference, requestId) {
+        try {
+            const res = await fetch('/payments/verify', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token() }}'},
+                body: JSON.stringify({ reference, request_id: requestId })
+            });
+            const result = await res.json();
+            
+            if (result.success) {
+                showFlash("Payment successful! Your service request is now active.", "success");
+                // loadDashboardData();
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500); // 1.5 seconds
+            }
+        } catch (e) {
+            alert("Payment received but verification failed. Please contact support.");
+        }
+    }
+
+    function showNewServiceModal() {
+        document.getElementById('serviceModal').classList.remove('hidden');
+        document.getElementById('serviceModal').classList.add('flex');
+    }
+
+    function hideServiceModal() {
+        const modal = document.getElementById('serviceModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', loadDashboardData);
+</script>
+{% endblock %}
