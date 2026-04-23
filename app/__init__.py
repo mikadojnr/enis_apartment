@@ -40,27 +40,27 @@ def create_app(config_name='development'):
 
     # 2. Override/ensure mail settings from environment (after .env is loaded in config.py)
     # These are already pulled in DevelopmentConfig, but we reinforce here
-    # if 'MAIL_SERVER' in os.environ:
-    #     app.config['MAIL_SERVER'] = os.environ['MAIL_SERVER']
-    # if 'MAIL_PORT' in os.environ:
-    #     app.config['MAIL_PORT'] = int(os.environ['MAIL_PORT'])
-    # if 'MAIL_USE_TLS' in os.environ:
-    #     app.config['MAIL_USE_TLS'] = os.environ['MAIL_USE_TLS'].lower() in ('true', '1', 'yes')
-    # if 'MAIL_USERNAME' in os.environ:
-    #     app.config['MAIL_USERNAME'] = os.environ['MAIL_USERNAME']
-    # if 'MAIL_PASSWORD' in os.environ:
-    #     app.config['MAIL_PASSWORD'] = os.environ['MAIL_PASSWORD']
-    # if 'MAIL_DEFAULT_SENDER' in os.environ:
-    #     app.config['MAIL_DEFAULT_SENDER'] = os.environ['MAIL_DEFAULT_SENDER']
+    if 'MAIL_SERVER' in os.environ:
+        app.config['MAIL_SERVER'] = os.environ['MAIL_SERVER']
+    if 'MAIL_PORT' in os.environ:
+        app.config['MAIL_PORT'] = int(os.environ['MAIL_PORT'])
+    if 'MAIL_USE_TLS' in os.environ:
+        app.config['MAIL_USE_TLS'] = os.environ['MAIL_USE_TLS'].lower() in ('true', '1', 'yes')
+    if 'MAIL_USERNAME' in os.environ:
+        app.config['MAIL_USERNAME'] = os.environ['MAIL_USERNAME']
+    if 'MAIL_PASSWORD' in os.environ:
+        app.config['MAIL_PASSWORD'] = os.environ['MAIL_PASSWORD']
+    if 'MAIL_DEFAULT_SENDER' in os.environ:
+        app.config['MAIL_DEFAULT_SENDER'] = os.environ['MAIL_DEFAULT_SENDER']
 
     # Debug print (very useful)
-    print("Flask-Mail Configuration Loaded:")
-    print(f"  MAIL_SERVER:         {app.config.get('MAIL_SERVER')}")
-    print(f"  MAIL_PORT:           {app.config.get('MAIL_PORT')}")
-    print(f"  MAIL_USE_TLS:        {app.config.get('MAIL_USE_TLS')}")
-    print(f"  MAIL_USERNAME:       {app.config.get('MAIL_USERNAME')}")
-    print(f"  MAIL_DEFAULT_SENDER: {app.config.get('MAIL_DEFAULT_SENDER')}")
-    print(f"  IDANALYZER_API_KEY:  {app.config.get('IDANALYZER_API_KEY')}")
+    # print("Flask-Mail Configuration Loaded:")
+    # print(f"  MAIL_SERVER:         {app.config.get('MAIL_SERVER')}")
+    # print(f"  MAIL_PORT:           {app.config.get('MAIL_PORT')}")
+    # print(f"  MAIL_USE_TLS:        {app.config.get('MAIL_USE_TLS')}")
+    # print(f"  MAIL_USERNAME:       {app.config.get('MAIL_USERNAME')}")
+    # print(f"  MAIL_DEFAULT_SENDER: {app.config.get('MAIL_DEFAULT_SENDER')}")
+    # print(f"  IDANALYZER_API_KEY:  {app.config.get('IDANALYZER_API_KEY')}")
 
 
     # 3. Initialize ALL extensions AFTER config is loaded

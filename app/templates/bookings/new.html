@@ -331,7 +331,7 @@
             const checkOut = document.getElementById('checkOut')?.value;
             if (!checkIn || !checkOut) return 0;
             const diff = new Date(checkOut) - new Date(checkIn);
-            return Math.ceil(diff / (1000 * 60 * 60 * 24));
+            return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
         }
 
         function isFormReady() {
@@ -352,10 +352,8 @@
                 }
             }
 
-            // ID Verification Requirement
-            if (!hasVerifiedId && !verifiedIdId) {
-                return false;
-            }
+            // ID verification required
+            if (!hasVerifiedId && !verifiedIdId) return false;
 
             return calculateNights() > 0;
         }
@@ -377,38 +375,56 @@
 
             fetchedData.apartment_type.addons.forEach(addon => {
                 const checkbox = document.getElementById(`addon${addon.id}`);
-                if (checkbox?.checked) {
-                    let cost = addon.price || 0;
-                    if (addon.pricing_type?.includes('per_person')) cost *= totalGuests;
-                    if (addon.pricing_type?.includes('per_day') || addon.pricing_type?.includes('per_night')) cost *= nights;
+                if (!checkbox?.checked) return;   // ← Only selected add-ons
 
+                let cost = parseFloat(addon.price || 0);
+                const type = (addon.pricing_type || '').toLowerCase();
+
+                // Apply multipliers based on pricing_type
+                if (type.includes('per_person') || type.includes('per_guest')) {
+                    cost *= totalGuests;
+                }
+                if (type.includes('per_day') || type.includes('per_night')) {
+                    cost *= nights;
+                }
+
+                // Fallback: if no pricing_type, treat as flat (once)
+                if (!type) {
+                    // cost remains as is (flat fee)
+                }
+
+                if (cost > 0) {
                     total += cost;
-                    lines.push({ name: addon.name, cost });
+                    lines.push({ 
+                        name: addon.name, 
+                        cost: Math.round(cost) 
+                    });
                 }
             });
 
-            return { total, lines };
+            return { total: Math.round(total), lines };
         }
 
         function updatePricingDisplay() {
             if (!fetchedData) return;
 
             const nights = calculateNights();
-            const basePrice = (fetchedData.apartment_type?.base_price || 0) * nights;
+            const basePricePerNight = parseFloat(fetchedData.apartment_type?.base_price || 0);
+            const baseTotal = Math.round(basePricePerNight * nights);
+
             const { total: addonsTotal, lines } = calculateAddonsTotalAndLines();
-            const subtotal = basePrice + addonsTotal;
-            // const serviceFee = Math.round(subtotal * 0.05);
-            const serviceFee = 0;
-            // const grandTotal = subtotal + serviceFee;
-            const grandTotal = subtotal;
+            const subtotal = baseTotal + addonsTotal;
+            const serviceFee = 0;                    // Change to Math.round(subtotal * 0.05) if needed
+            const grandTotal = subtotal + serviceFee;
 
-            // Update UI
+            // Update main pricing display
             document.getElementById('unitPricing').textContent = nights > 0
-                ? `₦${(fetchedData.apartment_type?.base_price || 0).toLocaleString()} × ${nights} night${nights !== 1 ? 's' : ''}`
-                : '₦0 × 0 nights';
+                ? `₦${basePricePerNight.toLocaleString()} × ${nights} night${nights !== 1 ? 's' : ''}`
+                : 'Select dates';
 
-            document.getElementById('unitTotal').textContent = `₦${basePrice.toLocaleString()}`;
+            document.getElementById('unitTotal').textContent = `₦${baseTotal.toLocaleString()}`;
 
+            // Add-ons breakdown
             let addonsHtml = '';
             lines.forEach(item => {
                 addonsHtml += `
@@ -418,13 +434,15 @@
                     </div>
                 `;
             });
-            document.getElementById('addonsBreakdown').innerHTML = addonsHtml;
+            document.getElementById('addonsBreakdown').innerHTML = addonsHtml || '<div class="text-sm text-neutral">No add-ons selected</div>';
 
             document.getElementById('serviceFee').textContent = `₦${serviceFee.toLocaleString()}`;
             document.getElementById('grandTotal').textContent = `₦${grandTotal.toLocaleString()}`;
             document.getElementById('payAmount').textContent = `₦${grandTotal.toLocaleString()}`;
         }
-
+       
+       
+       
         // ────────────────────────────────────────────────
         //  Fetch unit data
         // ────────────────────────────────────────────────
