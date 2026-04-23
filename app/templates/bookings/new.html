@@ -590,25 +590,6 @@
                         expiryDate.toLocaleString('en-GB', options) + ' (UTC)';
                 }
 
-                // Pay Now button – you can later initialize Paystack here
-                document.getElementById('payNowBtn').addEventListener('click', function() {
-                    const ref = bookingReference;
-                    alert(`Paystack payment flow would start here for reference: ${ref}\n\n(In real implementation – call Paystack.setup())`);
-                    // Real example:
-                    // PaystackPop.setup({
-                    //     key: 'pk_test_xxxx',
-                    //     email: document.getElementById('email')?.value || 'guest@example.com',
-                    //     amount: grandTotal * 100, // in kobo
-                    //     ref: ref,
-                    //     onClose: () => { /* handle close */ },
-                    //     callback: (response) => {
-                    //         // verify on backend & show success section
-                    //         document.getElementById('paymentAwaitingSection').classList.add('hidden');
-                    //         document.getElementById('paymentSuccessSection').classList.remove('hidden');
-                    //     }
-                    // });
-                });
-
                 // Guest lookup button
                 document.getElementById('lookupBtn').addEventListener('click', function() {
                     const ref = document.getElementById('lookupReference').value.trim().toUpperCase();

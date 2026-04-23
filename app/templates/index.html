@@ -6,15 +6,15 @@
     <!-- Hero Section -->
     <section id="home" class="relative h-screen flex items-center justify-center overflow-hidden">
         <div class="absolute inset-0 bg-cover bg-center" 
-             style="background-image: linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1600&q=80');">
+             style="background-image: linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.5)), url('{{ url_for('static', filename='images/hero.jpeg') }}');">
         </div>
        
         <div class="relative z-10 text-center text-white px-6 max-w-5xl">
-            <h1 class="serif text-6xl md:text-8xl font-light mb-6 fade-in-up text-white">
+            <h1 class="serif text-6xl md:text-8xl font-light mb-6 fade-in-up text-white text-shadow-lg">
                 Elevated Living
             </h1>
             <div class="accent-line fade-in-up delay-1" style="background-color: #94CA3E;"></div>
-            <p class="text-lg md:text-xl mb-10 max-w-2xl mx-auto font-light leading-relaxed fade-in-up delay-2">
+            <p class="text-lg md:text-xl mb-10 max-w-2xl mx-auto font-light leading-relaxed fade-in-up delay-2 text-shadow-lg">
                Luxury meets comfort in our curated collection of fully serviced apartments. Experience hotel-grade amenities with the freedom of home.
             </p>
 
@@ -133,10 +133,11 @@
                     Every comfort and convenience at your fingertips, ensuring a seamless living experience
                 </p>
             </div>
+
             
             <div class="grid md:grid-cols-4 gap-6">
                 {% for service in essential_services %}
-                <div class="service-card text-center ">
+                <div class=" service service-card text-center ">
                     <div class="text-[#632A89] text-5xl mb-4">
                         {% if "Security" in service.name %}<i class="fa-solid fa-shield"></i>
                         {% elif "Electricity" in service.name %}<i class="fa-solid fa-bolt"></i>
@@ -147,7 +148,7 @@
                         {% elif "Parking" in service.name %}<i class="fa-solid fa-car"></i>
                         {% else %}<i class="fa-solid fa-wifi"></i>{% endif %}
                     </div>
-                    <h3 class="font-semibold text-lg mb-2">{{ service.name }}</h3>
+                    <h3 class="serif font-semibold text-lg mb-2">{{ service.name }}</h3>
                     <p class="text-sm text-neutral">{{ service.description }}</p>
                 </div>
                 {% endfor %}
@@ -168,7 +169,7 @@
             
             <div class="grid md:grid-cols-3 gap-6">
                 {% for service in optional_services %}
-                <div class="service-card text-center ">
+                <div class="service service-card text-center ">
                     <div class="text-[#632A89] text-5xl mb-4">
                         {% if "Laundry" in service.name %}<i class="fa-solid fa-shirt"></i>
                         {% elif "Gym" in service.name %}<i class="fa-solid fa-dumbbell"></i>
@@ -177,7 +178,7 @@
                         {% elif "Pet" in service.name %}<i class="fa-solid fa-paw"></i>
                         {% else %}<i class="fa-solid fa-star"></i>{% endif %}
                     </div>
-                    <h3 class="font-semibold text-lg mb-2">{{ service.name }}</h3>
+                    <h3 class="serif font-semibold text-lg mb-2">{{ service.name }}</h3>
                     <p class="text-sm text-neutral mb-4">{{ service.description }}</p>
                     {% if service.price > 0 %}
                     <!-- <p class="text-sm font-semibold text-[#E96C40]">N{{ "%.0f"|format(service.price) }}/service</p> -->

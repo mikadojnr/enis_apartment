@@ -47,7 +47,7 @@
 
     <!-- Quick Actions -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        <a href="#services" class="bg-gradient-to-br from-[#632A89] to-[#4a1f6a] text-white p-6 hover:shadow-lg transition">
+        <a href="{{ url_for('bookings.service_requests') }}?requestService=true" class="bg-gradient-to-br from-[#632A89] to-[#4a1f6a] text-white p-6 hover:shadow-lg transition">
             <i class="fa-solid fa-bell-concierge text-4xl mb-4"></i>
             <h3 class="text-xl text-white font-semibold">Request Service</h3>
             <p class="mt-2 opacity-90">Laundry • Cleaning • Maintenance</p>
@@ -59,7 +59,7 @@
             <p class="mt-2 opacity-90">Add more nights to your booking</p>
         </a>
 
-        <a href="#" class="bg-gradient-to-br from-[#94CA3E] to-[#7eb52f] text-white p-6 hover:shadow-lg transition">
+        <a href="{{ url_for('bookings.payments') }}" class="bg-gradient-to-br from-[#94CA3E] to-[#7eb52f] text-white p-6 hover:shadow-lg transition">
             <i class="fa-solid fa-file-invoice-dollar text-4xl mb-4"></i>
             <h3 class="text-xl text-white font-semibold">View Invoices</h3>
             <p class="mt-2 opacity-90">Payment history & receipts</p>

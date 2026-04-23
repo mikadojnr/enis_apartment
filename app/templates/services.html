@@ -24,7 +24,7 @@
             
             <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
                 {% for service in essential %}
-                <div class="service-card text-center h-full">
+                <div class="service service-card text-center h-full">
                     <div class="text-[#632A89] text-6xl mb-4">
                         {% if "Security" in service.name %}<i class="fa-solid fa-shield"></i>
                         {% elif "Electricity" in service.name %}<i class="fa-solid fa-bolt"></i>
@@ -59,7 +59,7 @@
             
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {% for service in optional %}
-                <div class="service-card h-full flex flex-col text-center">
+                <div class="service service-card h-full flex flex-col text-center">
                     <div class="text-[#632A89] text-6xl mb-4 text-center">
                         {% if "Laundry" in service.name %}<i class="fa-solid fa-shirt"></i>
                         {% elif "Gym" in service.name %}<i class="fa-solid fa-dumbbell"></i>

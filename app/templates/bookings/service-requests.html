@@ -348,6 +348,14 @@
     }
 
     // Initialize
-    document.addEventListener('DOMContentLoaded', loadDashboardData);
+    document.addEventListener('DOMContentLoaded', () => {
+        loadDashboardData();
+
+        const params = new URLSearchParams(window.location.search);
+
+        if (params.get('requestService') === 'true') {
+            showNewServiceModal();
+        }
+    });
 </script>
 {% endblock %}
