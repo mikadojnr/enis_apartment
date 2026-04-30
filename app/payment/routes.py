@@ -103,63 +103,102 @@ def verify_payment():
     # HANDLE SERVICE REQUEST PAYMENT
     # ────────────────────────────────────────────────────────────────
     elif payment_type == "service_request":
-        request_id = metadata.get("request_id")
-        if not request_id:
-            return jsonify({"success": False, "message": "Missing request_id in metadata"}), 400
+        payment_reference = metadata.get("payment_reference")
 
-        service_request = ServiceRequest.query.get(request_id)
-        if not service_request:
-            return jsonify({"success": False, "message": "Service request not found"}), 404
+        if not payment_reference:
+            return jsonify({"success": False, "message": "Missing payment_reference"}), 400
 
-        if service_request.paid:
-            return jsonify({"success": True, "message": "Service already paid"})
+        # 🔥 Get ALL requests tied to this payment
+        service_requests = ServiceRequest.query.filter_by(
+            payment_reference=payment_reference
+        ).all()
 
-        existing_payment = Payment.query.filter_by(
+        if not service_requests:
+            return jsonify({"success": False, "message": "Service requests not found"}), 404
+
+        # If already paid
+        if all(req.paid for req in service_requests):
+            return jsonify({"success": True, "message": "Services already paid"})
+
+        # Update payment record
+        payment = Payment.query.filter_by(
             payment_reference=reference
         ).first()
 
-        if existing_payment:
-            # Already processed → just return success
+        if payment:
+            payment.status = 'success'
+            payment.gateway_response = str(paystack_data)
+            payment.currency = str(paystack_data.get("currency"))
+            payment.transaction_date = datetime.utcnow()
 
-            existing_payment.status = 'success'
-            existing_payment.gateway_response = str(paystack_data)
-            existing_payment.currency = str(paystack_data.get("currency"))
-            existing_payment.transaction_date = datetime.now()
-
-            db.session.commit()        
-
-        # # Create Payment Record (linked to booking)
-        # payment = Payment(
-        #     booking_id=service_request.booking_id,
-        #     payment_reference=reference,
-        #     amount=amount_paid,
-        #     currency='NGN',
-        #     status='success',
-        #     payment_method=paystack_data.get("channel", "paystack"),
-        #     gateway_response=str(paystack_data),
-        #     transaction_date=datetime.utcnow()
-        # )
-        # db.session.add(payment)
-
-        # Mark Service Request as Paid
-        service_request.paid = True
-        service_request.paid_at = datetime.utcnow()
-        # service_request.payment_reference = reference
-        service_request.status = 'in_progress'  # Still waiting admin action on completion
+        # 🔥 Update ALL service requests
+        for req in service_requests:
+            req.paid = True
+            req.paid_at = datetime.utcnow()
+            req.status = 'in_progress'
 
         db.session.commit()
 
-        # Send notifications
-        send_new_service_request_email([service_request])
-        send_service_request_confirmation_email([service_request])
+        # 🔥 Send ONE email with ALL services
+        send_new_service_request_email(service_requests)
+        send_service_request_confirmation_email(service_requests)
 
         return jsonify({
             "success": True,
             "message": "Service payment successful",
             "type": "service_request",
-            "request_id": service_request.id,
-            "service_name": service_request.service.name,
-            "booking_reference": service_request.booking.booking_reference
+            "request_ids": [r.id for r in service_requests],
+            "booking_reference": service_requests[0].booking.booking_reference
+        })
+    
+
+    # ────────────────────────────────────────────────────────────────
+    # HANDLE BOOKING EXTENSION PAYMENT
+    # ────────────────────────────────────────────────────────────────
+    elif payment_type == "extension":
+        extension_id = metadata.get("extension_id")
+        if not extension_id:
+            return jsonify({"success": False, "message": "Missing extension_id"}), 400
+
+        extension = BookingExtension.query.get(extension_id)
+        if not extension:
+            return jsonify({"success": False, "message": "Extension not found"}), 404
+
+        if extension.paid:
+            return jsonify({"success": True, "message": "Extension already paid"})
+
+        # Create Payment record
+        payment = Payment(
+            booking_id=extension.booking_id,
+            payment_reference=reference,
+            amount=amount_paid,
+            currency='NGN',
+            status='success',
+            payment_method=paystack_data.get("channel", "paystack"),
+            gateway_response=str(paystack_data),
+            transaction_date=datetime.utcnow()
+        )
+        db.session.add(payment)
+
+        # Update Extension
+        extension.paid = True
+        extension.paid_at = datetime.utcnow()
+        extension.payment_reference = reference
+        extension.status = 'approved'          # Auto-approve after payment
+
+        # Update original booking check-out date
+        extension.booking.check_out_date = extension.new_check_out
+        extension.booking.total_price += float(extension.extra_amount)
+
+        db.session.commit()
+
+        return jsonify({
+            "success": True,
+            "message": "Stay extension payment successful. Booking updated.",
+            "type": "extension",
+            "extension_id": extension.id,
+            "new_check_out": extension.new_check_out.strftime('%Y-%m-%d'),
+            "booking_reference": extension.booking.booking_reference
         })
 
     else:

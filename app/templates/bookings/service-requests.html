@@ -99,56 +99,55 @@
     let currentBookings = [];
     let currentServices = [];
 
-    // async function loadDashboardData() {
-       // try {
-         //   const [bookingsRes, servicesRes, requestsRes] = await Promise.all([
-          //      fetch('/api/my-bookings'),
-           //     fetch('/api/services'),
-         //       fetch('/bookings/service-requests')
-        //    ]);
-//
- //           currentBookings = await bookingsRes.json();
-  //          currentServices = await servicesRes.json();
-   //         const serviceRequests = await requestsRes.json();
-
-//            renderServiceRequests(serviceRequests);
- //           populateModal();
-  //      } catch (e) {
-   //         console.error(e);
-    //    }
-  //  }
-    async function loadDashboardData() {
-        try {
-            const bookingsRes = await fetch('/api/my-bookings', {
-                credentials: 'include'
-            });
-
-            if (!bookingsRes.ok) {
-                console.error("Bookings request failed:", bookingsRes.status);
-                return;
-            }
-
-            const bookingsData = await bookingsRes.json();
-            console.log("RAW bookings response:", bookingsData);
-            currentBookings = bookingsData;
-
-            const servicesRes = await fetch('/api/services', {
-                credentials: 'include'
-            });
-            currentServices = await servicesRes.json();
-
-            const requestsRes = await fetch('/bookings/service-requests', {
-                credentials: 'include'
-            });
-            const serviceRequests = await requestsRes.json();
-
-            renderServiceRequests(serviceRequests);
-            populateModal();
-
-        } catch (e) {
-            console.error("Dashboard load error:", e);
+     async function loadDashboardData() {
+         try {
+               const [bookingsRes, servicesRes, requestsRes] = await Promise.all([
+                  fetch('/api/my-bookings'),
+                 fetch('/api/services'),
+                   fetch('/api/service-requests')
+            ]); 
+               currentBookings = await bookingsRes.json();
+              currentServices = await servicesRes.json();
+             const serviceRequests = await requestsRes.json();
+                renderServiceRequests(serviceRequests);
+               populateModal();
+          } catch (e) {
+             console.error(e);
         }
-    }
+      }
+
+    // async function loadDashboardData() {
+    //    try {
+    //        const bookingsRes = await fetch('/api/my-bookings', {
+    //            credentials: 'include'
+    //        });
+
+    //        if (!bookingsRes.ok) {
+    //            console.error("Bookings request failed:", bookingsRes.status);
+    //            return;
+    //        }
+
+    //        const bookingsData = await bookingsRes.json();
+    //        console.log("RAW bookings response:", bookingsData);
+    //        currentBookings = bookingsData;
+
+    //        const servicesRes = await fetch('/api/services', {
+    //            credentials: 'include'
+    //        });
+    //        currentServices = await servicesRes.json();
+
+    //        const requestsRes = await fetch('/bookings/service-requests', {
+    //            credentials: 'include'
+    //        });
+    //        const serviceRequests = await requestsRes.json();
+
+    //        renderServiceRequests(serviceRequests);
+    //        populateModal();
+
+    //    } catch (e) {
+    //        console.error("Dashboard load error:", e);
+    //    }
+    //}
 
     console.log("Bookings:", currentBookings);
     
@@ -302,11 +301,11 @@
             ref: data.payment_reference,
             metadata: {
                 type: "service_request",
-                request_id: data.request_id,
+                payment_reference: data.payment_reference,
                 type: "service_request"
             },
             callback: function(response) {
-                verifyServicePayment(response.reference, data.request_id);
+                verifyServicePayment(response.reference, data.request_ids);
             },
             onClose: function() {
                 alert("Payment cancelled");

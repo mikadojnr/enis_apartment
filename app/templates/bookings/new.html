@@ -524,7 +524,7 @@
                     '✓ Free cancellation up to 48 hours before check-in. After that, 50% refund may apply.';
             } catch (err) {
                 console.error('Failed to load unit:', err);
-                showMessage('Could not load apartment details. Please try again later.', 'error');
+                showFlash('Could not load apartment details. Please try again later.', 'error');
             }
         }
 
@@ -534,7 +534,7 @@
         document.getElementById('bookingForm')?.addEventListener('submit', async function(e) {
             e.preventDefault();
             if (!isFormReady()) {
-                showMessage('Please complete all required fields.', 'error');
+                showFlash('Please complete all required fields.', 'error');
                 return;
             }
 
@@ -615,7 +615,7 @@
                         window.location.href = `/booking-lookup?ref=${encodeURIComponent(ref)}`;
                         // or open modal / fetch status
                     } else {
-                        showMessage('Please enter a valid booking reference (starts with ENI-)', 'error');
+                        showFlash('Please enter a valid booking reference (starts with ENI-)', 'error');
                     }
                 });
 
@@ -630,17 +630,17 @@
                 document.getElementById('step3').querySelector('div').classList.replace('bg-gray-300', 'bg-[#94CA3E]');
                 document.getElementById('step3').querySelector('span').classList.replace('text-gray-400', 'text-[#94CA3E]');
 
-                showMessage(`Booking ${bookingReference} created successfully!`, 'success');
+                showFlash(`Booking ${bookingReference} created successfully!`, 'success');
             } catch (err) {
                 console.error('Booking creation failed:', err);
-                showMessage(err.message || 'Failed to create booking. Please check your details and try again.', 'error');
+                showFlash(err.message || 'Failed to create booking. Please check your details and try again.', 'error');
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = originalHTML;
             }
         });
 
-        function showMessage(text, type = 'error', target = 'form') {
+        function showFlash(text, type = 'error', target = 'form') {
             const targetId = target === 'verification' ? 'verificationMessage' : 'formMessage';
             const msgEl = document.getElementById(targetId);
 
@@ -703,12 +703,6 @@
 
 
         // ID Verification logic
-        // ====================== ID VERIFICATION ======================
-        // ====================== GLOBAL VARIABLES ======================
-        let verifiedIdId = null;
-        let hasVerifiedId = false;        // For logged-in users who already have verified ID
-        let selectedFile = null;
-
         // ====================== ID VERIFICATION ======================
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('idDocument');

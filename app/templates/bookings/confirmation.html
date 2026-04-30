@@ -24,7 +24,7 @@
 </div>
 
 <div class="max-w-4xl mx-auto px-6 py-12">
-    <h1 class="text-4xl font-light text-center mb-10">Booking Confirmation</h1>
+    <h1 class="serif text-4xl font-light text-center mb-10">Booking Confirmation</h1>
 
     {% if booking.status == 'expired' %}
     <div class="bg-red-50 border border-red-200 p-10 text-center ">
@@ -34,7 +34,7 @@
             This booking has been automatically cancelled.
         </p>
         <a href="/units" class="btn-primary inline-block px-10 py-4 text-lg">
-            Start New Booking
+            <span>Start New Booking</span>
         </a>
     </div>
 
@@ -46,7 +46,8 @@
         </p>
 
         <div class="text-2xl font-bold mb-8">
-            Amount Due: ₦{{ "{:,.2f}".format(booking.total_price * 1.05) }}
+            <!-- Amount Due: ₦{{ "{:,.2f}".format(booking.total_price * 1.05) }} -->
+            Amount Due: ₦{{ "{:,.2f}".format(amount_due) }}
         </div>
 
         <!-- Countdown -->
@@ -65,8 +66,6 @@
             Secure payment • Powered by Paystack • You will be redirected back after payment
         </p>
     </div>
-
-    <script src="https://js.paystack.co/v1/inline.js"></script>
 
     <script>
         // Countdown (your existing code — unchanged)
@@ -99,7 +98,7 @@
             const handler = PaystackPop.setup({
                 key: '{{ paystack_public_key }}',                    // from template context
                 email: '{{ booking.email }}',
-                amount: {{ (booking.total_price * 1.05 * 100) | int }},   // in kobo
+                amount: '{{ (amount_due * 100) | int }}',
                 ref: '{{ booking.booking_reference }}',              // unique ref
                 currency: 'NGN',
                 metadata: {

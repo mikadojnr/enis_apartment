@@ -295,6 +295,7 @@ def booking_confirmation(booking_reference):
     return render_template(
         'bookings/confirmation.html',
         booking=booking,
+        amount_due=booking.calculate_total_with_addons(),
         paystack_public_key=current_app.config.get('PAYSTACK_PUBLIC_KEY'),
         csrf_token=generate_csrf()
     )
@@ -345,7 +346,7 @@ def dashboard():
     service_requests = current_user.service_requests.all()
 
     # Calculate total spent (only confirmed/paid bookings)
-    total_spent = sum(b.total_price for b in bookings if b.paid and b.status == 'confirmed')
+    total_spent = sum(b.total_price for b in bookings if b.paid and (b.status == 'confirmed' or b.status == 'completed'))
 
     return render_template(
         'bookings/dashboard.html',
@@ -473,13 +474,20 @@ def create_service_request():
         db.session.add(payment)
         db.session.commit()
 
+        for req in created_requests:
+            req.payment_id = payment.id
+            req.payment_reference = payment_reference
+
+        db.session.commit()
+
         return jsonify({
             "success": True,
             "message": "Service request created. Please complete payment.",
             "requires_payment": True,
             "amount": total_amount,
             "payment_reference": payment_reference,
-            "request_id": created_requests[0].id,   # Main request ID
+            # "request_id": created_requests[0].id,   # Main request ID
+            "request_ids": [req.id for req in created_requests],  # List of all request IDs
             "paystack_public_key": current_app.config.get('PAYSTACK_PUBLIC_KEY')
         })
 
@@ -499,12 +507,12 @@ def send_new_service_request_email(service_requests):
         return
 
     # All requests share same booking & user
-    first_request = service_requests[0]
+    # first_request = service_requests[0]
 
-    booking = first_request.booking
-    user = booking.guest
+    booking = service_requests[0].booking
+    user = service_requests[0].requester
 
-    total = sum(float(r.service.price) for r in service_requests if r.service.price > 0)
+    total = sum(float(r.service.price or 0) for r in service_requests)
 
     send_email(
         subject="New Service Request Received",
@@ -522,11 +530,9 @@ def send_service_request_confirmation_email(service_requests):
     if not service_requests:
         return
 
-    first_request = service_requests[0]
-
-    booking = first_request.booking
-    user = booking.guest
-    total = sum(float(r.service.price) for r in service_requests if r.service.price > 0)
+    booking = service_requests[0].booking
+    user = service_requests[0].requester
+    total = sum(float(r.service.price or 0) for r in service_requests)
 
     send_email(
         subject="Your Service Request Has Been Received",
@@ -585,3 +591,85 @@ def get_service_requests():
         'created_at': r.created_at.strftime('%d %b %Y, %I:%M %p'),
         'booking_reference': r.booking.booking_reference
     } for r in requests])
+
+
+# ====================== EXTEND STAY ======================
+
+@bookings_bp.route('/extend-stay', methods=['POST'])
+@login_required
+def request_extend_stay():
+    """Guest requests to extend their stay"""
+    data = request.get_json()
+
+    booking_id = data.get('booking_id')
+    extra_nights = int(data.get('extra_nights', 0))
+    notes = data.get('notes', '').strip()
+
+    if not booking_id or extra_nights <= 0:
+        return jsonify({"success": False, "message": "Valid booking and extra nights required"}), 400
+
+    booking = Booking.query.get_or_404(booking_id)
+
+    # Strict validation
+    if booking.user_id != current_user.id:
+        return jsonify({"success": False, "message": "Unauthorized"}), 403
+
+    if booking.status != 'confirmed' or not booking.paid:
+        return jsonify({"success": False, "message": "Only confirmed and paid bookings can be extended"}), 400
+
+    now = datetime.utcnow().date()
+    if booking.check_out_date.date() < now:
+        return jsonify({"success": False, "message": "This booking has already ended"}), 400
+
+    # Calculate new dates and cost
+    new_check_out = booking.check_out_date + timedelta(days=extra_nights)
+    nightly_rate = float(booking.unit.apartment_type.base_price)
+    extra_amount = extra_nights * nightly_rate
+
+    extension = BookingExtension(
+        booking_id=booking.id,
+        original_check_out=booking.check_out_date,
+        new_check_out=new_check_out,
+        extra_nights=extra_nights,
+        extra_amount=extra_amount,
+        status='pending',
+        notes=notes
+    )
+
+    db.session.add(extension)
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "message": "Extension request submitted. Please complete payment for extra nights.",
+        "extension_id": extension.id,
+        "extra_amount": float(extra_amount),
+        "new_check_out": new_check_out.strftime('%Y-%m-%d'),
+        "requires_payment": True
+    })
+
+
+@bookings_bp.route('/extend-stay/<int:extension_id>/pay', methods=['POST'])
+@login_required
+def pay_extension(extension_id):
+    """Initialize payment for stay extension"""
+    extension = BookingExtension.query.get_or_404(extension_id)
+
+    if extension.booking.user_id != current_user.id:
+        return jsonify({"success": False, "message": "Unauthorized"}), 403
+
+    if extension.paid or extension.status != 'pending':
+        return jsonify({"success": False, "message": "Extension already processed"}), 400
+
+    payment_ref = f"EXT-{extension.booking.booking_reference}-{int(datetime.utcnow().timestamp())}"
+
+    return jsonify({
+        "success": True,
+        "payment_reference": payment_ref,
+        "amount": float(extension.extra_amount) * 100,   # in kobo
+        "email": current_user.email,
+        "extension_id": extension.id,
+        "booking_reference": extension.booking.booking_reference,
+        "paystack_public_key": current_app.config.get('PAYSTACK_PUBLIC_KEY'),
+        "metadata_type": "extension"   # for verify route
+    })

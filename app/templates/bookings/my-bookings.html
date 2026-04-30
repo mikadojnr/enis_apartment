@@ -37,7 +37,14 @@
                     {{ booking.status|capitalize }}
                 </span>
                 <a href="{{ url_for('bookings.booking_details', booking_reference=booking.booking_reference) }}" 
-                   class="block mt-4 text-[#E96C40] font-medium">View Details →</a>
+                   class="block mt-4 text-[#E96C40] font-medium">View Details →
+                </a>
+                {% if booking.status == 'confirmed' and booking.paid %}
+                <button onclick="requestExtension('{{ booking.id }}')" 
+                        class="mt-4 text-sm bg-[#E96C40] text-white px-5 py-2 hover:bg-orange-600">
+                    <i class="fa-solid fa-calendar-plus"></i> Extend Stay
+                </button>
+                {% endif %}
             </div>
         </div>
         {% else %}
@@ -45,4 +52,54 @@
         {% endfor %}
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+
+<script>
+    async function requestExtension(bookingId) {
+        const extraNights = prompt("How many extra nights would you like to extend?", "3");
+        if (!extraNights || isNaN(extraNights) || extraNights <= 0) {
+            showFlash("Please enter a valid number of nights.", 'warning');
+            return;
+        }
+
+        const notes = prompt("Any special notes? (optional)");
+
+        const res = await fetch('/bookings/extend-stay', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token() }}'},
+            body: JSON.stringify({
+                booking_id: bookingId,
+                extra_nights: parseInt(extraNights),
+                notes: notes || ''
+            })
+        });
+
+        const data = await res.json();
+        if (data.success && data.requires_payment) {
+            initiateExtensionPayment(data);
+        } else {
+            showFlash(data.message, 'error');
+        }
+    }
+
+    function initiateExtensionPayment(data) {
+        const handler = PaystackPop.setup({
+            key: data.paystack_public_key,
+            email: current_user_email,
+            amount: data.extra_amount * 100,
+            ref: data.payment_reference,
+            metadata: {
+                type: "extension",
+                extension_id: data.extension_id
+            },
+            callback: function(response) {
+                // Verify will handle everything
+                window.location.reload();
+            }
+        });
+        handler.openIframe();
+    }
+</script>
 {% endblock %}

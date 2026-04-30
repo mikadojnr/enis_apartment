@@ -1,7 +1,7 @@
 from flask import jsonify, request
 from flask_login import current_user, login_required
 from app.api import api_bp
-from app.models import Unit, Service, Booking, User, VerifiedID
+from app.models import ServiceRequest, Unit, Service, Booking, User, VerifiedID
 from datetime import datetime
 from app import db
 
@@ -33,7 +33,6 @@ def api_me():
         })
     return jsonify({"is_authenticated": False})
 
-
 @api_bp.route('/my-bookings')
 @login_required
 def api_my_bookings():
@@ -63,6 +62,7 @@ def get_units():
         'unit_number': u.unit_number,
         'floor': u.floor,
         'view': u.view,
+        'image_url': u.image_url,
         'is_available': u.is_available,
         'apartment_type': {
             'name': u.apartment_type.name,
@@ -228,3 +228,38 @@ def calculate_price():
         'price_per_day': float(unit.apartment_type.base_price),
         'total_price': total_price
     })
+
+
+@api_bp.route('/service-requests', methods=['GET'])
+@login_required
+def get_service_requests():
+    try:
+        requests = (
+            db.session.query(ServiceRequest, Service, Booking, Unit)
+            .join(Service, Service.id == ServiceRequest.service_id)
+            .join(Booking, Booking.id == ServiceRequest.booking_id)
+            .join(Unit, Unit.id == ServiceRequest.unit_id)
+            .filter(ServiceRequest.user_id == current_user.id)
+            .order_by(ServiceRequest.created_at.desc())
+            .all()
+        )
+
+        result = []
+
+        for req, service, booking, unit in requests:
+            result.append({
+                "id": req.id,
+                "service_name": service.name,
+                "booking_reference": booking.booking_reference,
+                "unit_number": unit.unit_number,
+                "status": req.status,
+                "notes": req.notes,
+                "paid": req.paid,
+                "created_at": req.created_at.strftime('%Y-%m-%d %H:%M')
+            })
+
+        return jsonify(result), 200
+
+    except Exception as e:
+        print("Service request fetch error:", str(e))
+        return jsonify({"error": "Failed to fetch service requests"}), 500

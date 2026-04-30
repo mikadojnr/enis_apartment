@@ -159,6 +159,11 @@ class Booking(db.Model):
         lazy='subquery',
         backref=db.backref('bookings', lazy=True)
     )
+
+    def calculate_total_with_addons(self):
+        addon_total = sum(service.price for service in self.addons)
+        return self.total_price + addon_total
+
     
     def __repr__(self):
         return f'<Booking {self.booking_reference}>'  
@@ -236,6 +241,10 @@ class Payment(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     booking_id = db.Column(db.Integer, db.ForeignKey('bookings.id', ondelete='CASCADE'), nullable=True)
+
+    # Add this to support extensions and future features
+    payment_type = db.Column(db.String(20), default='booking')  # booking, service_request, extension
+
     payment_reference = db.Column(db.String(100), unique=True, nullable=False)
     amount = db.Column(db.Numeric(10,2), nullable=False)
     currency = db.Column(db.String(10), default='NGN')
@@ -246,11 +255,9 @@ class Payment(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    items = db.relationship(
-        'PaymentItem',
-        backref='payment',
-        cascade='all, delete-orphan'
-    )
+    # Relationships
+    items = db.relationship('PaymentItem', backref='payment', cascade='all, delete-orphan')
+    booking_extension = db.relationship('BookingExtension', back_populates='payment', uselist=False)
 
 class PaymentItem(db.Model):
     __tablename__ = 'payment_items'
@@ -272,3 +279,40 @@ class PaymentItem(db.Model):
     amount = db.Column(db.Numeric(10,2), nullable=False)
 
     service_request = db.relationship('ServiceRequest')
+
+class BookingExtension(db.Model):
+    """Extension of an existing booking"""
+    __tablename__ = 'booking_extensions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    booking_id = db.Column(db.Integer, db.ForeignKey('bookings.id'), nullable=False)
+    
+    # Foreign key to Payment (this was missing!)
+    payment_id = db.Column(
+        db.Integer, 
+        db.ForeignKey('payments.id', ondelete='SET NULL'), 
+        nullable=True
+    )
+
+    original_check_out = db.Column(db.DateTime, nullable=False)
+    new_check_out = db.Column(db.DateTime, nullable=False)
+    extra_nights = db.Column(db.Integer, nullable=False)
+    extra_amount = db.Column(db.Numeric(10,2), nullable=False)
+    
+    status = db.Column(db.String(50), default='pending')   # pending, approved, paid, rejected
+    payment_reference = db.Column(db.String(100), nullable=True)
+    paid = db.Column(db.Boolean, default=False)
+    paid_at = db.Column(db.DateTime, nullable=True)
+    
+    requested_at = db.Column(db.DateTime, default=datetime.utcnow)
+    approved_at = db.Column(db.DateTime, nullable=True)
+    notes = db.Column(db.Text)
+
+    # Relationships
+    booking = db.relationship('Booking', backref=db.backref('extensions', lazy='dynamic'))
+    
+    # Fixed relationship
+    payment = db.relationship( 'Payment', foreign_keys=[payment_id], back_populates='booking_extension' )
+
+    def __repr__(self):
+        return f'<BookingExtension {self.id} for Booking {self.booking.booking_reference}>'
